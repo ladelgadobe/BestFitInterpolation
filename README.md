@@ -71,3 +71,5 @@ Laura Delgado Bejarano
 Lucas Rios do Amaral
 Repository: <https://github.com/ladelgadobe/BestFitInterpolation>
 
+## Reference
+Delgado Bejarano, L., Loureiro Gonçalves Oliveira, A., Fiolo Pozzuto, J. V., Castañeda Sánchez, D., & Rios do Amaral, L. (2026). Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 27(1), 10. <https://link.springer.com/article/10.1007/s11119-025-10311-8>
