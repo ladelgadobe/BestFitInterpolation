@@ -1,0 +1,1395 @@
+# -*- coding: utf-8 -*-
+"""
+ok_r_integration.py
+Ordinary Kriging tab controller in pure Python (no R dependency).
+All code comments are in English. UI labels are updated in place.
+
+What this file does:
+- Computes the experimental semivariogram in Python.
+- Estimates initial variogram parameters (nugget, partial sill, range) via MoM-like heuristics.
+- Overlays a theoretical model curve (Spherical / Exponential / Gaussian) on the experimental variogram.
+- Builds a prediction grid inside a polygon and performs Ordinary Kriging predictions in Python.
+- Plots the clipped prediction map with a viridis colormap.
+
+Note:
+- The "MoM/REML" label in the UI is informational only. No REML fit is executed here.
+"""
+
+import math
+import os
+import numpy as np
+from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.PyQt.QtWidgets import QProgressDialog, QFileDialog, QMenu, QDialog, QMessageBox
+
+from qgis.PyQt.QtWidgets import QVBoxLayout
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.ticker import MaxNLocator, ScalarFormatter
+from matplotlib.path import Path as MplPath
+from matplotlib.patches import Polygon as MplPolygon
+from qgis.core import QgsProject, QgsWkbTypes, QgsRasterLayer
+from osgeo import gdal, osr
+import tempfile
+import uuid
+
+# Optional REML backend (SciPy-based); fall back to MoM if unavailable
+try:
+    from .reml_bridge import fit_ok_reml_interface
+    from .kriging_reml import _HAS_SCIPY as _REML_SCIPY
+    _HAS_REML = bool(_REML_SCIPY)
+except Exception:
+    _HAS_REML = False
+
+# Pure-Python kriging backend (already used by your other path)
+from .kriging_ordinary import ordinary_kriging_interpolation
+
+# Centralized colors
+EXP_COLOR = "#2f0dee"   # experimental points
+TH_COLOR  = "#000000"   # theoretical curve
+
+
+class OKTabController:
+    """Manages logic for the Ordinary Kriging tab (pure Python):
+       - Computes the experimental variogram (Python)
+       - Estimates initial parameters (Python, MoM-like heuristics)
+       - Overlays a theoretical model (Python)
+       - Interpolates via pure-Python ordinary kriging (no R/gstat)
+       - Reset returns to the first auto-computed baseline for the current layer/field
+    """
+
+    def __init__(self, iface, dlg, plugin_dir=None, r_folder_path=None):
+        # Plugin dir kept for symmetry (no longer used for R)
+        self.plugin_dir = plugin_dir
+
+        # QGIS iface & dialog
+        self.iface = iface
+        self.dlg = dlg
+
+        # Data holders provided by the main plugin class
+        self.points_layer = None
+        self.z_field = None
+
+        # Matplotlib holders
+        self._krig_vario_fig = None
+        self._krig_vario_canvas = None
+        self._krig_map_fig = None
+        self._krig_map_canvas = None
+
+        # Cached last computed data
+        self._exp_lags = None
+        self._exp_gamma = None
+        self._cutoff = None
+        self._lag_width = None
+        self._n = 0
+        self._init_params = None  # (nugget, psill, rng)
+        self._ok_fit_method = "MoM"  # or "REML" when successful
+        self._use_reml = False
+        self._reml_fitted = False
+
+        # Handoff from main plugin class for CV
+        self.run_ok_cv_function = None
+
+        # Baselines
+        self._baseline_initial = None  # first auto baseline (heuristics) for current layer/field
+        self._baseline_last = None     # last computed (auto or manual)
+
+        self._dispatcher_active = True
+        self._wire_signals()
+        try:
+            self._update_sdi_label()
+        except Exception:
+            pass
+
+    def set_dispatcher_active(self, state: bool):
+        """Enable or disable this controller when used by the dispatcher."""
+        self._dispatcher_active = bool(state)
+
+    def is_dispatcher_active(self) -> bool:
+        return bool(getattr(self, "_dispatcher_active", True))
+
+    # ------------------------------ Wiring ----------------------------------
+
+    def _wire_signals(self):
+        """Connect UI signals for Kriging tab."""
+        try:
+            self.dlg.mainTabs.currentChanged.connect(self._on_tab_changed)
+        except Exception:
+            pass
+
+        # Calculate (recompute experimental + overlay)
+        if hasattr(self.dlg, "btnOKCalculate") and self.dlg.btnOKCalculate is not None:
+            try:
+                self.dlg.btnOKCalculate.clicked.connect(self._on_recalculate_clicked)
+            except Exception:
+                pass
+
+        # CV button (in validation tab)
+        btn_cv = getattr(self.dlg, "btnOKRunCV", None)
+        if btn_cv is not None:
+            btn_cv.clicked.connect(self._on_run_cv_clicked)
+
+        # Interpolate (map)
+        self._hook_interpolate_button()
+
+        # Reset button(s): try common names, then generic scan
+        if not self._hook_reset_button_by_common_names():
+            self._hook_reset_button_generic()
+
+        # Overlay model whenever user changes model or params
+        for wname in ("cmbOKModel", "spinOKNugget", "spinOKPsill", "spinOKRange"):
+            w = getattr(self.dlg, wname, None)
+            if w is None:
+                continue
+            if hasattr(w, "valueChanged"):
+                try:
+                    w.valueChanged.connect(self._plot_with_model_if_possible)
+                    w.valueChanged.connect(self._update_sdi_label)
+                except Exception:
+                    pass
+            if hasattr(w, "currentIndexChanged"):
+                try:
+                    w.currentIndexChanged.connect(self._plot_with_model_if_possible)
+                    w.currentIndexChanged.connect(self._update_sdi_label)
+                except Exception:
+                    pass
+
+        # Recompute when the user changes the variable/field combo (names vary across UIs)
+        for wname in ("cmbZField", "cmbField", "cmbVariable", "cmbOKField", "Points_2"):
+            w = getattr(self.dlg, wname, None)
+            if w is not None and hasattr(w, "currentIndexChanged"):
+                try:
+                    w.currentIndexChanged.connect(self._on_variable_ui_changed)
+                except Exception:
+                    pass
+
+        # Optional: recompute if the points layer combo changes
+        for wname in ("cmbPointsLayer", "cmbLayerPoints", "Points", "cmbPoints"):
+            w = getattr(self.dlg, wname, None)
+            if w is not None and hasattr(w, "currentIndexChanged"):
+                try:
+                    w.currentIndexChanged.connect(self._on_variable_ui_changed)
+                except Exception:
+                    pass
+
+    def _hook_interpolate_button(self):
+        """Wire the kriging interpolate button to run map generation."""
+        btn = None
+        for name in ("btnOKInterpolate", "btnKrigInterpolate", "btnOKRun"):
+            w = getattr(self.dlg, name, None)
+            if w is not None and hasattr(w, "clicked"):
+                btn = w
+                break
+        if btn is not None:
+            try:
+                btn.clicked.connect(self._on_interpolate_clicked)
+            except Exception:
+                pass
+
+    def _hook_reset_button_by_common_names(self) -> bool:
+        """Try common reset button objectNames. Return True if hooked."""
+        for bname in ("btnOKReset", "btnOKDefaults", "btnOKRevert", "btnOKParamsReset", "btnReset"):
+            btn = getattr(self.dlg, bname, None)
+            if btn is not None and hasattr(btn, "clicked"):
+                try:
+                    btn.clicked.connect(self._on_reset_clicked)
+                    return True
+                except Exception:
+                    pass
+        return False
+
+    def _hook_reset_button_generic(self):
+        """Scan dialog attributes for a QPushButton-like with 'reset'/'default' text/name."""
+        try:
+            for attr in dir(self.dlg):
+                if attr.startswith("_"):
+                    continue
+                obj = getattr(self.dlg, attr, None)
+                if obj is None:
+                    continue
+                if hasattr(obj, "clicked"):
+                    name = ""
+                    try:
+                        if hasattr(obj, "objectName"):
+                            name = (obj.objectName() or "").lower()
+                    except Exception:
+                        pass
+                    text = ""
+                    try:
+                        if hasattr(obj, "text"):
+                            text = (obj.text() or "").lower()
+                    except Exception:
+                        pass
+                    hay = any(k in name for k in ("reset", "default", "reiniciar", "restablecer")) or \
+                          any(k in text for k in ("reset", "default", "reiniciar", "restablecer"))
+                    if hay:
+                        try:
+                            obj.clicked.connect(self._on_reset_clicked)
+                            return
+                        except Exception:
+                            continue
+        except Exception:
+            pass
+
+    # ---------------------- Layer/field handoff from main ---------------------
+
+    def set_points_layer_and_field(self, layer, field):
+        if not self.is_dispatcher_active():
+            return
+        """Receive the currently selected points layer and field from the main class."""
+        self.points_layer = layer
+        self.z_field = field
+        # Invalidate initial baseline for new context
+        self._baseline_initial = None
+        # Reset REML state on context change
+        self._use_reml = False
+        self._reml_fitted = False
+        # Compute immediately for the current context.
+        # The previous version only ran when the tab text was exactly "kriging",
+        # which fails in this plugin because the visible tab name is "Geostatistics".
+        self.calculate_and_plot_experimental(initial_load=True)
+
+    def _on_tab_changed(self, index):
+        """Triggered when the user switches tabs."""
+        # The main plugin already updates the kriging/geostatistics context when entering the tab.
+        # Keeping this as a no-op avoids duplicate recalculation and tab-name mismatches.
+        pass
+
+    # ----------------------- Model & variable helpers ------------------------
+
+    def _normalize_model_token(self, txt: str) -> str:
+        t = (txt or "").strip().lower()
+        if t.startswith(("sph", "esf")):   # Spherical/Esférico
+            return "spherical"
+        if t.startswith(("gau", "gaus")):  # Gaussian
+            return "gaussian"
+        if t.startswith(("exp", "expon")): # Exponential
+            return "exponential"
+        if "spher" in t:
+            return "spherical"
+        if "gaus" in t:
+            return "gaussian"
+        return "exponential"
+
+    def _get_selected_model(self) -> str:
+        cmb = getattr(self.dlg, "cmbOKModel", None)
+        if cmb is not None and hasattr(cmb, "currentText"):
+            return self._normalize_model_token(cmb.currentText())
+        return "exponential"
+
+    def _set_model_combo_by_token(self, token: str):
+        cmb = getattr(self.dlg, "cmbOKModel", None)
+        if cmb is None or not hasattr(cmb, "count"):
+            return
+        try:
+            for i in range(cmb.count()):
+                itxt = cmb.itemText(i)
+                if self._normalize_model_token(itxt) == token:
+                    cmb.setCurrentIndex(i)
+                    return
+        except Exception:
+            pass
+
+    def _maybe_pull_field_from_ui(self):
+        for name in ("cmbZField", "cmbField", "cmbVariable", "cmbOKField", "Points_2"):
+            w = getattr(self.dlg, name, None)
+            if w is not None and hasattr(w, "currentText"):
+                txt = w.currentText()
+                if txt:
+                    self.z_field = txt
+                    return
+
+    def _on_variable_ui_changed(self, *args):
+        if not self.is_dispatcher_active():
+            return
+        self._maybe_pull_field_from_ui()
+        self._baseline_initial = None
+        self.calculate_and_plot_experimental(initial_load=True)
+        self._plot_with_model_if_possible()
+
+    # -------------------------- Click handlers -------------------------------
+
+    def _on_run_cv_clicked(self):
+        """Handler for the 'Run CV' button on the Kriging validation tab."""
+        if self.run_ok_cv_function is not None:
+            try:
+                self.run_ok_cv_function()
+            except Exception as e:
+                self.iface.messageBar().pushCritical("Kriging CV", f"Failed to trigger CV run: {e}")
+
+    def _on_recalculate_clicked(self):
+        if not self.is_dispatcher_active():
+            return
+        # Recompute experimental and MoM seeds
+        self._ensure_inputs_from_ui()
+        self.calculate_and_plot_experimental(initial_load=False)
+        # If small sample size and REML available, fit now on Calculate
+        try:
+            x, y, z = self._read_xy_z()
+        except Exception:
+            x = y = z = None
+        if x is not None and _HAS_REML and z is not None and len(z) < 100:
+            try:
+                # Enter REML mode, clear experimental, fit once, and plot theoretical only
+                self._use_reml = True
+                self._exp_lags, self._exp_gamma = None, None
+                self._reml_fitted = False
+                self._fit_reml_if_needed(x, y, z)
+            except Exception:
+                # If REML fails, stay with MoM overlay
+                self._use_reml = False
+                self._reml_fitted = False
+                self._plot_with_model_if_possible()
+        else:
+            # MoM only: overlay model on experimental
+            self._plot_with_model_if_possible()
+
+    # --- Reset helpers ---
+
+    def _restore_baseline_to_ui_and_state(self, baseline: dict):
+        if not baseline:
+            return False
+        try:
+            if hasattr(self.dlg, "spinOKCutoff"):
+                self.dlg.spinOKCutoff.setValue(float(baseline["cutoff"]))
+            if hasattr(self.dlg, "spinOKLag"):
+                self.dlg.spinOKLag.setValue(float(baseline["lagw"]))
+            if hasattr(self.dlg, "spinOKNugget"):
+                self.dlg.spinOKNugget.setValue(float(baseline["nugget"]))
+            if hasattr(self.dlg, "spinOKPsill"):
+                self.dlg.spinOKPsill.setValue(float(baseline["psill"]))
+            if hasattr(self.dlg, "spinOKRange"):
+                self.dlg.spinOKRange.setValue(float(baseline["range"]))
+        except Exception:
+            pass
+        try:
+            self._set_model_combo_by_token(baseline.get("model", "exponential"))
+        except Exception:
+            pass
+        try:
+            self._cutoff      = float(baseline["cutoff"])
+            self._lag_width   = float(baseline["lagw"])
+            self._init_params = (
+                float(baseline["nugget"]),
+                float(baseline["psill"]),
+                float(baseline["range"]),
+            )
+        except Exception:
+            pass
+        return True
+
+    def _on_reset_clicked(self):
+        self._ensure_inputs_from_ui()
+        if not self._baseline_initial:
+            self.calculate_and_plot_experimental(initial_load=True)
+            self._plot_with_model_if_possible()
+            return
+        ok = self._restore_baseline_to_ui_and_state(self._baseline_initial)
+        if not ok:
+            return
+        self.calculate_and_plot_experimental(initial_load=False)
+        self._plot_with_model_if_possible()
+
+    # -------------------------- Data extraction ------------------------------
+
+    def _read_xy_z(self):
+        """Extract X, Y, Z from the selected points layer and field. Requires >=5 valid points."""
+        if not self.points_layer or not self.z_field:
+            return None, None, None
+        xs, ys, zs = [], [], []
+        for feat in self.points_layer.getFeatures():
+            g = feat.geometry()
+            if g is None or g.isEmpty():
+                continue
+            try:
+                pt = g.asPoint()
+            except Exception:
+                try:
+                    mpt = g.constGet()
+                    if hasattr(mpt, "geometryN"):
+                        pt = mpt.geometryN(0).asPoint()
+                    else:
+                        continue
+                except Exception:
+                    continue
+            try:
+                val = float(feat[self.z_field])
+            except Exception:
+                val = np.nan
+            if np.isfinite(val):
+                xs.append(pt.x()); ys.append(pt.y()); zs.append(val)
+        if len(xs) < 5:
+            return None, None, None
+        return np.array(xs, dtype=float), np.array(ys, dtype=float), np.array(zs, dtype=float)
+
+    # ----------------------- Variogram core (experimental) --------------------
+
+    @staticmethod
+    def _pairwise_distances(x, y):
+        """Return condensed array of pairwise Euclidean distances."""
+        n = x.size
+        d = np.empty(n * (n - 1) // 2, dtype=float)
+        k = 0
+        for i in range(n - 1):
+            dx = x[i + 1:] - x[i]
+            dy = y[i + 1:] - y[i]
+            m = np.hypot(dx, dy)
+            d[k:k + m.size] = m
+            k += m.size
+        return d
+
+    @staticmethod
+    def _nearest_neighbor_dist(x, y):
+        """Return the minimum nearest-neighbor distance."""
+        n = x.size
+        if n < 2:
+            return np.nan
+        dmin = np.inf
+        for i in range(n):
+            dx = x - x[i]
+            dy = y - y[i]
+            dist = np.hypot(dx, dy)
+            dist[i] = np.inf
+            mi = float(np.min(dist))
+            if mi < dmin:
+                dmin = mi
+        return dmin if np.isfinite(dmin) else np.nan
+
+    @staticmethod
+    def _semivariances(z):
+        """Return a callable γ(i, J) = 0.5 * (i - J)^2 to vectorize per-pair values."""
+        def gamma(i_val, j_vals):
+            diff = i_val - j_vals
+            return 0.5 * (diff * diff)
+        return gamma
+
+    def _bin_variogram(self, x, y, z, cutoff, lag_width):
+        """Compute binned experimental semivariogram up to 'cutoff' with bin size 'lag_width'."""
+        nbins = max(1, int(math.floor(cutoff / lag_width)))
+        sums = np.zeros(nbins, dtype=float)
+        counts = np.zeros(nbins, dtype=int)
+        dists = np.zeros(nbins, dtype=float)
+        gamma_of = self._semivariances(z)
+        n = x.size
+        for i in range(n - 1):
+            xi, yi, zi = x[i], y[i], z[i]
+            xj = x[i + 1:]; yj = y[i + 1:]; zj = z[i + 1:]
+            dd = np.hypot(xj - xi, yj - yi)
+            mask = (dd > 0) & (dd <= cutoff)
+            if not np.any(mask):
+                continue
+            dd = dd[mask]
+            gj = gamma_of(zi, zj[mask])
+            bin_idx = np.floor(dd / lag_width).astype(int)
+            bin_idx[bin_idx == nbins] = nbins - 1  # clamp edge case
+            for b, dval, gval in zip(bin_idx, dd, gj):
+                sums[b] += gval
+                counts[b] += 1
+                dists[b] += dval
+        valid = counts > 0
+        default_centers = np.linspace(lag_width * 0.5, nbins * lag_width - lag_width * 0.5, nbins)
+        lags = np.where(valid, dists / np.maximum(counts, 1), default_centers)
+        gamma = np.where(valid, sums / np.maximum(counts, 1), np.nan)
+        keep = ~np.isnan(gamma)
+        return lags[keep], gamma[keep]
+
+    # --------------------- Initial parameter estimation -----------------------
+
+    @staticmethod
+    def _robust_var(z):
+        """Robust variance proxy via MAD. Falls back to sample variance if MAD=0."""
+        med = np.median(z)
+        mad = np.median(np.abs(z - med))
+        if mad <= 0:
+            return float(np.var(z, ddof=1))
+        return float((1.4826 * mad) ** 2)
+
+    def _guess_initial_params(self, lags, gamma, cutoff, model="exponential"):
+        """Estimate MoM seed parameters with the same robust search used by Framework."""
+        lags = np.asarray(lags, dtype=float)
+        gamma = np.asarray(gamma, dtype=float)
+        keep = np.isfinite(lags) & np.isfinite(gamma) & (lags > 0)
+        lags = lags[keep]
+        gamma = gamma[keep]
+
+        if lags.size == 0:
+            return 0.0, 1.0, max(1.0, cutoff * 0.4)
+
+        order = np.argsort(lags)
+        lags = lags[order]
+        gamma = gamma[order]
+
+        first_vals = gamma[:max(1, min(3, gamma.size))]
+        tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
+        first_bin = float(first_vals[0]) if first_vals.size else 0.0
+        first_med = float(np.nanmedian(first_vals)) if first_vals.size else first_bin
+        first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
+
+        nugget_intercept = first_bin
+        if lags.size >= 2:
+            h1, h2 = float(lags[0]), float(lags[1])
+            g1, g2 = float(gamma[0]), float(gamma[1])
+            if abs(h2 - h1) > 1e-12:
+                slope = (g2 - g1) / (h2 - h1)
+                nugget_intercept = float(g1 - slope * h1)
+
+        nugget_floor = 0.75 * first_bin
+        nugget_seed = float(max(0.0, max(max(0.0, nugget_intercept), nugget_floor, first_bin)))
+        plateau_seed = float(np.nanmedian(tail_vals))
+        max_seed = float(np.nanmax(gamma))
+        sill_total_seed = max(plateau_seed, max_seed, first_max, nugget_seed + 1e-6)
+        target = 0.90 * sill_total_seed
+        idx = np.where(gamma >= target)[0]
+        range_seed = float(lags[idx[0]]) if idx.size > 0 else float(0.60 * cutoff)
+        range_seed = max(range_seed, float(np.nanmin(lags)), 1e-9)
+
+        nugget_cap = max(0.0, min(first_max, 0.90 * sill_total_seed))
+        nugget_seed = float(np.clip(nugget_seed, 0.0, nugget_cap)) if nugget_cap > 0 else 0.0
+        nugget_candidates = np.array([nugget_seed], dtype=float)
+
+        lag_min = max(float(np.nanmin(lags)), 1e-9)
+        lag_max = max(float(np.nanmax(lags)), lag_min)
+        low = max(lag_min, 0.20 * range_seed)
+        high = max(low * 1.05, min(float(cutoff), max(lag_max * 1.15, range_seed * 1.8, low)))
+        range_candidates = np.unique(np.concatenate([
+            np.linspace(low, high, 28),
+            np.array([range_seed, 0.5 * cutoff, 0.75 * cutoff, lag_max], dtype=float),
+        ]))
+        range_candidates = range_candidates[np.isfinite(range_candidates) & (range_candidates > 0)]
+
+        lag_scale = max(float(np.nanmedian(lags)), 1e-9)
+        weights = 1.0 / (1.0 + (lags / lag_scale))
+        best = None
+        model_token = self._normalize_model_token(model)
+
+        for nugget in nugget_candidates:
+            y = gamma - float(nugget)
+            for rng in range_candidates:
+                basis = self._model_func(lags, model_token, 0.0, 1.0, float(rng))
+                denom = float(np.sum(weights * basis * basis))
+                if denom <= 0:
+                    continue
+                psill = float(np.sum(weights * basis * y) / denom)
+                psill = max(psill, 1e-9)
+                pred = float(nugget) + psill * basis
+                sse = float(np.sum(weights * (gamma - pred) ** 2))
+                sse += 1e-6 * (float(rng) / max(float(cutoff), 1e-9)) ** 2
+                if best is None or sse < best[0]:
+                    best = (sse, float(nugget), float(psill), float(rng))
+
+        if best is None:
+            return nugget_seed, max(sill_total_seed - nugget_seed, 1e-6), range_seed
+
+        _, nugget, psill, rng = best
+        return nugget, psill, rng
+
+        if lags.size == 0:
+            return 0.0, 1.0, max(1.0, cutoff * 0.4)
+        # Nugget: minimum over the first 1-3 empirical points (non-negative)
+        nugget = float(max(0.0, np.nanmin(gamma[: max(1, min(3, gamma.size))])))
+        # Sill total: max of (max γ, tail median). Ensure at least nugget + eps
+        plateau = float(np.nanmedian(gamma[-max(3, gamma.size // 4):]))
+        psill_total = float(max(np.nanmax(gamma), plateau))
+        psill_total = max(psill_total, nugget + 1e-6)
+        # Range: first h where γ(h) reaches 95% of sill (or 0.5*cutoff fallback)
+        target = 0.95 * psill_total
+        idx = np.where(gamma >= target)[0]
+        if idx.size > 0:
+            r = float(lags[idx[0]])
+        else:
+            r = float(0.5 * cutoff)
+        r = max(r, lags[0] if lags.size else 1.0)
+        # Partial sill = (sill total - nugget)
+        return nugget, psill_total - nugget, r
+
+    # ----------------------------- UI helpers ---------------------------------
+
+    def _ensure_canvas(self):
+        """Ensure variogram and map canvases exist and are attached."""
+        # Variogram
+        container_v = getattr(self.dlg, "CanvasOKVariogram", None) or getattr(self.dlg, "canvasOKVariogram", None)
+        if container_v is not None and self._krig_vario_canvas is None:
+            self._krig_vario_fig = Figure(figsize=(5, 4), tight_layout=True)
+            self._krig_vario_canvas = FigureCanvas(self._krig_vario_fig)
+            layout = container_v.layout() or QVBoxLayout(container_v)
+            for i in reversed(range(layout.count())):
+                w = layout.itemAt(i).widget()
+                if w is not None:
+                    w.setParent(None)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self._krig_vario_canvas)
+            self._install_save_png_handler(self._krig_vario_canvas, self._krig_vario_fig, default_prefix="kriging_variogram")
+
+        # Map
+        container_m = getattr(self.dlg, "canvasOKInterpolation", None) or getattr(self.dlg, "CanvasOKInterpolation", None)
+        if container_m is not None and self._krig_map_canvas is None:
+            self._krig_map_fig = Figure(figsize=(5, 4), tight_layout=True)
+            self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
+            layout = container_m.layout() or QVBoxLayout(container_m)
+            for i in reversed(range(layout.count())):
+                w = layout.itemAt(i).widget()
+                if w is not None:
+                    w.setParent(None)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self._krig_map_canvas)
+            self._install_save_png_handler(self._krig_map_canvas, self._krig_map_fig, default_prefix="kriging_map")
+
+        return (self._krig_vario_canvas is not None)
+
+    # ----------------------------- Save PNG hooks -----------------------------
+
+    def _install_save_png_handler(self, canvas, fig, default_prefix: str):
+        """Install right-click context menu 'Save graph…' on a Matplotlib canvas."""
+        try:
+            if canvas is None or fig is None:
+                return
+            # Avoid multiple connections on the same canvas
+            if not hasattr(self, "_save_handlers"):
+                self._save_handlers = set()
+            key = id(canvas)
+            if key in self._save_handlers:
+                return
+
+            # Prefer Qt custom context menu
+            try:
+                canvas.setContextMenuPolicy(Qt.CustomContextMenu)
+            except Exception:
+                pass
+
+            def _show_menu(pos):
+                try:
+                    menu = QMenu(self.dlg)
+                    act_view = menu.addAction("View larger view")
+                    act_save = menu.addAction("Save graph…")
+                    chosen = menu.exec_(canvas.mapToGlobal(pos))
+                    if chosen == act_view:
+                        self._show_larger_graph(fig, default_prefix)
+                    elif chosen == act_save:
+                        suggested_dir = os.path.expanduser("~")
+                        suggested = os.path.join(suggested_dir, f"{default_prefix}.png")
+                        path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
+                        if path:
+                            fig.savefig(path, dpi=300, bbox_inches='tight')
+                            try:
+                                self.iface.messageBar().pushMessage("Saved", f"PNG saved to: {path}", level=0)
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+
+            try:
+                canvas.customContextMenuRequested.connect(_show_menu)
+            except Exception:
+                # Fallback to raw mpl right-click
+                def _on_click(event):
+                    try:
+                        if getattr(event, 'button', None) == 3:
+                            _show_menu(canvas.mapFromGlobal(canvas.cursor().pos()))
+                    except Exception:
+                        pass
+                canvas.mpl_connect('button_press_event', _on_click)
+
+            self._save_handlers.add(key)
+        except Exception:
+            pass
+
+    def _show_larger_graph(self, source_fig, title_prefix: str):
+        try:
+            import io
+            import matplotlib.image as mpimg
+            dlg = QDialog(self.dlg)
+            dlg.setWindowTitle(f"{title_prefix} - larger view")
+            layout = QVBoxLayout(dlg)
+            fig = Figure(figsize=(9, 6.5))
+            canvas = FigureCanvas(fig)
+            layout.addWidget(canvas)
+            buf = io.BytesIO()
+            source_fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
+            buf.seek(0)
+            arr = mpimg.imread(buf)
+            ax = fig.add_subplot(111)
+            ax.imshow(arr)
+            ax.axis("off")
+            canvas.draw()
+            dlg.resize(980, 720)
+            dlg.exec_()
+        except Exception as exc:
+            QMessageBox.warning(self.dlg, "View larger view", f"Could not open larger view:\n{exc}")
+
+    def _update_headers(self, var_name, n, cutoff, lagw):
+        """Update small UI labels/fields regarding the current context."""
+        if hasattr(self.dlg, "valOKZName") and hasattr(self.dlg, "valOKSamples"):
+            try:
+                self.dlg.valOKZName.setText(str(var_name))
+                self.dlg.valOKSamples.setText(str(n))
+            except Exception:
+                pass
+        # Display which fitting method is active (value label in UI is 'valOKModel')
+        label_val = getattr(self.dlg, "valOKModel", None)
+        if label_val is not None and hasattr(label_val, "setText"):
+            try:
+                label_val.setText(self._ok_fit_method)
+            except Exception:
+                pass
+        else:
+            # Backward-compat for older UI naming
+            label_compat = getattr(self.dlg, "lblFitTitle", None) or getattr(self.dlg, "lblOKModel", None)
+            if label_compat is not None and hasattr(label_compat, "setText"):
+                try:
+                    label_compat.setText(self._ok_fit_method)
+                except Exception:
+                    pass
+        if hasattr(self.dlg, "spinOKCutoff") and hasattr(self.dlg, "spinOKLag"):
+            try:
+                self.dlg.spinOKCutoff.setValue(float(cutoff))
+                self.dlg.spinOKLag.setValue(float(lagw))
+            except Exception:
+                pass
+        try:
+            self._update_sdi_label()
+        except Exception:
+            pass
+
+    # -------------------------- Public main actions ---------------------------
+
+    def calculate_and_plot_experimental(self, initial_load=True):
+        """Compute and plot the experimental semivariogram, then seed initial params."""
+        if not self._ensure_canvas():
+            return
+        x, y, z = self._read_xy_z()
+        if x is None:
+            self.iface.messageBar().pushMessage(
+                "Kriging",
+                "Select point layer and variable in the Data tab",
+                level=1
+            )
+            return
+        self._n = len(z)
+        all_d = self._pairwise_distances(x, y)
+        d_max = float(np.nanmax(all_d))
+        nn_min = float(self._nearest_neighbor_dist(x, y))
+        cutoff = 0.5 * d_max
+        lagw = max(nn_min, 1e-9)
+        if not initial_load:
+            try:
+                cutoff = float(self.dlg.spinOKCutoff.value())
+            except Exception:
+                pass
+            try:
+                lagw = float(self.dlg.spinOKLag.value())
+            except Exception:
+                pass
+        self._cutoff = cutoff
+        self._lag_width = lagw
+
+        # Decide REML usage and, if enabled, fit immediately and draw theoretical-only curve
+        self._use_reml = bool(_HAS_REML and (self._n < 100))
+        if self._use_reml:
+            self._exp_lags, self._exp_gamma = None, None
+            self._ok_fit_method = "REML"
+            self._reml_fitted = False
+            try:
+                self._fit_reml_if_needed(x, y, z)
+            except Exception:
+                # If REML fails, continue with MoM below
+                self._use_reml = False
+                self._ok_fit_method = "MoM"
+            else:
+                # Already plotted theoretical-only inside _fit_reml_if_needed
+                return
+
+        lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
+        if lags.size == 0:
+            lags = np.array([0.0])
+            gamma = np.array([0.0])
+        else:
+            # prepend the origin for nicer display
+            lags = np.insert(lags, 0, 0.0)
+            gamma = np.insert(gamma, 0, 0.0)
+
+        self._exp_lags, self._exp_gamma = lags, gamma
+
+        # Start with MoM-like heuristics as baseline and show immediately
+        nugget, psill, rng = self._guess_initial_params(lags[1:], gamma[1:], cutoff, model=self._get_selected_model())
+        # Always show MoM as initial method; REML will be applied on Interpolate
+        self._ok_fit_method = "MoM"
+        self._init_params = (nugget, psill, rng)
+
+        # Update headers and parameter widgets (MoM seeds first for instant feedback)
+        self._update_headers(self.z_field, self._n, cutoff, lagw)
+        try:
+            if hasattr(self.dlg, "spinOKNugget"):
+                self.dlg.spinOKNugget.setValue(float(nugget))
+            if hasattr(self.dlg, "spinOKPsill"):
+                self.dlg.spinOKPsill.setValue(float(psill))
+            if hasattr(self.dlg, "spinOKRange"):
+                self.dlg.spinOKRange.setValue(float(rng))
+        except Exception:
+            pass
+
+        # Store baselines (for Reset)
+        current_baseline = {
+            "cutoff": cutoff, "lagw": lagw,
+            "nugget": nugget, "psill": psill, "range": rng,
+            "model": self._get_selected_model()
+        }
+        if initial_load and not self._baseline_initial:
+            self._baseline_initial = dict(current_baseline)
+        self._baseline_last = dict(current_baseline)
+
+        # Plot experimental points (draw now so UI updates even if REML takes time)
+        ax = self._krig_vario_fig.axes[0] if self._krig_vario_fig.axes else self._krig_vario_fig.add_subplot(111)
+        ax.clear()
+        lags_plot = lags[1:] if lags.size > 1 else lags
+        gamma_plot = gamma[1:] if gamma.size > 1 else gamma
+        ax.plot(lags_plot, gamma_plot, 'o', label="Experimental", color=EXP_COLOR)
+        ax.set_title("Semivariogram", fontsize=10)
+        ax.set_xlabel("Lag distance (h)", fontsize=9)
+        ax.set_ylabel("Semivariance γ(h)", fontsize=9)
+        ax.set_xlim(left=0.0, right=max(cutoff, (lags_plot.max() if lags_plot.size else 1.0)))
+        ax.set_ylim(bottom=0.0)
+        ax.xaxis.set_major_locator(MaxNLocator(nbins=8))
+        ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
+        xf = ScalarFormatter(useOffset=False, useMathText=False); xf.set_scientific(False)
+        yf = ScalarFormatter(useOffset=False, useMathText=False); yf.set_scientific(False)
+        ax.xaxis.set_major_formatter(xf); ax.yaxis.set_major_formatter(yf)
+        ax.tick_params(axis='x', rotation=0)
+        ax.tick_params(axis='both', labelsize=8)
+        ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.6)
+        self._krig_vario_canvas.draw()
+        # Overlay with current params
+        self._plot_with_model_if_possible()
+        try:
+            QCoreApplication.processEvents()
+        except Exception:
+            pass
+
+    # -------------------------- Theoretical model -----------------------------
+
+    def _model_func(self, h, model, nugget, psill, rng):
+        """Theoretical semivariogram models: Spherical / Exponential / Gaussian."""
+        h = np.asarray(h, dtype=float)
+        c0 = float(nugget)
+        c = float(psill)
+        a = max(float(rng), 1e-9)
+        if model == "spherical":
+            hr = np.clip(h / a, 0.0, 1.0)
+            sph = c * (1.5 * hr - 0.5 * (hr ** 3))
+            return np.where(h <= a, c0 + sph, c0 + c)
+        elif model == "gaussian":
+            return c0 + c * (1.0 - np.exp(-(h * h) / (a * a)))
+        else:
+            # exponential
+            return c0 + c * (1.0 - np.exp(-h / a))
+
+    # ------------------------------- SDI helpers -------------------------------
+
+    def _compute_sdi_text(self, nugget: float, psill: float) -> str:
+        try:
+            total = float(nugget) + float(psill)
+            if not np.isfinite(total) or total <= 0:
+                return "—"
+            sdi = 100.0 * float(psill) / total
+            if sdi < 20.0:
+                cls = "Very Low"
+            elif sdi < 40.0:
+                cls = "Low"
+            elif sdi < 60.0:
+                cls = "Moderate"
+            elif sdi < 80.0:
+                cls = "High"
+            else:
+                cls = "Very High"
+            return f"{sdi:.1f}% ({cls})"
+        except Exception:
+            return "—"
+
+    def _update_sdi_label(self):
+        try:
+            lbl = getattr(self.dlg, "lblSDI_value", None)
+            if lbl is None:
+                return
+            nugget = float(self.dlg.spinOKNugget.value()) if hasattr(self.dlg, "spinOKNugget") else None
+            psill = float(self.dlg.spinOKPsill.value()) if hasattr(self.dlg, "spinOKPsill") else None
+            if nugget is None or psill is None:
+                lbl.setText("—")
+                return
+            lbl.setText(self._compute_sdi_text(nugget, psill))
+        except Exception:
+            pass
+
+
+    def _fit_reml_if_needed(self, x, y, z):
+        """Fit REML once if in REML mode and not yet fitted. Does not draw experimental."""
+        if not self._use_reml or self._reml_fitted:
+            return
+        cutoff = self._cutoff or (float(np.max(np.hypot(x - x.mean(), y - y.mean()))) if x.size else 1.0)
+        lagw = self._lag_width or max(1e-9, float(np.min(np.hypot(x[1:] - x[:-1], y[1:] - y[:-1]))) if x.size > 1 else 1.0)
+        # Seed with MoM-like heuristics using a temporary experimental (not stored)
+        lags_tmp, gamma_tmp = self._bin_variogram(x, y, z, cutoff, lagw)
+        if lags_tmp.size > 0:
+            lags_tmp = np.insert(lags_tmp, 0, 0.0)
+            gamma_tmp = np.insert(gamma_tmp, 0, 0.0)
+            nugget0, psill0, rng0 = self._guess_initial_params(lags_tmp[1:], gamma_tmp[1:], cutoff, model=self._get_selected_model())
+        else:
+            # Fallback seeds
+            nugget0, psill0, rng0 = 0.0, float(np.var(z, ddof=1) if z.size > 1 else 1.0), max(cutoff * 0.5, 1.0)
+
+        # Run REML optimization
+        model_token = getattr(self.dlg, "cmbOKModel", None)
+        model_txt = model_token.currentText() if model_token is not None else "Sph"
+        reml_res = fit_ok_reml_interface(
+            sample_xyz=np.column_stack([x, y, z]),
+            model=model_txt,
+            init_from_mom={"nugget": nugget0, "psill": psill0, "range": rng0},
+            random_state=123,
+        )
+        rnug = float(reml_res.get("nugget", nugget0))
+        rps  = float(reml_res.get("psill", psill0))
+        rrng = float(reml_res.get("range", rng0))
+        if np.isfinite(rnug) and np.isfinite(rps) and np.isfinite(rrng):
+            self._init_params = (rnug, rps, rrng)
+            self._ok_fit_method = "REML"
+            self._reml_fitted = True
+            # Reflect into UI and overlay theoretical-only curve
+            try:
+                if hasattr(self.dlg, "spinOKNugget"):
+                    self.dlg.spinOKNugget.setValue(float(rnug))
+                if hasattr(self.dlg, "spinOKPsill"):
+                    self.dlg.spinOKPsill.setValue(float(rps))
+                if hasattr(self.dlg, "spinOKRange"):
+                    self.dlg.spinOKRange.setValue(float(rrng))
+            except Exception:
+                pass
+            self._update_headers(self.z_field, self._n, cutoff, lagw)
+            try:
+                self._update_sdi_label()
+            except Exception:
+                pass
+            self._plot_with_model_if_possible()
+            try:
+                QCoreApplication.processEvents()
+            except Exception:
+                pass
+
+    def _plot_with_model_if_possible(self):
+        """Overlay the theoretical model on the variogram axes.
+        - If experimental exists, plot points + model.
+        - If in REML mode (no experimental), plot model only.
+        """
+        if self._krig_vario_fig is None:
+            return
+        # In REML mode, avoid plotting until we have a fitted model
+        if self._use_reml and not self._reml_fitted:
+            ax = self._krig_vario_fig.axes[0] if self._krig_vario_fig.axes else self._krig_vario_fig.add_subplot(111)
+            ax.clear()
+            ax.set_title("Semivariogram (REML model)")
+            ax.set_xlabel("Lag distance (h)")
+            ax.set_ylabel("Semivariance γ(h)")
+            ax.set_xlim(left=0.0, right=max(self._cutoff or 1.0, 1.0))
+            ax.set_ylim(bottom=0.0)
+            ax.grid(True)
+            self._krig_vario_canvas.draw()
+            return
+
+        # Start with initial params; then allow UI overrides
+        nugget = self._init_params[0] if self._init_params else 0.0
+        psill  = self._init_params[1] if self._init_params else 1.0
+        rng    = self._init_params[2] if self._init_params else max(1.0, (self._cutoff or 1.0) * 0.5)
+        try:
+            nugget = float(self.dlg.spinOKNugget.value())
+        except Exception:
+            pass
+        try:
+            psill = float(self.dlg.spinOKPsill.value())
+        except Exception:
+            pass
+        try:
+            rng = float(self.dlg.spinOKRange.value())
+        except Exception:
+            pass
+        model = self._get_selected_model()
+
+        ax = self._krig_vario_fig.axes[0] if self._krig_vario_fig.axes else self._krig_vario_fig.add_subplot(111)
+        ax.clear()
+        lags_plot = None
+        gamma_plot = None
+        if (self._exp_lags is not None) and (self._exp_gamma is not None) and (not self._use_reml):
+            lags_plot = self._exp_lags[1:] if getattr(self._exp_lags, 'size', 0) > 1 else self._exp_lags
+            gamma_plot = self._exp_gamma[1:] if getattr(self._exp_gamma, 'size', 0) > 1 else self._exp_gamma
+            ax.plot(lags_plot, gamma_plot, 'o', label="Experimental", color=EXP_COLOR)
+
+        if self._cutoff is not None:
+            xmax = max(self._cutoff, 1.0)
+        elif lags_plot is not None and hasattr(lags_plot, 'size') and lags_plot.size:
+            xmax = max(float(lags_plot.max()), 1.0)
+        else:
+            xmax = 1.0
+        h_line = np.linspace(0.0, xmax, 200)
+        th = self._model_func(h_line, model, nugget, psill, rng)
+        ax.plot(h_line, th, '-', label=f"Theoretical ({model.capitalize()})", color=TH_COLOR, linewidth=2)
+
+        ax.set_title("Semivariogram", fontsize=10)
+        ax.set_xlabel("Lag distance (h)", fontsize=9)
+        ax.set_ylabel("Semivariance γ(h)", fontsize=9)
+        ax.set_xlim(left=0.0, right=xmax); ax.set_ylim(bottom=0.0)
+        ax.xaxis.set_major_locator(MaxNLocator(nbins=8)); ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
+        xf = ScalarFormatter(useOffset=False, useMathText=False); xf.set_scientific(False)
+        yf = ScalarFormatter(useOffset=False, useMathText=False); yf.set_scientific(False)
+        ax.xaxis.set_major_formatter(xf); ax.yaxis.set_major_formatter(yf)
+        ax.tick_params(axis='x', rotation=0)
+        ax.tick_params(axis='both', labelsize=8)
+        ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.6)
+        if (self._exp_lags is not None) and (self._exp_gamma is not None) and (not self._use_reml):
+            ax.legend(fontsize=9, frameon=False)
+        self._krig_vario_canvas.draw()
+
+    # ---------------------------- Interpolation map ---------------------------
+
+    def _on_interpolate_clicked(self):
+        if not self.is_dispatcher_active():
+            return
+        """Predict on grid inside polygon extent (pure Python OK) with a modal progress dialog."""
+        self._ensure_canvas()
+        # Inputs
+        x, y, z = self._read_xy_z()
+        if x is None:
+            self.iface.messageBar().pushMessage("Kriging", "There are no valid points/variables.", level=2)
+            return
+        poly_layer = self._resolve_polygon_layer()
+        if poly_layer is None:
+            self.iface.messageBar().pushMessage("Kriging", "Select a polygon layer.", level=2)
+            return
+
+        pixel = self._resolve_pixel_size()
+        if pixel is None or pixel <= 0:
+            pixel = max((poly_layer.extent().width(), poly_layer.extent().height())) / 100.0
+
+        # Build grid
+        extent = poly_layer.extent()
+        xmin, xmax = extent.xMinimum(), extent.xMaximum()
+        ymin, ymax = extent.yMinimum(), extent.yMaximum()
+
+        n_cols = int(max(1, np.ceil((xmax - xmin) / pixel)))
+        n_rows = int(max(1, np.ceil((ymax - ymin) / pixel)))
+
+        x_coords = xmin + pixel * (np.arange(n_cols) + 0.5)
+        y_coords = ymax - pixel * (np.arange(n_rows) + 0.5)
+        grid_points = np.array([(xc, yc) for yc in y_coords for xc in x_coords], dtype=float)
+
+        # Clip to polygon(s)
+        inside_mask = self._points_inside_polygon_mask(grid_points, poly_layer)
+        if not np.any(inside_mask):
+            self.iface.messageBar().pushMessage("Kriging", "The grid does not fall within the polygon.", level=1)
+            return
+
+        inside_idx = np.where(inside_mask)[0]
+        inside_pts = grid_points[inside_idx]
+        n_pred = inside_pts.shape[0]
+
+        # Warn and auto-guard very large grids
+        if n_pred > 800_000:
+            self.iface.messageBar().pushWarning("Kriging",
+                f"Many cells to predict ({n_pred:,}). Consider increasing the pixel size.")
+        # Setup progress dialog (modal, closes automatically)
+        prog = QProgressDialog("Running kriging...", "Cancel", 0, n_pred, self.dlg)
+        prog.setWindowModality(Qt.ApplicationModal)
+        prog.setMinimumDuration(0)
+        prog.setValue(0)
+
+        def _progress(done, total):
+            prog.setValue(done)
+            # allow UI to repaint
+            if prog.wasCanceled():
+                # raise a lightweight exception to unwind cleanly
+                raise KeyboardInterrupt
+
+        model = self._get_selected_model()
+        nugget, psill, rng = self._read_params_from_ui()
+
+        try:
+            # Call OK with progress callback
+            preds = ordinary_kriging_interpolation(
+                x, y, z,
+                inside_pts[:, 0], inside_pts[:, 1],
+                nugget, psill, rng, model,
+                progress_fn=_progress
+            )
+        except KeyboardInterrupt:
+            prog.cancel()
+            self.iface.messageBar().pushMessage("Kriging", "Canceled for the user.", level=1)
+            return
+        except Exception as e:
+            prog.cancel()
+            self.iface.messageBar().pushMessage("Kriging", f"Kriging failed: {e}", level=2)
+            return
+        finally:
+            prog.close()
+
+        # Fill array and plot
+        result = np.full((n_rows, n_cols), np.nan, dtype=float)
+        for j, flat_i in enumerate(inside_idx):
+            col = flat_i % n_cols
+            row = flat_i // n_cols
+            result[row, col] = preds[j]
+
+        self._maybe_export_ok_raster(result, xmin, xmax, ymin, ymax, pixel, poly_layer, (self.z_field or "Z"), model)
+        self._maybe_export_ok_raster(result, xmin, xmax, ymin, ymax, pixel, poly_layer, (self.z_field or "Z"), model)
+        self._plot_kriging_map(result, xmin, xmax, ymin, ymax, poly_layer, var_label=(self.z_field or "Z"))
+
+
+    def _build_ok_raster_path(self, variable_name: str, model_token: str) -> str:
+        proj_path = QgsProject.instance().fileName()
+        if proj_path:
+            base_dir = os.path.dirname(proj_path)
+            out_dir = os.path.join(base_dir, "BestFitInterpolation")
+        else:
+            out_dir = tempfile.gettempdir()
+        os.makedirs(out_dir, exist_ok=True)
+        safe_var = (variable_name or "variable").replace(" ", "_")
+        safe_model = (model_token or "OK_REML").replace(" ", "_")
+        fname = f"OK_REML_{safe_model}_{safe_var}_{uuid.uuid4().hex[:6]}.tif"
+        return os.path.join(out_dir, fname)
+
+    def _write_ok_raster(self, array, xmin, xmax, ymin, ymax, pixel, polygon_layer, variable_name, model_token):
+        if pixel is None or pixel <= 0:
+            raise ValueError("Invalid pixel size for export.")
+        n_rows, n_cols = array.shape
+        raster_path = self._build_ok_raster_path(variable_name, model_token)
+        driver = gdal.GetDriverByName("GTiff")
+        dataset = driver.Create(raster_path, n_cols, n_rows, 1, gdal.GDT_Float32)
+        if dataset is None:
+            raise RuntimeError("Unable to create GeoTIFF dataset.")
+        geotransform = (xmin, pixel, 0, ymax, 0, -pixel)
+        dataset.SetGeoTransform(geotransform)
+        try:
+            crs = polygon_layer.crs() if polygon_layer is not None else None
+            if crs and crs.isValid():
+                srs = osr.SpatialReference()
+                srs.ImportFromWkt(crs.toWkt())
+                dataset.SetProjection(srs.ExportToWkt())
+        except Exception:
+            pass
+        band = dataset.GetRasterBand(1)
+        band.WriteArray(array)
+        band.SetNoDataValue(np.nan)
+        band.FlushCache()
+        dataset.FlushCache()
+        dataset = None
+        return raster_path
+
+    def _maybe_export_ok_raster(self, array, xmin, xmax, ymin, ymax, pixel, polygon_layer, variable_label, model_token):
+        try:
+            out_path = self._write_ok_raster(array, xmin, xmax, ymin, ymax, pixel, polygon_layer, variable_label, model_token)
+        except Exception as exc:
+            self.iface.messageBar().pushWarning("Kriging REML", f"Failed to export raster: {exc}")
+            return
+        layer_name = f"OK REML {model_token.capitalize()} ({variable_label})"
+        layer = QgsRasterLayer(out_path, layer_name, "gdal")
+        if not layer.isValid():
+            self.iface.messageBar().pushWarning("Kriging REML", "Raster created but is invalid for QGIS.")
+            return
+        QgsProject.instance().addMapLayer(layer)
+        self.iface.messageBar().pushMessage("Kriging REML", f"Raster added to QGIS: {out_path}", level=0)
+
+
+    def _resolve_polygon_layer(self):
+        """Try common widget names to get selected polygon layer by name."""
+        cand_names = ("poly", "cmbPolygonLayer", "cmbPoly", "cmbMask")
+        layer_name = None
+        for nm in cand_names:
+            w = getattr(self.dlg, nm, None)
+            if w is not None and hasattr(w, "currentText"):
+                txt = w.currentText()
+                if txt:
+                    layer_name = txt
+                    break
+        if not layer_name:
+            return None
+        layers = QgsProject.instance().mapLayersByName(layer_name)
+        if not layers:
+            return None
+        lyr = layers[0]
+        try:
+            gt = lyr.geometryType()
+            if gt == QgsWkbTypes.PolygonGeometry or (QgsWkbTypes.isMultiType(lyr.wkbType()) and gt == QgsWkbTypes.PolygonGeometry):
+                return lyr
+        except Exception:
+            pass
+        return None
+
+    def _resolve_pixel_size(self):
+        """Try to fetch pixel size from common widgets (kriging or deterministic)."""
+        for nm in ("spinOKPixelSize", "spinPixelSize", "pixelsize"):
+            w = getattr(self.dlg, nm, None)
+            if w is not None:
+                try:
+                    return float(w.value()) if hasattr(w, "value") else float(w.text())
+                except Exception:
+                    continue
+        return None
+
+    def _points_inside_polygon_mask(self, grid_points, polygon_layer):
+        """Return boolean mask of points inside any polygon (handles multipart)."""
+        mask = np.zeros(grid_points.shape[0], dtype=bool)
+        try:
+            for feat in polygon_layer.getFeatures():
+                geom = feat.geometry()
+                if geom.isMultipart():
+                    for part in geom.asMultiPolygon():
+                        for ring in part:
+                            ring_coords = [(pt.x(), pt.y()) for pt in ring]
+                            path = MplPath(ring_coords)
+                            mask = np.logical_or(mask, path.contains_points(grid_points))
+                else:
+                    for ring in geom.asPolygon():
+                        ring_coords = [(pt.x(), pt.y()) for pt in ring]
+                        path = MplPath(ring_coords)
+                        mask = np.logical_or(mask, path.contains_points(grid_points))
+        except Exception:
+            pass
+        return mask
+
+    def _read_params_from_ui(self):
+        """Read nugget/psill/range from UI, fallback to initial."""
+        n, p, r = (0.0, 1.0, max(1.0, (self._cutoff or 1.0) * 0.5)) if not self._init_params else self._init_params
+        try:
+            n = float(self.dlg.spinOKNugget.value())
+        except Exception:
+            pass
+        try:
+            p = float(self.dlg.spinOKPsill.value())
+        except Exception:
+            pass
+        try:
+            r = float(self.dlg.spinOKRange.value())
+        except Exception:
+            pass
+        return n, p, r
+
+    # ------------------------- Pure-Python OK backend -------------------------
+
+    def _krige_predict_python(self, x, y, z, grid_xy, model, nugget, psill, rng):
+        """Predict via pure-Python ordinary kriging on (grid_xy[:,0], grid_xy[:,1])."""
+        # Map normalized token -> the short token expected by our Python kriging
+        model_short = {"exponential": "Exp", "gaussian": "Gau", "spherical": "Sph"}.get(model, "Exp")
+        try:
+            xp = grid_xy[:, 0]
+            yp = grid_xy[:, 1]
+            pred = ordinary_kriging_interpolation(
+                x, y, z,
+                xp, yp,
+                float(nugget), float(psill), float(rng),
+                model_short
+            )
+            return np.asarray(pred, dtype=float)
+        except Exception as e:
+            self.iface.messageBar().pushMessage("Kriging", f"Python kriging failed: {e}", level=2)
+            return None
+
+    # ------------------------------ Map plotting ------------------------------
+
+    def _plot_kriging_map(self, result_array, xmin, xmax, ymin, ymax, polygon_layer, var_label="Z"):
+        """Plot gridded predictions clipped by polygon using viridis and a labeled colorbar."""
+        if self._krig_map_fig is None or self._krig_map_canvas is None:
+            # Ensure canvas
+            container_m = getattr(self.dlg, "canvasOKInterpolation", None) or getattr(self.dlg, "CanvasOKInterpolation", None)
+            if container_m is None:
+                self.iface.messageBar().pushMessage("Kriging", "There is no canvas for the kriging map.", level=1)
+                return
+            self._krig_map_fig = Figure(figsize=(5, 4), tight_layout=True)
+            self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
+            layout = container_m.layout() or QVBoxLayout(container_m)
+            for i in reversed(range(layout.count())):
+                w = layout.itemAt(i).widget()
+                if w is not None:
+                    w.setParent(None)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.addWidget(self._krig_map_canvas)
+
+        self._krig_map_fig.clear()
+        ax = self._krig_map_fig.add_subplot(111)
+
+        ax.set_title("Ordinary Kriging", fontsize=10)
+        ax.set_xlabel("X", fontsize=9); ax.set_ylabel("Y", fontsize=9)
+
+        n_rows, n_cols = result_array.shape
+        x_edges = np.linspace(xmin, xmax, n_cols + 1)
+        y_edges = np.linspace(ymin, ymax, n_rows + 1)
+
+        disp_array = np.flipud(result_array)  # y increasing up
+        masked = np.ma.masked_invalid(disp_array)
+
+        pm = ax.pcolormesh(x_edges, y_edges, masked, cmap="viridis", shading="auto")
+        cbar = self._krig_map_fig.colorbar(pm, ax=ax, orientation='vertical')
+        cbar.set_label(var_label)
+
+        # outline polygons
+        try:
+            for feat in polygon_layer.getFeatures():
+                geom = feat.geometry()
+                if geom.isMultipart():
+                    for part in geom.asMultiPolygon():
+                        for ring in part:
+                            ring_xy = [(pt.x(), pt.y()) for pt in ring]
+                            patch = MplPolygon(ring_xy, closed=True, edgecolor="black", facecolor="none", linewidth=1.0)
+                            ax.add_patch(patch)
+                else:
+                    for ring in geom.asPolygon():
+                        ring_xy = [(pt.x(), pt.y()) for pt in ring]
+                        patch = MplPolygon(ring_xy, closed=True, edgecolor="black", facecolor="none", linewidth=1.0)
+                        ax.add_patch(patch)
+        except Exception:
+            pass
+
+        ax.set_xlim(xmin, xmax); ax.set_ylim(ymin, ymax)
+        # Use normal number format, but smaller labels and fewer ticks for readability
+        try:
+            ax.xaxis.set_major_locator(MaxNLocator(nbins=6))
+            ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
+        except Exception:
+            pass
+        ax.tick_params(axis='both', labelsize=8)
+        try:
+            self._krig_map_fig.tight_layout()
+        except Exception:
+            pass
+        self._krig_map_canvas.draw()
+
+    def clear_plots(self):
+        """Clear variogram and map canvases and reset REML flags (used on data/variable change)."""
+        # Clear variogram (blank)
+        try:
+            if self._krig_vario_fig is not None and self._krig_vario_canvas is not None:
+                self._krig_vario_fig.clear()
+                self._krig_vario_canvas.draw()
+        except Exception:
+            pass
+        # Clear map (blank)
+        try:
+            if self._krig_map_fig is not None and self._krig_map_canvas is not None:
+                self._krig_map_fig.clear()
+                self._krig_map_canvas.draw()
+        except Exception:
+            pass
+        # Reset state flags
+        self._exp_lags, self._exp_gamma = None, None
+        self._reml_fitted = False
+
+    # ----------------------- Resolve inputs from UI if needed -----------------
+
+    def _maybe_pull_points_layer_from_ui(self):
+        for name in ("cmbPointsLayer", "cmbLayerPoints", "Points", "cmbPoints"):
+            w = getattr(self.dlg, name, None)
+            if w is not None and hasattr(w, "currentText"):
+                lname = w.currentText()
+                if lname:
+                    layers = QgsProject.instance().mapLayersByName(lname)
+                    if layers:
+                        self.points_layer = layers[0]
+                        return
+
+    def _ensure_inputs_from_ui(self):
+        if self.points_layer is None:
+            self._maybe_pull_points_layer_from_ui()
+        if not self.z_field:
+            self._maybe_pull_field_from_ui()
