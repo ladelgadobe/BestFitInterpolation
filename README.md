@@ -68,5 +68,6 @@ Do not zip only the files inside the folder; QGIS expects the top-level plugin d
 ## Author
 
 Laura Delgado Bejarano  
+Lucas Rios do Amaral
 Repository: <https://github.com/ladelgadobe/BestFitInterpolation>
 
