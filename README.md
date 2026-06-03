@@ -10,7 +10,6 @@ Best Fit Interpolator helps users compare deterministic, geostatistical, machine
 
 [![QGIS](https://img.shields.io/badge/QGIS-3.14%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![Digital Soil Mapping](https://img.shields.io/badge/Digital%20Soil%20Mapping-Precision%20Agriculture-2E7D32?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
 [![Article](https://img.shields.io/badge/Reference%20Article-Precision%20Agriculture-1B5E20?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
 
 [Reference article](https://doi.org/10.1007/s11119-025-10311-8) |
