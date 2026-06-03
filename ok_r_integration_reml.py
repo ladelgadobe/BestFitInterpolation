@@ -439,20 +439,50 @@ class OKTabController:
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
-        """Return the minimum nearest-neighbor distance."""
+        """Return the minimum positive nearest-neighbor distance."""
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
         n = x.size
         if n < 2:
             return np.nan
+        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
+                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
+                    1.0)
+        zero_tol = np.finfo(float).eps * scale * 32.0
         dmin = np.inf
         for i in range(n):
             dx = x - x[i]
             dy = y - y[i]
             dist = np.hypot(dx, dy)
             dist[i] = np.inf
+            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
+            if dist.size == 0:
+                continue
             mi = float(np.min(dist))
             if mi < dmin:
                 dmin = mi
         return dmin if np.isfinite(dmin) else np.nan
+
+    def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
+        """Keep lag width positive while preventing pathological bin counts."""
+        try:
+            cutoff = float(cutoff)
+        except Exception:
+            cutoff = np.nan
+        if not np.isfinite(cutoff) or cutoff <= 0:
+            return np.nan
+        try:
+            lag_width = float(lag_width)
+        except Exception:
+            lag_width = np.nan
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = float(self._nearest_neighbor_dist(x, y))
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = cutoff / 12.0
+        min_width = cutoff / float(max(1, int(max_bins)))
+        if lag_width < min_width:
+            lag_width = min_width
+        return float(lag_width)
 
     @staticmethod
     def _semivariances(z):
@@ -464,7 +494,14 @@ class OKTabController:
 
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
         """Compute binned experimental semivariogram up to 'cutoff' with bin size 'lag_width'."""
+        cutoff = float(cutoff)
+        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
+        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
+            return np.array([], dtype=float), np.array([], dtype=float)
         nbins = max(1, int(math.floor(cutoff / lag_width)))
+        if nbins > 10000:
+            nbins = 10000
+            lag_width = cutoff / float(nbins)
         sums = np.zeros(nbins, dtype=float)
         counts = np.zeros(nbins, dtype=int)
         dists = np.zeros(nbins, dtype=float)
@@ -768,7 +805,7 @@ class OKTabController:
         d_max = float(np.nanmax(all_d))
         nn_min = float(self._nearest_neighbor_dist(x, y))
         cutoff = 0.5 * d_max
-        lagw = max(nn_min, 1e-9)
+        lagw = self._safe_lag_width(x, y, cutoff, nn_min)
         if not initial_load:
             try:
                 cutoff = float(self.dlg.spinOKCutoff.value())
@@ -778,6 +815,7 @@ class OKTabController:
                 lagw = float(self.dlg.spinOKLag.value())
             except Exception:
                 pass
+            lagw = self._safe_lag_width(x, y, cutoff, lagw)
         self._cutoff = cutoff
         self._lag_width = lagw
 
@@ -924,6 +962,7 @@ class OKTabController:
             return
         cutoff = self._cutoff or (float(np.max(np.hypot(x - x.mean(), y - y.mean()))) if x.size else 1.0)
         lagw = self._lag_width or max(1e-9, float(np.min(np.hypot(x[1:] - x[:-1], y[1:] - y[:-1]))) if x.size > 1 else 1.0)
+        lagw = self._safe_lag_width(x, y, cutoff, lagw)
         # Seed with MoM-like heuristics using a temporary experimental (not stored)
         lags_tmp, gamma_tmp = self._bin_variogram(x, y, z, cutoff, lagw)
         if lags_tmp.size > 0:

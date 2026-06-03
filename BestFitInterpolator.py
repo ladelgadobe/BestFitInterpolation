@@ -1399,6 +1399,62 @@ class BestFitInterpolator:
             )
         return filtered_coords, filtered_values
 
+    def _dedupe_training_by_xy_keep_first(self, x, y, z):
+        """Return one TPS training sample per exact XY coordinate, keeping the first row."""
+        x = np.asarray(x, dtype=float).ravel()
+        y = np.asarray(y, dtype=float).ravel()
+        z = np.asarray(z, dtype=float).ravel()
+        if x.size != y.size or x.size != z.size or z.size <= 1:
+            return x, y, z, 0, 0
+
+        xy = np.column_stack([x, y])
+        _, first_idx, counts = np.unique(xy, axis=0, return_index=True, return_counts=True)
+        duplicate_groups = int(np.count_nonzero(counts > 1))
+        duplicate_rows = int(np.sum(counts - 1))
+        if duplicate_rows <= 0:
+            return x, y, z, 0, 0
+
+        keep = np.sort(first_idx)
+        return x[keep], y[keep], z[keep], duplicate_rows, duplicate_groups
+
+    def _confirm_tps_duplicate_handling(self, duplicate_rows, duplicate_groups):
+        reply = QMessageBox.question(
+            self.dlg,
+            "TPS duplicate locations",
+            (
+                "TPS requires one sample per coordinate.\n\n"
+                f"{duplicate_rows} repeated samples were found in "
+                f"{duplicate_groups} duplicated locations.\n"
+                "Continue using only the first sample at each repeated coordinate?\n\n"
+                "The original layer will not be modified."
+            ),
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        return reply == QMessageBox.Yes
+
+    def _prepare_tps_training_data(self, x, y, z, context_title="TPS"):
+        x2, y2, z2, duplicate_rows, duplicate_groups = self._dedupe_training_by_xy_keep_first(x, y, z)
+        if duplicate_rows <= 0:
+            return np.asarray(x, dtype=float).ravel(), np.asarray(y, dtype=float).ravel(), np.asarray(z, dtype=float).ravel()
+
+        if not self._confirm_tps_duplicate_handling(duplicate_rows, duplicate_groups):
+            self.iface.messageBar().pushWarning(
+                context_title,
+                "TPS canceled because duplicate locations were not accepted.",
+            )
+            return None
+
+        self.iface.messageBar().pushMessage(
+            context_title,
+            (
+                f"Using {z2.size} unique locations for TPS; "
+                f"{duplicate_rows} repeated samples ignored for this run only."
+            ),
+            level=1,
+        )
+        return x2, y2, z2
+
     def _on_data_selection_changed(self, *_):
         """
         Clear plots only when the data tab selections change (points/variable/polygon).
@@ -1872,6 +1928,12 @@ class BestFitInterpolator:
         except Exception as exc:
             QMessageBox.warning(self.dlg, "Validation", format_shape_error(exc))
             return
+        using_tps = (self._current_mode == self.MODE_TPS)
+        if using_tps:
+            prepared = self._prepare_tps_training_data(x, y, z, "Validation")
+            if prepared is None:
+                return
+            x, y, z = prepared
         n = len(z)
         if n < 10:
             self.iface.messageBar().pushMessage(
@@ -1899,7 +1961,6 @@ class BestFitInterpolator:
         preds = np.full(n, np.nan, dtype=float)
 
         # Determine method params
-        using_tps = (self._current_mode == self.MODE_TPS)
         if using_tps and not _HAS_TPS:
             self.iface.messageBar().pushMessage("Error","TPS is selected but Thin_plate_spline.py was not found or failed to import.", level=3)
             return
@@ -2250,6 +2311,10 @@ class BestFitInterpolator:
             if not _HAS_TPS:
                 self.iface.messageBar().pushMessage("Error", "TPS is selected but Thin_plate_spline.py was not found or failed to import.", level=3)
                 return
+            prepared = self._prepare_tps_training_data(x, y, z, "TPS")
+            if prepared is None:
+                return
+            x, y, z = prepared
             self.create_and_display_raster_tps(points_layer_name, variable_name, polygon_layer_name, pixel_size, x, y, z)
 
         # ------- Inverse Distance Weighting -------
@@ -2468,6 +2533,10 @@ class BestFitInterpolator:
         except Exception as exc:
             QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(exc))
             return
+        prepared = self._prepare_tps_training_data(x, y, z, "TPS")
+        if prepared is None:
+            return
+        x, y, z = prepared
         if z.size < 10:
             self.iface.messageBar().pushMessage("Error", "At least 10 valid samples are required for TPS interpolation.", level=3)
             return

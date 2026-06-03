@@ -219,7 +219,7 @@ class Ui_BestFitInterpolatorDialogBase(object):
         self.lblOKLag.setObjectName("lblOKLag")
         self.gridOKLeft.addWidget(self.lblOKLag, 4, 0, 1, 1)
         self.spinOKLag = QtWidgets.QDoubleSpinBox(self.groupOKVariogram)
-        self.spinOKLag.setDecimals(4)
+        self.spinOKLag.setDecimals(12)
         self.spinOKLag.setMinimum(0.0)
         self.spinOKLag.setMaximum(1000000000000.0)
         self.spinOKLag.setObjectName("spinOKLag")

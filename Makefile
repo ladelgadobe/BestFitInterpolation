@@ -1,11 +1,11 @@
 #/***************************************************************************
 # BestFitInterpolator
 #
-# This plugin wants to select the best interpolator for different kind of data
+# Decision-support plugin for selecting and validating spatial interpolation methods in QGIS
 #							 -------------------
 #		begin				: 2024-12-20
 #		git sha				: $Format:%H$
-#		copyright			: (C) 2024 by Laura Delgado Bejarano
+#		copyright			: (C) 2024 by Laura Delgado Bejarano and Lucas Rios do Amaral
 #		email				: ladelgadobe@unal.edu.co
 # ***************************************************************************/
 #

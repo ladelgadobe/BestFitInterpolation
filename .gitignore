@@ -1,37 +1,19 @@
 __pycache__/
 *.py[cod]
-*$py.class
-
-.Python
-.venv/
-venv/
-env/
-ENV/
-
-.pytest_cache/
-.coverage
-htmlcov/
+*.pyo
 
 .idea/
 .vscode/
-*.swp
-*.swo
 
 *.log
 *.tmp
 *.bak
-*.aux.xml
+*.swp
+
+.pytest_cache/
+.mypy_cache/
 
 build/
 dist/
 *.egg-info/
-
-# Local report/export artifacts
-framework_decision_tree_*.png
-framework_validation_report*.pdf
-bestfitinterpolator*.zip
-
-# QGIS/plugin local generated files
-*.qgz~
-*.qgs~
 

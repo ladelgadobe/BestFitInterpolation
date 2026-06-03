@@ -464,7 +464,7 @@
                 <item row="3" column="1">
                  <widget class="QDoubleSpinBox" name="spinOKCutoff">
                   <property name="decimals">
-                   <number>4</number>
+                   <number>12</number>
                   </property>
                   <property name="minimum">
                    <double>0.000000000000000</double>
@@ -484,7 +484,7 @@
                 <item row="4" column="1">
                  <widget class="QDoubleSpinBox" name="spinOKLag">
                   <property name="decimals">
-                   <number>4</number>
+                   <number>12</number>
                   </property>
                   <property name="minimum">
                    <double>0.000000000000000</double>

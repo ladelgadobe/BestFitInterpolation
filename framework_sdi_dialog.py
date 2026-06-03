@@ -142,7 +142,7 @@ class FrameworkSDIDialog(QDialog):
         self.spin_nugget = self._make_double_spin(0.0, 1e12, 6)
         self.spin_psill = self._make_double_spin(0.0, 1e12, 6)
         self.spin_range = self._make_double_spin(0.0, 1e12, 6)
-        self.spin_lag_width = self._make_double_spin(1e-12, 1e12, 6)
+        self.spin_lag_width = self._make_double_spin(1e-12, 1e12, 12)
         self.spin_max_distance = self._make_double_spin(1e-12, 1e12, 6)
         self.lbl_lag_count = QLabel("—")
 
@@ -356,7 +356,7 @@ class FrameworkSDIDialog(QDialog):
         nn_min = float(self._nearest_neighbor_dist(x, y))
 
         cutoff = 0.5 * d_max
-        lagw = max(nn_min, 1e-9)
+        lagw = self._safe_lag_width(x, y, cutoff, nn_min)
         seeded_model = "Spherical"
         seeded_nugget = None
         seeded_psill = None
@@ -398,6 +398,7 @@ class FrameworkSDIDialog(QDialog):
                     self._fit_method = str(getattr(ok_ctrl, "_ok_fit_method", "MoM"))
                 except Exception:
                     pass
+        lagw = self._safe_lag_width(x, y, cutoff, lagw)
 
         if seeded_nugget is None or seeded_psill is None or seeded_range is None:
             exp_lags, exp_gamma = self._bin_variogram(x, y, z, cutoff, lagw)
@@ -456,6 +457,7 @@ class FrameworkSDIDialog(QDialog):
             cutoff = self.spin_max_distance.value()
         if lagw is None:
             lagw = self.spin_lag_width.value()
+        lagw = self._safe_lag_width(self._inputs.x, self._inputs.y, cutoff, lagw)
 
         fit_method = str(getattr(ok_ctrl, "_ok_fit_method", getattr(ok_ctrl, "strategy_name", "MoM")) or "MoM")
         exp_lags = getattr(ok_ctrl, "_exp_lags", None)
@@ -473,7 +475,7 @@ class FrameworkSDIDialog(QDialog):
             self._updating = False
 
         self._cutoff = float(self.spin_max_distance.value())
-        self._lag_width = float(self.spin_lag_width.value())
+        self._lag_width = self._safe_lag_width(self._inputs.x, self._inputs.y, self._cutoff, self.spin_lag_width.value())
         self._fit_method = "REML" if fit_method.upper() == "REML" else "MoM"
         self._reml_meta = {}
 
@@ -549,7 +551,7 @@ class FrameworkSDIDialog(QDialog):
         x, y, z = self._inputs.x, self._inputs.y, self._inputs.z
         all_d = self._pairwise_distances(x, y)
         cutoff = 0.5 * float(np.nanmax(all_d)) if all_d.size else 1.0
-        lagw = max(float(self._nearest_neighbor_dist(x, y)), 1e-9)
+        lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
 
         self._cutoff = cutoff
         self._lag_width = lagw
@@ -602,11 +604,16 @@ class FrameworkSDIDialog(QDialog):
             QMessageBox.warning(self, "Framework SDI", "Max distance must be greater than zero.")
             return
         if lagw <= 0:
-            QMessageBox.warning(self, "Framework SDI", "Lag(h) width must be greater than zero.")
-            return
+            lagw = self._safe_lag_width(self._inputs.x, self._inputs.y, cutoff, lagw)
+            self._updating = True
+            try:
+                self.spin_lag_width.setValue(max(1e-12, float(lagw)))
+            finally:
+                self._updating = False
         if lagw >= cutoff:
             QMessageBox.warning(self, "Framework SDI", "Lag(h) width must be smaller than max distance.")
             return
+        lagw = self._safe_lag_width(self._inputs.x, self._inputs.y, cutoff, lagw)
 
         x, y, z = self._inputs.x, self._inputs.y, self._inputs.z
         self._cutoff = cutoff
@@ -861,19 +868,48 @@ class FrameworkSDIDialog(QDialog):
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
         n = x.size
         if n < 2:
             return np.nan
+        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
+                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
+                    1.0)
+        zero_tol = np.finfo(float).eps * scale * 32.0
         dmin = np.inf
         for i in range(n):
             dx = x - x[i]
             dy = y - y[i]
             dist = np.hypot(dx, dy)
             dist[i] = np.inf
+            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
+            if dist.size == 0:
+                continue
             mi = float(np.min(dist))
             if mi < dmin:
                 dmin = mi
         return dmin if np.isfinite(dmin) else np.nan
+
+    def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
+        try:
+            cutoff = float(cutoff)
+        except Exception:
+            cutoff = np.nan
+        if not np.isfinite(cutoff) or cutoff <= 0:
+            return np.nan
+        try:
+            lag_width = float(lag_width)
+        except Exception:
+            lag_width = np.nan
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = float(self._nearest_neighbor_dist(x, y))
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = cutoff / 12.0
+        min_width = cutoff / float(max(1, int(max_bins)))
+        if lag_width < min_width:
+            lag_width = min_width
+        return float(lag_width)
 
     @staticmethod
     def _semivariances(z):
@@ -883,7 +919,14 @@ class FrameworkSDIDialog(QDialog):
         return gamma
 
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
+        cutoff = float(cutoff)
+        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
+        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
+            return np.array([], dtype=float), np.array([], dtype=float)
         nbins = max(1, int(math.floor(cutoff / lag_width)))
+        if nbins > 10000:
+            nbins = 10000
+            lag_width = cutoff / float(nbins)
         sums = np.zeros(nbins, dtype=float)
         counts = np.zeros(nbins, dtype=int)
         dists = np.zeros(nbins, dtype=float)

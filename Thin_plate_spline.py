@@ -61,6 +61,13 @@ def tps_interpolation(x, y, z, xi, yi, epsilon=None, chunk_size=50000):
         raise ValueError("Training arrays x, y, z must have the same length.")
     if xi.size != yi.size:
         raise ValueError("Query arrays xi, yi must have the same length.")
+    if x.size > 1:
+        xy = np.column_stack([x, y])
+        if np.unique(xy, axis=0).shape[0] < xy.shape[0]:
+            raise ValueError(
+                "TPS training data contains duplicate coordinates. "
+                "Keep one sample per coordinate before interpolation."
+            )
 
     # Default epsilon
     if epsilon is None or float(epsilon) <= 0.0:

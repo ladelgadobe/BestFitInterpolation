@@ -1,42 +1,44 @@
-<html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Best Fit Interpolator</title>
+</head>
 <body>
-<h3>Plugin Builder Results</h3>
+  <h1>Best Fit Interpolator</h1>
+  <p><strong>A QGIS plugin for selecting, validating, and applying spatial interpolation methods for environmental, soil, and precision-agriculture data.</strong></p>
 
-Congratulations! You just built a plugin for QGIS!<br/><br />
+  <p>
+    Best Fit Interpolator compares deterministic, geostatistical, machine-learning, and hybrid interpolation approaches, including IDW, TPS, Ordinary Kriging, REML-assisted kriging, Random Forest, SVM, and Regression Kriging.
+  </p>
 
-<div id='help' style='font-size:.9em;'>
-Your plugin <b>BestFitInterpolator</b> was created in:<br>
-&nbsp;&nbsp;<b>G:/Mi unidad/02_Maestria/01_Projeito/09_Plugin_qgis\bestfitinterpolator</b>
-<p>
-Your QGIS plugin directory is located at:<br>
-&nbsp;&nbsp;<b>C:/Users/ldb/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins</b>
-<p>
-<h3>What's Next</h3>
-<ol>
-    <li>If resources.py is not present in your plugin directory, compile the resources file using pyrcc5 (simply use <b>pb_tool</b> or <b>make</b> if you have automake)
-    <li>Optionally, test the generated sources using <b>make test</b> (or run tests from your IDE)
-    <li>Copy the entire directory containing your new plugin to the QGIS plugin directory (see Notes below)
-    <li>Test the plugin by enabling it in the QGIS plugin manager
-    <li>Customize it by editing the implementation file <b>BestFitInterpolator.py</b>
-    <li>Create your own custom icon, replacing the default <b>icon.png</b>
-    <li>Modify your user interface by opening <b>BestFitInterpolator_dialog_base.ui</b> in Qt Designer
-</ol>
-Notes:
-<ul>
-    <li>You can use <b>pb_tool</b> to compile, deploy, and manage your plugin. Tweak the <i>pb_tool.cfg</i> file included with your plugin as you add files. Install <b>pb_tool</b> using 
-        <i>pip</i> or <i>easy_install</i>. See <b>http://loc8.cc/pb_tool</b> for more information.
-    <li>You can also use the <b>Makefile</b> to compile and deploy when you
-        make changes. This requires GNU make (gmake). The Makefile is ready to use, however you 
-        will have to edit it to add addional Python source files, dialogs, and translations.
-</ul>
-</div>
-<div style='font-size:.9em;'>
-<p>
-For information on writing PyQGIS code, see <b>http://loc8.cc/pyqgis_resources</b> for a list of resources.
-</p>
-</div>
-<p>
-&copy;2011-2019 GeoApt LLC - geoapt.com 
-</p>
+  <h2>Main features</h2>
+  <ul>
+    <li>Data diagnostics and spatial-pattern support.</li>
+    <li>Semivariogram preview and kriging tools.</li>
+    <li>Framework-guided method selection.</li>
+    <li>Cross-validation metrics and observed-vs-predicted plots.</li>
+    <li>Interpolation maps and PDF report support.</li>
+  </ul>
+
+  <h2>Authors</h2>
+  <ul>
+    <li><a href="https://www.linkedin.com/in/laura-delgado-bejarano-09b6681a2/">Laura Delgado Bejarano</a></li>
+    <li><a href="https://www.linkedin.com/in/lucas-rios-do-amaral-bb302449/">Lucas Rios do Amaral</a></li>
+  </ul>
+
+  <p>Contact: <a href="mailto:ladelgadobe@unal.edu.co">ladelgadobe@unal.edu.co</a></p>
+
+  <h2>Reference article</h2>
+  <p>
+    Delgado Bejarano, L., Loureiro Goncalves Oliveira, A., Fiolo Pozzuto, J. V.,
+    Castaneda Sanchez, D., &amp; Rios do Amaral, L. (2026).
+    <em>Performance of interpolation methods in digital soil mapping: the influence of data characteristics.</em>
+    Precision Agriculture, 27(1), 10.
+    <a href="https://doi.org/10.1007/s11119-025-10311-8">https://doi.org/10.1007/s11119-025-10311-8</a>
+  </p>
+
+  <h2>Repository</h2>
+  <p><a href="https://github.com/ladelgadobe/BestFitInterpolation">https://github.com/ladelgadobe/BestFitInterpolation</a></p>
 </body>
 </html>

@@ -576,7 +576,7 @@ class FrameworkTabController(QObject):
             layout.addWidget(panel)
 
     def _ensure_observed_method_live_selector(self) -> None:
-        """Create a visible method selector with an explicit update button."""
+        """Create hidden legacy controls; the visible selector lives inside the plot."""
         if getattr(self, "cmb_observed_plot_method", None) is not None:
             return
         group = self._get("groupFrameworkValidationPlotControls")
@@ -968,7 +968,7 @@ class FrameworkTabController(QObject):
 
         dmax = float(np.nanmax(self._pairwise_distances(x, y))) if z.size > 1 else 1.0
         cutoff = 0.5 * dmax
-        lagw = max(self._nearest_neighbor_dist(x, y), 1e-9)
+        lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
 
         persisted = self._persisted_variogram_state() if use_state else None
@@ -980,6 +980,7 @@ class FrameworkTabController(QObject):
             fit_method = persisted["fit_method"]
             cutoff = persisted.get("max_distance") or cutoff
             lagw = persisted.get("lag_width") or lagw
+            lagw = self._safe_lag_width(x, y, cutoff, lagw)
             lags_plot = persisted.get("lags")
             gamma_plot = persisted.get("gamma")
         else:
@@ -1114,19 +1115,48 @@ class FrameworkTabController(QObject):
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
         n = x.size
         if n < 2:
             return np.nan
+        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
+                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
+                    1.0)
+        zero_tol = np.finfo(float).eps * scale * 32.0
         dmin = np.inf
         for i in range(n):
             dx = x - x[i]
             dy = y - y[i]
             dist = np.hypot(dx, dy)
             dist[i] = np.inf
+            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
+            if dist.size == 0:
+                continue
             mi = float(np.min(dist))
             if mi < dmin:
                 dmin = mi
         return dmin if np.isfinite(dmin) else np.nan
+
+    def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
+        try:
+            cutoff = float(cutoff)
+        except Exception:
+            cutoff = np.nan
+        if not np.isfinite(cutoff) or cutoff <= 0:
+            return np.nan
+        try:
+            lag_width = float(lag_width)
+        except Exception:
+            lag_width = np.nan
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = float(self._nearest_neighbor_dist(x, y))
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = cutoff / 12.0
+        min_width = cutoff / float(max(1, int(max_bins)))
+        if lag_width < min_width:
+            lag_width = min_width
+        return float(lag_width)
 
     @staticmethod
     def _semivariances(z):
@@ -1136,7 +1166,14 @@ class FrameworkTabController(QObject):
         return gamma
 
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
+        cutoff = float(cutoff)
+        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
+        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
+            return np.array([], dtype=float), np.array([], dtype=float)
         nbins = max(1, int(math.floor(cutoff / lag_width)))
+        if nbins > 10000:
+            nbins = 10000
+            lag_width = cutoff / float(nbins)
         sums = np.zeros(nbins, dtype=float)
         counts = np.zeros(nbins, dtype=int)
         dists = np.zeros(nbins, dtype=float)
@@ -1665,6 +1702,40 @@ class FrameworkTabController(QObject):
             return int(np.count_nonzero(mask))
         except Exception:
             return 0
+
+    def _dedupe_training_by_xy_keep_first(self, x, y, z):
+        """Return one TPS training sample per exact XY coordinate, keeping the first row."""
+        x = np.asarray(x, dtype=float).ravel()
+        y = np.asarray(y, dtype=float).ravel()
+        z = np.asarray(z, dtype=float).ravel()
+        if x.size != y.size or x.size != z.size or z.size <= 1:
+            return x, y, z, 0, 0
+
+        xy = np.column_stack([x, y])
+        _, first_idx, counts = np.unique(xy, axis=0, return_index=True, return_counts=True)
+        duplicate_groups = int(np.count_nonzero(counts > 1))
+        duplicate_rows = int(np.sum(counts - 1))
+        if duplicate_rows <= 0:
+            return x, y, z, 0, 0
+
+        keep = np.sort(first_idx)
+        return x[keep], y[keep], z[keep], duplicate_rows, duplicate_groups
+
+    def _confirm_tps_duplicate_handling(self, duplicate_rows: int, duplicate_groups: int) -> bool:
+        reply = QMessageBox.question(
+            self.dlg,
+            "TPS duplicate locations",
+            (
+                "TPS requires one sample per coordinate.\n\n"
+                f"{duplicate_rows} repeated samples were found in "
+                f"{duplicate_groups} duplicated locations.\n"
+                "Continue using only the first sample at each repeated coordinate?\n\n"
+                "The original layer will not be modified."
+            ),
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        return reply == QMessageBox.Yes
 
     def _minimum_samples_for_method(self, method: str) -> int:
         """Return absolute sample minimums by method without blocking article-supported paths."""
@@ -2288,7 +2359,8 @@ class FrameworkTabController(QObject):
         model_name = str(self.state.__dict__.get("variogram_model") or "Spherical")
         dmax = float(np.nanmax(self._pairwise_distances(x, y))) if z.size > 1 else 1.0
         cutoff = float(self.state.__dict__.get("max_distance") or 0.5 * dmax)
-        lagw = float(self.state.__dict__.get("lag_width") or max(self._nearest_neighbor_dist(x, y), 1e-9))
+        lagw = float(self.state.__dict__.get("lag_width") or self._nearest_neighbor_dist(x, y))
+        lagw = self._safe_lag_width(x, y, cutoff, lagw)
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
         if z.size < 100 and self._has_reml():
             fit_method = "REML"
@@ -2843,8 +2915,8 @@ class FrameworkTabController(QObject):
             getattr(self, "btn_observed_plot_update", None),
         ):
             if widget is not None:
-                widget.setVisible(bool(visible))
-                widget.setEnabled(bool(visible))
+                widget.setVisible(False)
+                widget.setEnabled(False)
 
     def _draw_validation_plot(self, *args) -> None:
         """Draw validation comparison bars in the Framework validation plot tab."""
@@ -3001,6 +3073,12 @@ class FrameworkTabController(QObject):
             z = np.asarray(data.get("z", []), dtype=float)
             mask = np.isfinite(x) & np.isfinite(y) & np.isfinite(z)
             x, y, z = x[mask], y[mask], z[mask]
+        if method == "TPS":
+            x2, y2, z2, duplicate_rows, duplicate_groups = self._dedupe_training_by_xy_keep_first(x, y, z)
+            if duplicate_rows > 0:
+                if not self._confirm_tps_duplicate_handling(duplicate_rows, duplicate_groups):
+                    raise ValueError("TPS validation canceled because duplicate locations were not accepted.")
+                x, y, z = x2, y2, z2
         min_required = self._minimum_samples_for_method(method)
         if z.size < min_required:
             raise ValueError(f"at least {min_required} valid points are required.")
@@ -3055,7 +3133,7 @@ class FrameworkTabController(QObject):
         model_name = str(self.state.__dict__.get("variogram_model") or "Spherical")
         dmax = float(np.nanmax(self._pairwise_distances(x, y))) if z.size > 1 else 1.0
         cutoff = 0.5 * dmax
-        lagw = max(self._nearest_neighbor_dist(x, y), 1e-9)
+        lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
         nugget, psill, rng = self._guess_initial_params(lags, gamma, cutoff, model=self._normalize_model_token(model_name))
 

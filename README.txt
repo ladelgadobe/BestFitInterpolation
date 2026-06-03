@@ -1,32 +1,42 @@
-Plugin Builder Results
+Best Fit Interpolator
+=====================
 
-Your plugin BestFitInterpolator was created in:
-    G:/Mi unidad/02_Maestria/01_Projeito/09_Plugin_qgis\bestfitinterpolator
+Best Fit Interpolator is a QGIS plugin for selecting, validating, and applying spatial interpolation methods for environmental, soil, and precision-agriculture data.
 
-Your QGIS plugin directory is located at:
-    C:/Users/ldb/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
+The plugin supports deterministic, geostatistical, machine-learning, and hybrid methods, including IDW, TPS, Ordinary Kriging, REML-assisted kriging, Random Forest, SVM, and Regression Kriging.
 
-What's Next:
+Main features
+-------------
+- Data diagnostics and spatial-pattern support.
+- Semivariogram preview and kriging tools.
+- Framework-guided method selection.
+- Cross-validation metrics and observed-vs-predicted plots.
+- Interpolation maps and PDF report support.
 
-  * Copy the entire directory containing your new plugin to the QGIS plugin
-    directory
+Authors
+-------
+Laura Delgado Bejarano
+Lucas Rios do Amaral
 
-  * Compile the resources file using pyrcc5
+Contact
+-------
+ladelgadobe@unal.edu.co
 
-  * Run the tests (``make test``)
+LinkedIn
+--------
+Laura Delgado Bejarano:
+https://www.linkedin.com/in/laura-delgado-bejarano-09b6681a2/
 
-  * Test the plugin by enabling it in the QGIS plugin manager
+Lucas Rios do Amaral:
+https://www.linkedin.com/in/lucas-rios-do-amaral-bb302449/
 
-  * Customize it by editing the implementation file: ``BestFitInterpolator.py``
+Reference article
+-----------------
+Delgado Bejarano, L., Loureiro Goncalves Oliveira, A., Fiolo Pozzuto, J. V., Castaneda Sanchez, D., & Rios do Amaral, L. (2026). Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 27(1), 10.
 
-  * Create your own custom icon, replacing the default icon.png
+DOI:
+https://doi.org/10.1007/s11119-025-10311-8
 
-  * Modify your user interface by opening BestFitInterpolator_dialog_base.ui in Qt Designer
-
-  * You can use the Makefile to compile your Ui and resource files when
-    you make changes. This requires GNU make (gmake)
-
-For more information, see the PyQGIS Developer Cookbook at:
-http://www.qgis.org/pyqgis-cookbook/index.html
-
-(C) 2011-2018 GeoApt LLC - geoapt.com
+Repository
+----------
+https://github.com/ladelgadobe/BestFitInterpolation

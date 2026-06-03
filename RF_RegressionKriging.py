@@ -640,20 +640,56 @@ class RegressionKrigingRFController:
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
+        x = np.asarray(x, dtype=float)
+        y = np.asarray(y, dtype=float)
         n = x.size
         if n < 2:
             return np.nan
+        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
+                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
+                    1.0)
+        zero_tol = np.finfo(float).eps * scale * 32.0
         dmin = np.inf
         for i in range(n):
             dx = x - x[i]
             dy = y - y[i]
             dist = np.hypot(dx, dy)
             dist[i] = np.inf
+            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
+            if dist.size == 0:
+                continue
             dmin = min(dmin, float(np.min(dist)))
         return dmin if np.isfinite(dmin) else np.nan
 
+    def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
+        try:
+            cutoff = float(cutoff)
+        except Exception:
+            cutoff = np.nan
+        if not np.isfinite(cutoff) or cutoff <= 0:
+            return np.nan
+        try:
+            lag_width = float(lag_width)
+        except Exception:
+            lag_width = np.nan
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = float(self._nearest_neighbor_dist(x, y))
+        if not np.isfinite(lag_width) or lag_width <= 0:
+            lag_width = cutoff / 12.0
+        min_width = cutoff / float(max(1, int(max_bins)))
+        if lag_width < min_width:
+            lag_width = min_width
+        return float(lag_width)
+
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
+        cutoff = float(cutoff)
+        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
+        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
+            return np.array([], dtype=float), np.array([], dtype=float)
         nbins = max(1, int(math.floor(cutoff / lag_width)))
+        if nbins > 10000:
+            nbins = 10000
+            lag_width = cutoff / float(nbins)
         sums = np.zeros(nbins, dtype=float)
         counts = np.zeros(nbins, dtype=int)
         dists = np.zeros(nbins, dtype=float)
@@ -756,7 +792,7 @@ class RegressionKrigingRFController:
 
         all_d = self._pairwise_distances(x, y)
         cutoff = 0.5 * float(np.nanmax(all_d))
-        lagw = max(float(self._nearest_neighbor_dist(x, y)), 1e-9)
+        lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
 
         if lags.size == 0:
@@ -1093,7 +1129,10 @@ class RegressionKrigingRFController:
 
                 all_d = self._pairwise_distances(xy_train[:, 0], xy_train[:, 1])
                 cutoff = 0.5 * float(np.nanmax(all_d))
-                lagw = max(float(self._nearest_neighbor_dist(xy_train[:, 0], xy_train[:, 1])), 1e-9)
+                lagw = self._safe_lag_width(
+                    xy_train[:, 0], xy_train[:, 1], cutoff,
+                    self._nearest_neighbor_dist(xy_train[:, 0], xy_train[:, 1])
+                )
                 lags, gamma = self._bin_variogram(
                     xy_train[:, 0], xy_train[:, 1], residuals_train, cutoff, lagw
                 )
