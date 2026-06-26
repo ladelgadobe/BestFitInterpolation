@@ -1,0 +1,24 @@
+# This file contains metadata for the Best Fit Interpolator QGIS plugin.
+
+[general]
+name=Best Fit Interpolator
+qgisMinimumVersion=3.14
+description=Decision-support plugin for selecting, validating, and applying spatial interpolation methods in QGIS.
+version=1
+author=Laura Delgado Bejarano and Lucas Rios do Amaral
+email=ladelgadobe@unal.edu.co
+
+about=Best Fit Interpolator supports spatial interpolation workflows for environmental, soil, and precision-agriculture data. The plugin compares deterministic, geostatistical, machine-learning, and hybrid approaches, including IDW, TPS, ordinary kriging, REML-assisted kriging, Random Forest, SVM, and Regression Kriging. It provides data diagnostics, semivariogram visualization, validation metrics, observed-vs-predicted plots, interpolation maps, and a framework-guided decision workflow based on: Delgado Bejarano, L., Loureiro Goncalves Oliveira, A., Fiolo Pozzuto, J. V., Castaneda Sanchez, D., and Rios do Amaral, L. (2026). Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 27(1), 10. https://doi.org/10.1007/s11119-025-10311-8. Contact: ladelgadobe@unal.edu.co. LinkedIn: Laura Delgado Bejarano - https://www.linkedin.com/in/laura-delgado-bejarano-09b6681a2/; Lucas Rios do Amaral - https://www.linkedin.com/in/lucas-rios-do-amaral-bb302449/.
+changelog=Version 1: First public release prepared for the QGIS plugin repository, including interpolation, validation, mapping, and framework-guided method selection workflows.
+
+tracker=https://github.com/ladelgadobe/BestFitInterpolation/issues
+repository=https://github.com/ladelgadobe/BestFitInterpolation
+
+hasProcessingProvider=False
+tags=interpolation, geostatistics, kriging, IDW, TPS, machine learning, digital soil mapping, precision agriculture, QGIS
+homepage=https://github.com/ladelgadobe/BestFitInterpolation
+category=Raster
+icon=icon.png
+experimental=False
+deprecated=False
+server=False

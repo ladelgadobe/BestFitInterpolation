@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="icon.png" alt="Best Fit Interpolator icon" width="150">
+<img src="bestfitinterpolator/icon.png" alt="Best Fit Interpolator icon" width="150">
 
 # Best Fit Interpolator
 
@@ -63,7 +63,7 @@ The Framework tab translates the method-selection logic from the reference artic
 Use this workflow when interpolation is based mainly on the target variable sampled in the field.
 
 <p align="center">
-  <img src="framework_univariate.png" alt="Univariate interpolation framework" width="920">
+  <img src="bestfitinterpolator/framework_univariate.png" alt="Univariate interpolation framework" width="920">
 </p>
 
 ### Full Framework With Covariates
@@ -71,7 +71,7 @@ Use this workflow when interpolation is based mainly on the target variable samp
 Use this workflow when auxiliary raster layers or environmental covariates are available for machine-learning or hybrid modeling.
 
 <p align="center">
-  <img src="framework_full.png" alt="Full interpolation framework with covariates" width="920">
+  <img src="bestfitinterpolator/framework_full.png" alt="Full interpolation framework with covariates" width="920">
 </p>
 
 ---
