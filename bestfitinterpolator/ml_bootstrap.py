@@ -106,9 +106,16 @@ def _find_python_executable():
     Try to locate a Python executable compatible with the QGIS environment.
     """
     candidates = _candidate_python_paths()
-    if candidates:
-        return candidates[0]
-    return None
+    if not candidates:
+        return None
+
+    # On Windows, subprocess cannot reliably execute QGIS .bat launchers
+    # directly. Prefer the real Python executable and keep launchers only as
+    # a fallback for unusual installations.
+    for path in candidates:
+        if path.lower().endswith(".exe"):
+            return path
+    return candidates[0]
 
 
 def _run_subprocess(command, parent=None):
