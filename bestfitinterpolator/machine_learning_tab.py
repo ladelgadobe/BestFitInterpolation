@@ -58,6 +58,8 @@ from qgis.core import (
 
 from osgeo import gdal, osr
 
+from .ml_bootstrap import ensure_ml_ready
+
 try:
     from statistics import NormalDist
 except Exception:
@@ -2816,6 +2818,9 @@ class MachineLearningTabController:
         - Runs RF training + (optional) hyperparameter search.
         - Predicts over grid and writes a GeoTIFF.
         """
+        if not ensure_ml_ready(parent=self.dlg, method_name="Random Forest"):
+            return
+
         rf_interpolation = self._import_rf_interpolation(show_message=True)
         if rf_interpolation is None:
             return
@@ -2989,6 +2994,9 @@ class MachineLearningTabController:
         )
     def _on_run_rf_cross_validation(self):
         """Run RF cross-validation using the same CV policy used in the other tabs."""
+        if not ensure_ml_ready(parent=self.dlg, method_name="Random Forest"):
+            return
+
         self._reset_metric_labels([
             "valRFRMSE", "valRFRMSEpct", "valRFMAE",
             "valRFR2", "valRFPearsonR", "valRFLCCC",
@@ -3852,6 +3860,9 @@ class MachineLearningTabController:
 
     def _on_run_svm_interpolation(self):
         """Entry point for the SVM interpolation button."""
+        if not ensure_ml_ready(parent=self.dlg, method_name="Support Vector Machine"):
+            return
+
         svm_interpolation = self._import_svm_interpolation(show_message=True)
         if svm_interpolation is None:
             return
@@ -4060,6 +4071,9 @@ class MachineLearningTabController:
         self._svm_val_ax = ax
 
     def _on_run_svm_cross_validation(self):
+        if not ensure_ml_ready(parent=self.dlg, method_name="Support Vector Machine"):
+            return
+
         self._reset_metric_labels([
             "valSVMRMSE", "valSVMRMSEpct", "valSVMMAE",
             "valSVMR2", "valSVMPearsonR", "valSVMLCCC",

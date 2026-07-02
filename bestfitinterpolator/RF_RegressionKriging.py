@@ -35,6 +35,7 @@ import matplotlib
 
 from .RF_Interpolation import _tune_random_forest
 from .kriging_ordinary import ordinary_kriging_interpolation
+from .ml_bootstrap import ensure_ml_ready
 
 
 @dataclass
@@ -735,6 +736,9 @@ class RegressionKrigingRFController:
         self._refresh_status()
 
     def _on_fit_rf_clicked(self):
+        if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
+            return
+
         progress = QProgressDialog("Fitting RF parameters…", "Cancel", 0, 0, self.dlg)
         progress.setWindowTitle("Regression Kriging")
         progress.setWindowModality(Qt.WindowModal)
@@ -1057,6 +1061,9 @@ class RegressionKrigingRFController:
         self._refresh_status()
 
     def _on_run_rk_clicked(self):
+        if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
+            return
+
         if self._rk_running:
             return
         self._rk_running = True
@@ -1198,6 +1205,9 @@ class RegressionKrigingRFController:
         _set("valRKPearsonR", _fmt(pearson_r))
 
     def _on_run_rk_cv_clicked(self):
+        if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
+            return
+
         if self._cv_running:
             return
         self._cv_running = True
