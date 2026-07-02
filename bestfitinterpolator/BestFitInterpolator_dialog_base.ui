@@ -4715,13 +4715,6 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                     </property>
                    </widget>
                   </item>
-                  <item row="2" column="0" colspan="2">
-                   <widget class="QPushButton" name="btnFrameworkRunInterpolation">
-                    <property name="text">
-                     <string>Run interpolation</string>
-                    </property>
-                   </widget>
-                  </item>
                  </layout>
                 </widget>
                </item>

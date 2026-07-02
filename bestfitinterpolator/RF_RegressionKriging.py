@@ -86,6 +86,8 @@ class RegressionKrigingRFController:
         self._covariate_names: Optional[List[str]] = None
         self._rf_model = None
         self._rf_best_params: Optional[Dict[str, int]] = None
+        self._rf_fit_config = None
+        self._last_interpolation_config = None
         self._train_predictions: Optional[np.ndarray] = None
         self._residuals: Optional[np.ndarray] = None
         self._importance_df: Optional[pd.DataFrame] = None
@@ -699,17 +701,23 @@ class RegressionKrigingRFController:
         X = train_df[list(self._covariate_names)].to_numpy(dtype=float)
         y = train_df[self._target_name].to_numpy(dtype=float)
 
+        use_grid_search = self._is_using_grid_search()
+        manual_params = self._get_manual_params()
+        grid_params = self._get_grid_params()
+        search_folds = self._get_search_folds()
+        search_iterations = self._get_search_iterations()
+
         sig = inspect.signature(_tune_random_forest)
         kwargs = dict(
             X=X,
             y=y,
-            use_grid_search=self._is_using_grid_search(),
-            manual_params=self._get_manual_params(),
-            grid_params=self._get_grid_params(),
+            use_grid_search=use_grid_search,
+            manual_params=manual_params,
+            grid_params=grid_params,
             n_jobs=1,
             random_state=20,
-            cv_folds=self._get_search_folds(),
-            max_iterations=self._get_search_iterations(),
+            cv_folds=search_folds,
+            max_iterations=search_iterations,
         )
         if "progress_fn" in sig.parameters:
             kwargs["progress_fn"] = progress_fn
@@ -719,7 +727,17 @@ class RegressionKrigingRFController:
         residuals = y - pred
 
         self._rf_model = model
-        self._rf_best_params = best_params if self._is_using_grid_search() else None
+        self._rf_best_params = best_params if use_grid_search else None
+        self._rf_fit_config = {
+            "resolved_params": dict(best_params or manual_params),
+            "search_mode": "grid" if use_grid_search else "manual",
+            "grid_params": {
+                key: dict(value) for key, value in grid_params.items()
+            },
+            "search_folds": int(search_folds),
+            "search_iterations": int(search_iterations),
+        }
+        self._last_interpolation_config = None
         self._train_df = train_df
         self._train_predictions = pred
         self._residuals = residuals
@@ -1053,6 +1071,25 @@ class RegressionKrigingRFController:
                     )
                 except Exception:
                     pass
+                return
+
+        if self._rf_fit_config is None:
+            raise ValueError("The RF configuration used by Regression Kriging is unavailable.")
+        self._last_interpolation_config = {
+            "train_df": self._train_df.copy(deep=True),
+            "target_name": str(self._target_name),
+            "feature_names": list(self._covariate_names),
+            "rf_params": dict(self._rf_fit_config["resolved_params"]),
+            "rf_search_mode": self._rf_fit_config["search_mode"],
+            "variogram_fit": VariogramFit(
+                model=str(fit.model),
+                nugget=float(fit.nugget),
+                psill=float(fit.psill),
+                range_=float(fit.range_),
+                sse=float(fit.sse),
+                weak_structure=bool(fit.weak_structure),
+            ),
+        }
 
         if progress_fn is not None:
             progress_fn(100, 100, "Regression Kriging interpolation completed.")
@@ -1117,7 +1154,7 @@ class RegressionKrigingRFController:
 
     def _make_kfold_indices(self, n, k):
         idx = list(range(n))
-        random.shuffle(idx)
+        random.Random(20).shuffle(idx)
         folds = []
         base, rem = divmod(n, k)
         start = 0
@@ -1205,6 +1242,14 @@ class RegressionKrigingRFController:
         _set("valRKPearsonR", _fmt(pearson_r))
 
     def _on_run_rk_cv_clicked(self):
+        config = getattr(self, "_last_interpolation_config", None)
+        if not config:
+            self.iface.messageBar().pushWarning(
+                "Regression Kriging validation",
+                "Run the complete Regression Kriging interpolation first. Validation uses its exact predictors, RF parameters, and variogram.",
+            )
+            return
+
         if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
             return
 
@@ -1221,14 +1266,15 @@ class RegressionKrigingRFController:
         QCoreApplication.processEvents()
 
         try:
-            self._prepare_training_data()
-            cols = self._unique_columns(["x", "y"] + list(self._covariate_names) + [self._target_name])
-            train_df = self._train_df[cols].dropna().copy()
+            target_name = config["target_name"]
+            feature_names = list(config["feature_names"])
+            cols = self._unique_columns(["x", "y"] + feature_names + [target_name])
+            train_df = config["train_df"][cols].dropna().copy()
             if len(train_df) < 5:
                 raise ValueError("At least 5 valid points are required for cross-validation.")
 
-            X_all = train_df[list(self._covariate_names)].to_numpy(dtype=float)
-            y_all = train_df[self._target_name].to_numpy(dtype=float)
+            X_all = train_df[feature_names].to_numpy(dtype=float)
+            y_all = train_df[target_name].to_numpy(dtype=float)
             xy_all = train_df[["x", "y"]].to_numpy(dtype=float)
             n = len(y_all)
 
@@ -1250,6 +1296,8 @@ class RegressionKrigingRFController:
                 cv_desc = f"RK {k}-fold CV (n={n})"
 
             preds = np.full(n, np.nan, dtype=float)
+            resolved_rf_params = dict(config["rf_params"])
+            fixed_variogram_fit = config["variogram_fit"]
             total_folds = len(folds)
             progress.setRange(0, total_folds)
 
@@ -1274,35 +1322,18 @@ class RegressionKrigingRFController:
                 model, _ = _tune_random_forest(
                     X=X_train,
                     y=y_train,
-                    use_grid_search=self._is_using_grid_search(),
-                    manual_params=self._get_manual_params(),
-                    grid_params=self._get_grid_params(),
+                    use_grid_search=False,
+                    manual_params=resolved_rf_params,
+                    grid_params={},
                     n_jobs=1,
                     random_state=20,
-                    cv_folds=self._get_search_folds(),
-                    max_iterations=self._get_search_iterations(),
+                    cv_folds=2,
+                    max_iterations=1,
                     progress_fn=None,
                 )
 
                 rf_train_pred = np.asarray(model.predict(X_train), dtype=float)
                 residuals_train = y_train - rf_train_pred
-
-                all_d = self._pairwise_distances(xy_train[:, 0], xy_train[:, 1])
-                cutoff = 0.5 * float(np.nanmax(all_d))
-                lagw = self._safe_lag_width(
-                    xy_train[:, 0], xy_train[:, 1], cutoff,
-                    self._nearest_neighbor_dist(xy_train[:, 0], xy_train[:, 1])
-                )
-                lags, gamma = self._bin_variogram(
-                    xy_train[:, 0], xy_train[:, 1], residuals_train, cutoff, lagw
-                )
-                if lags.size == 0:
-                    lags = np.array([0.0, cutoff], dtype=float)
-                    gamma = np.array([0.0, np.nanvar(residuals_train)], dtype=float)
-                fit = sorted(
-                    self._fit_variogram_candidates(lags, gamma, cutoff),
-                    key=lambda item: item.sse,
-                )[0]
 
                 rf_test_pred = np.asarray(model.predict(X_test), dtype=float)
                 residual_test_pred = ordinary_kriging_interpolation(
@@ -1311,10 +1342,10 @@ class RegressionKrigingRFController:
                     residuals_train,
                     xy_test[:, 0],
                     xy_test[:, 1],
-                    float(fit.nugget),
-                    float(fit.psill),
-                    float(fit.range_),
-                    {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}[fit.model],
+                    float(fixed_variogram_fit.nugget),
+                    float(fixed_variogram_fit.psill),
+                    float(fixed_variogram_fit.range_),
+                    {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}[fixed_variogram_fit.model],
                 )
                 preds[test_idx] = rf_test_pred + np.asarray(residual_test_pred, dtype=float)
 

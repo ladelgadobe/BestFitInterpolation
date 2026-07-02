@@ -156,6 +156,8 @@ class MachineLearningTabController:
         self._rf_val_ax = None
         self._rf_last_map_payload = None
         self._rf_last_importance_df = None
+        self._last_rf_interpolation_config = None
+        self._last_svm_interpolation_config = None
 
         self._rf_cv_auto = None
         self._rf_cv_loocv = None
@@ -435,7 +437,7 @@ class MachineLearningTabController:
     def _rf_make_kfold_indices(self, n, k):
         """Create K random folds using the same simple policy as the other tabs."""
         idx = list(range(n))
-        random.shuffle(idx)
+        random.Random(20).shuffle(idx)
         folds = []
         base, rem = divmod(n, k)
         start = 0
@@ -2966,6 +2968,20 @@ class MachineLearningTabController:
         if out_path is None:
             return
 
+        resolved_params = dict(best_params or manual_params)
+        self._last_rf_interpolation_config = {
+            "points_df": points_df.copy(deep=True),
+            "target_name": str(target_name),
+            "feature_names": list(cov_names),
+            "resolved_params": resolved_params,
+            "search_mode": "grid" if use_grid_search else "manual",
+            "grid_params": {
+                key: dict(value) for key, value in grid_params.items()
+            },
+            "search_folds": int(search_folds),
+            "search_iterations": int(search_iterations),
+        }
+
         self._update_rf_metrics_ui(train_mae, train_rmse, best_params)
 
         try:
@@ -2994,6 +3010,14 @@ class MachineLearningTabController:
         )
     def _on_run_rf_cross_validation(self):
         """Run RF cross-validation using the same CV policy used in the other tabs."""
+        config = getattr(self, "_last_rf_interpolation_config", None)
+        if not config:
+            self._show_warning_message(
+                "RF validation",
+                "Run Random Forest interpolation first. Validation uses the exact predictors and final parameters from that interpolation.",
+            )
+            return
+
         if not ensure_ml_ready(parent=self.dlg, method_name="Random Forest"):
             return
 
@@ -3018,10 +3042,9 @@ class MachineLearningTabController:
         try:
             progress.setLabelText("Preparing training data…")
             QCoreApplication.processEvents()
-            points_df, target_name, cov_names = self._build_points_dataframe_for_rf()
-            if points_df is None or target_name is None or cov_names is None:
-                progress.close()
-                return
+            points_df = config["points_df"].copy(deep=True)
+            target_name = config["target_name"]
+            cov_names = list(config["feature_names"])
 
             feature_cols = list(cov_names)
             cols = self._unique_columns(["x", "y"] + feature_cols + [target_name])
@@ -3059,11 +3082,7 @@ class MachineLearningTabController:
                 cv_desc = f"RF {k}-fold CV (n={n})"
 
             preds = np.full(n, np.nan, dtype=float)
-            use_grid_search = self._is_rf_using_grid_search()
-            manual_params = self._get_rf_manual_params()
-            grid_params = self._get_rf_grid_params()
-            search_folds = self._get_rf_search_folds()
-            search_iterations = self._get_rf_search_iterations()
+            resolved_params = dict(config["resolved_params"])
 
             total_folds = len(folds)
             progress.setRange(0, total_folds)
@@ -3089,13 +3108,13 @@ class MachineLearningTabController:
                 model, _ = _tune_random_forest(
                     X=X_train,
                     y=y_train,
-                    use_grid_search=use_grid_search,
-                    manual_params=manual_params,
-                    grid_params=grid_params,
+                    use_grid_search=False,
+                    manual_params=resolved_params,
+                    grid_params={},
                     n_jobs=1,
                     random_state=20,
-                    cv_folds=search_folds,
-                    max_iterations=search_iterations,
+                    cv_folds=2,
+                    max_iterations=1,
                     progress_fn=None,
                 )
                 preds[test_idx] = np.asarray(model.predict(X_test), dtype=float)
@@ -3960,6 +3979,20 @@ class MachineLearningTabController:
         if out_path is None:
             return
 
+        resolved_params = dict(best_params or manual_params)
+        self._last_svm_interpolation_config = {
+            "points_df": points_df.copy(deep=True),
+            "target_name": str(target_name),
+            "feature_names": list(cov_names),
+            "resolved_params": resolved_params,
+            "search_mode": "grid" if use_grid_search else "manual",
+            "grid_params": {
+                key: dict(value) for key, value in grid_params.items()
+            },
+            "search_folds": int(search_folds),
+            "search_iterations": int(search_iterations),
+        }
+
         try:
             self._draw_svm_interpolation_preview(grid_with_pred, grid_meta, target_name)
         except Exception:
@@ -3995,7 +4028,7 @@ class MachineLearningTabController:
 
     def _svm_make_kfold_indices(self, n, k):
         idx = list(range(n))
-        random.shuffle(idx)
+        random.Random(20).shuffle(idx)
         folds = []
         base, rem = divmod(n, k)
         start = 0
@@ -4071,6 +4104,14 @@ class MachineLearningTabController:
         self._svm_val_ax = ax
 
     def _on_run_svm_cross_validation(self):
+        config = getattr(self, "_last_svm_interpolation_config", None)
+        if not config:
+            self._show_warning_message(
+                "SVM validation",
+                "Run SVM interpolation first. Validation uses the exact predictors and final parameters from that interpolation.",
+            )
+            return
+
         if not ensure_ml_ready(parent=self.dlg, method_name="Support Vector Machine"):
             return
 
@@ -4092,10 +4133,9 @@ class MachineLearningTabController:
         progress.show()
         QCoreApplication.processEvents()
         try:
-            points_df, target_name, cov_names = self._build_points_dataframe_for_rf()
-            if points_df is None or target_name is None or cov_names is None:
-                progress.close()
-                return
+            points_df = config["points_df"].copy(deep=True)
+            target_name = config["target_name"]
+            cov_names = list(config["feature_names"])
             feature_cols = list(cov_names)
             cols = self._unique_columns(["x", "y"] + feature_cols + [target_name])
             train_df = points_df[cols].dropna().copy()
@@ -4128,19 +4168,12 @@ class MachineLearningTabController:
             total_folds = len(folds)
             progress.setRange(0, total_folds)
 
-            if self._is_svm_using_grid_search():
-                gp = self._get_svm_grid_params()
-                c_vals = np.arange(gp["C"]["min"], gp["C"]["max"] + 1e-12, max(gp["C"]["step"], 1e-12))
-                g_vals = np.arange(gp["gamma"]["min"], gp["gamma"]["max"] + 1e-12, max(gp["gamma"]["step"], 1e-12))
-                e_vals = np.arange(gp["epsilon"]["min"], gp["epsilon"]["max"] + 1e-12, max(gp["epsilon"]["step"], 1e-12))
-                param_space = [(float(c), float(g), float(eps)) for c in c_vals for g in g_vals for eps in e_vals]
-                max_iter = self._get_svm_search_iterations()
-                if len(param_space) > max_iter:
-                    random.shuffle(param_space)
-                    param_space = param_space[:max_iter]
-            else:
-                mp = self._get_svm_manual_params()
-                param_space = [(float(mp["C"]), float(mp["gamma"]), float(mp["epsilon"]))]
+            params = dict(config["resolved_params"])
+            param_space = [(
+                float(params["C"]),
+                float(params["gamma"]),
+                float(params["epsilon"]),
+            )]
 
             for fold_idx, test_idx_list in enumerate(folds, start=1):
                 if progress.wasCanceled():

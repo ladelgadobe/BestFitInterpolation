@@ -180,6 +180,7 @@ class BestFitInterpolator:
         # Track the last data selection to avoid clearing plots unnecessarily
         self._last_data_selection = (None, None, None)
         self._last_det_interpolation = None
+        self._last_ok_interpolation = None
         self._suppress_data_change_events = False
 
         # Output directory inside the QGIS project folder
@@ -1472,6 +1473,7 @@ class BestFitInterpolator:
         self.dlg.poly.clear();      self.dlg.poly.addItem("")
         self._last_data_selection = (None, None, None)
         self._last_det_interpolation = None
+        self._last_ok_interpolation = None
         if hasattr(self.dlg, 'manualNInput'):
             try:
                 self.dlg.manualNInput.setValue(12)
@@ -1831,17 +1833,32 @@ class BestFitInterpolator:
         )
         return x2, y2, z2
 
-    def _record_det_interpolation(self, method, points_layer_name, variable_name, polygon_layer_name, pixel_size, **params):
+    def _record_det_interpolation(
+        self,
+        method,
+        points_layer_name,
+        variable_name,
+        polygon_layer_name,
+        pixel_size,
+        training_data,
+        **params,
+    ):
+        x, y, z = finite_training_arrays(*training_data)
         self._last_det_interpolation = {
             "method": method,
             "points_layer": points_layer_name,
             "variable": variable_name,
             "polygon_layer": polygon_layer_name,
             "pixel_size": float(pixel_size),
+            "training_data": {
+                "x": np.asarray(x, dtype=float).copy(),
+                "y": np.asarray(y, dtype=float).copy(),
+                "z": np.asarray(z, dtype=float).copy(),
+            },
             "params": dict(params),
         }
 
-    def _get_last_det_interpolation_for_validation(self, points_layer_name, variable_name):
+    def _get_last_det_interpolation_for_validation(self):
         state = getattr(self, "_last_det_interpolation", None)
         if not state:
             self.iface.messageBar().pushMessage(
@@ -1851,14 +1868,48 @@ class BestFitInterpolator:
             )
             return None
 
-        if state.get("points_layer") != points_layer_name or state.get("variable") != variable_name:
+        return state
+
+    def _record_ok_interpolation(
+        self,
+        backend,
+        points_layer_name,
+        variable_name,
+        polygon_layer_name,
+        pixel_size,
+        sample_xyz,
+        model,
+        nugget,
+        psill,
+        var_range,
+        reml_fit=None,
+    ):
+        sample_xyz = np.asarray(sample_xyz, dtype=float).copy()
+        if sample_xyz.ndim != 2 or sample_xyz.shape[1] != 3:
+            raise ValueError("Kriging training data must have x, y, and value columns.")
+        self._last_ok_interpolation = {
+            "backend": str(backend),
+            "points_layer": points_layer_name,
+            "variable": variable_name,
+            "polygon_layer": polygon_layer_name,
+            "pixel_size": float(pixel_size),
+            "sample_xyz": sample_xyz,
+            "model": str(model),
+            "nugget": float(nugget),
+            "psill": float(psill),
+            "var_range": float(var_range),
+            "reml_fit": reml_fit,
+        }
+
+    def _get_last_ok_interpolation_for_validation(self):
+        state = getattr(self, "_last_ok_interpolation", None)
+        if not state:
             self.iface.messageBar().pushMessage(
-                "Validation",
-                "The validation layer/variable does not match the last deterministic interpolation. Run interpolation again first.",
+                "Kriging validation",
+                "Run Ordinary Kriging interpolation first, then run validation.",
                 level=2,
             )
             return None
-
         return state
 
     def _on_data_selection_changed(self, *_):
@@ -1881,6 +1932,7 @@ class BestFitInterpolator:
 
         if current != getattr(self, "_last_data_selection", None):
             self._last_det_interpolation = None
+            self._last_ok_interpolation = None
             self._clear_all_plots(reset_framework=False)
             self._clear_ok_validation_outputs()
             self._reset_ok_validation_canvas()
@@ -2431,7 +2483,7 @@ class BestFitInterpolator:
     def _make_kfold_indices(self, n: int, k: int):
         """Create K roughly equal folds of indices 0..n-1 (random shuffle)."""
         idx = list(range(n))
-        random.shuffle(idx)
+        random.Random(20).shuffle(idx)
         folds = []
         base, rem = divmod(n, k)
         start = 0
@@ -2448,42 +2500,24 @@ class BestFitInterpolator:
         self._clear_det_validation_outputs()
         self._ensure_canvases_attached()
 
-        points_layer_name = self.dlg.cmbPointsLayer.currentText()
-        variable_name = self.dlg.cmbVariable.currentText()
-        if not points_layer_name or not variable_name:
-            self.iface.messageBar().pushMessage("Error","Please select a point layer and a variable.", level=3)
-            return
-
-        det_state = self._get_last_det_interpolation_for_validation(points_layer_name, variable_name)
+        det_state = self._get_last_det_interpolation_for_validation()
         if det_state is None:
             return
         det_method = det_state.get("method")
         det_params = det_state.get("params", {})
-
-        points_layer = QgsProject.instance().mapLayersByName(points_layer_name)[0]
-        coords, vals = [], []
-        for feat in points_layer.getFeatures():
-            g = feat.geometry()
-            if g.isEmpty(): continue
-            pt = g.asPoint()
-            v = feat[variable_name]
-            try: v = float(v)
-            except Exception: v = None
-            coords.append(pt); vals.append(v)
-
-        coords, vals = self.filter_incomplete_data(coords, vals)
-        if len(coords) < 5:
-            self.iface.messageBar().pushMessage("Error","At least 5 valid data points are required for cross-validation.", level=3)
-            return
-
+        training_data = det_state.get("training_data") or {}
         try:
             x, y, z = finite_training_arrays(
-                [p.x() for p in coords],
-                [p.y() for p in coords],
-                vals,
+                training_data.get("x", []),
+                training_data.get("y", []),
+                training_data.get("z", []),
             )
         except Exception as exc:
-            QMessageBox.warning(self.dlg, "Validation", format_shape_error(exc))
+            QMessageBox.warning(
+                self.dlg,
+                "Validation",
+                f"The saved interpolation data are unavailable. Run interpolation again.\n\n{format_shape_error(exc)}",
+            )
             return
         using_tps = (det_method == "TPS")
         if using_tps:
@@ -2610,40 +2644,23 @@ class BestFitInterpolator:
         self._ensure_canvases_attached()
         if self.ok_cv_fig is None or self.ok_cv_canvas is None:
             self._attach_ok_cv_canvas()
-        if getattr(self.ok_ctrl, "_use_reml", False):
-            return self.run_ok_cv_reml()
-
-        # Inputs
-        points_layer_name = self.dlg.cmbPointsLayer.currentText()
-        variable_name = self.dlg.cmbVariable.currentText()
-        if not points_layer_name or not variable_name:
-            self.iface.messageBar().pushMessage("Error","Please select a point layer and a variable.", level=3)
+        ok_state = self._get_last_ok_interpolation_for_validation()
+        if ok_state is None:
             return
+        if ok_state.get("backend") == "REML":
+            return self.run_ok_cv_reml(ok_state)
 
-        layers = QgsProject.instance().mapLayersByName(points_layer_name)
-        if not layers:
-            self.iface.messageBar().pushMessage("Error","Point layer not found.", level=3)
+        sample_xyz = np.asarray(ok_state.get("sample_xyz"), dtype=float)
+        if sample_xyz.ndim != 2 or sample_xyz.shape[1] != 3:
+            self.iface.messageBar().pushMessage(
+                "Kriging validation",
+                "The saved interpolation data are unavailable. Run interpolation again.",
+                level=2,
+            )
             return
-
-        layer = layers[0]
-        coords, vals = [], []
-        for feat in layer.getFeatures():
-            g = feat.geometry()
-            if g.isEmpty(): continue
-            pt = g.asPoint()
-            v = feat[variable_name]
-            try: v = float(v)
-            except Exception: v = None
-            coords.append(pt); vals.append(v)
-
-        coords, vals = self.filter_incomplete_data(coords, vals)
-        if len(coords) < 5:
-            self.iface.messageBar().pushMessage("Error","At least 5 valid data points are required for cross-validation.", level=3)
-            return
-
-        x = np.array([p.x() for p in coords])
-        y = np.array([p.y() for p in coords])
-        z = np.array(vals, dtype=float)
+        x = sample_xyz[:, 0].copy()
+        y = sample_xyz[:, 1].copy()
+        z = sample_xyz[:, 2].copy()
         n = len(z)
 
         # CV mode and folds (usar refs guardadas)
@@ -2672,20 +2689,10 @@ class BestFitInterpolator:
 
         preds = np.full(n, np.nan, dtype=float)
 
-        # Variogram params
-        if getattr(self, "ok_ctrl", None) is not None and hasattr(self.ok_ctrl, "_is_auto_model_selection"):
-            try:
-                if self.ok_ctrl._is_auto_model_selection() and hasattr(self.ok_ctrl, "_choose_best_model_by_validation"):
-                    cutoff = getattr(self.ok_ctrl, "_cutoff", None)
-                    lagw = getattr(self.ok_ctrl, "_lag_width", None)
-                    if cutoff is None or lagw is None:
-                        all_d = self.ok_ctrl._pairwise_distances(x, y)
-                        cutoff = 0.5 * float(np.nanmax(all_d))
-                        lagw = self.ok_ctrl._safe_lag_width(x, y, cutoff, self.ok_ctrl._nearest_neighbor_dist(x, y))
-                    self.ok_ctrl._choose_best_model_by_validation(x, y, z, cutoff, lagw)
-            except Exception:
-                pass
-        model, nugget, psill, var_range = self._read_ok_params()
+        model = ok_state["model"]
+        nugget = float(ok_state["nugget"])
+        psill = float(ok_state["psill"])
+        var_range = float(ok_state["var_range"])
 
         # Progress dialog
         progress = QProgressDialog("Running Kriging CVâ€¦", "Cancel", 0, len(folds), self.dlg)
@@ -2747,7 +2754,7 @@ class BestFitInterpolator:
             level=0
         )
 
-    def run_ok_cv_reml(self):
+    def run_ok_cv_reml(self, ok_state=None):
         """Run LOOCV for Ordinary Kriging using the REML backend."""
         self._clear_ok_validation_outputs()
         self._reset_ok_validation_canvas()
@@ -2755,65 +2762,25 @@ class BestFitInterpolator:
         if self.ok_cv_fig is None or self.ok_cv_canvas is None:
             self._attach_ok_cv_canvas()
 
-        points_layer_name = self.dlg.cmbPointsLayer.currentText()
-        variable_name = self.dlg.cmbVariable.currentText()
-        if not points_layer_name or not variable_name:
-            self.iface.messageBar().pushMessage("Error", "Please select a point layer and a variable.", level=3)
+        ok_state = ok_state or self._get_last_ok_interpolation_for_validation()
+        if ok_state is None:
+            return
+        if ok_state.get("backend") != "REML":
+            self.iface.messageBar().pushMessage(
+                "Kriging validation",
+                "The last interpolation used MoM. Run the matching Kriging validation.",
+                level=2,
+            )
             return
 
-        layers = QgsProject.instance().mapLayersByName(points_layer_name)
-        if not layers:
-            self.iface.messageBar().pushMessage("Error", "Point layer not found.", level=3)
-            return
-
-        layer = layers[0]
-        coords, vals = [], []
-        for feat in layer.getFeatures():
-            g = feat.geometry()
-            if g.isEmpty():
-                continue
-            pt = g.asPoint()
-            v = feat[variable_name]
-            try:
-                v = float(v)
-            except Exception:
-                v = None
-            coords.append(pt)
-            vals.append(v)
-
-        coords, vals = self.filter_incomplete_data(coords, vals)
-        if len(coords) < 5:
-            self.iface.messageBar().pushMessage("Error", "At least 5 valid data points are required for cross-validation.", level=3)
-            return
-
-        sample_xyz = np.column_stack((
-            [p.x() for p in coords],
-            [p.y() for p in coords],
-            np.array(vals, dtype=float)
-        ))
-
-        if getattr(self, "ok_ctrl", None) is not None and hasattr(self.ok_ctrl, "_is_auto_model_selection"):
-            try:
-                if self.ok_ctrl._is_auto_model_selection() and hasattr(self.ok_ctrl, "_choose_best_model_by_validation"):
-                    x_tmp = sample_xyz[:, 0]
-                    y_tmp = sample_xyz[:, 1]
-                    z_tmp = sample_xyz[:, 2]
-                    cutoff = getattr(self.ok_ctrl, "_cutoff", None)
-                    lagw = getattr(self.ok_ctrl, "_lag_width", None)
-                    if cutoff is None or lagw is None:
-                        all_d = self.ok_ctrl._pairwise_distances(x_tmp, y_tmp)
-                        cutoff = 0.5 * float(np.nanmax(all_d))
-                        lagw = self.ok_ctrl._safe_lag_width(x_tmp, y_tmp, cutoff, self.ok_ctrl._nearest_neighbor_dist(x_tmp, y_tmp))
-                    self.ok_ctrl._choose_best_model_by_validation(x_tmp, y_tmp, z_tmp, cutoff, lagw)
-            except Exception:
-                pass
-        model, nugget, psill, var_range = self._read_ok_params()
-        mom_fit = {"model": model, "psill": psill, "range": var_range, "nugget": nugget}
-
-        try:
-            reml_fit = fit_ok_reml_interface(sample_xyz, model=model, init_from_mom=mom_fit)
-        except Exception as e:
-            self.iface.messageBar().pushMessage("Error", f"REML fit failed: {e}", level=3)
+        sample_xyz = np.asarray(ok_state.get("sample_xyz"), dtype=float)
+        reml_fit = ok_state.get("reml_fit")
+        if sample_xyz.ndim != 2 or sample_xyz.shape[1] != 3 or reml_fit is None:
+            self.iface.messageBar().pushMessage(
+                "Kriging validation",
+                "The saved REML interpolation configuration is unavailable. Run interpolation again.",
+                level=2,
+            )
             return
 
         try:
@@ -3124,6 +3091,7 @@ class BestFitInterpolator:
             variable_name,
             polygon_layer_name,
             pixel_size,
+            training_data=(x_vals, y_vals, z_vals),
             p=float(p_value),
             n=int(n_value),
             raster_path=raster_path,
@@ -3190,6 +3158,7 @@ class BestFitInterpolator:
             variable_name,
             polygon_layer_name,
             pixel_size,
+            training_data=(x, y, z),
             epsilon=1e-4,
             raster_path=raster_path,
         )
@@ -3282,6 +3251,21 @@ class BestFitInterpolator:
 
         # Write GeoTIFF, add to QGIS, and draw preview
         raster_path = self._write_raster_and_add(result_array, polygon_layer, pixel_size, variable_name, "OK", "Interpolated OK")
+        if raster_path is None:
+            return
+
+        self._record_ok_interpolation(
+            "MoM",
+            points_layer_name,
+            variable_name,
+            polygon_layer_name,
+            pixel_size,
+            np.column_stack((x, y, z)),
+            model,
+            nugget,
+            psill,
+            var_range,
+        )
 
         # Preview (usa el canvas determinÃ­stico para mantener consistencia visual)
         self._draw_interpolation_preview(result_array, polygon_layer, variable_name,
@@ -3348,7 +3332,29 @@ class BestFitInterpolator:
             row_i = gi // n_cols
             result_array[row_i, col_i] = float(preds[local_i])
 
-        self._write_raster_and_add(result_array, polygon_layer, pixel_size, variable_name, "OK_REML", "Interpolated OK (REML)")
+        raster_path = self._write_raster_and_add(
+            result_array,
+            polygon_layer,
+            pixel_size,
+            variable_name,
+            "OK_REML",
+            "Interpolated OK (REML)",
+        )
+        if raster_path is None:
+            return
+        self._record_ok_interpolation(
+            "REML",
+            points_layer_name,
+            variable_name,
+            polygon_layer_name,
+            pixel_size,
+            sample_xyz,
+            model,
+            nugget,
+            psill,
+            var_range,
+            reml_fit=reml_fit,
+        )
         self._draw_interpolation_preview(result_array, polygon_layer, variable_name, f"OK REML Interpolation â€” {model}")
         self.iface.messageBar().pushMessage("Kriging REML", "Interpolation Complete", level=0)
 
