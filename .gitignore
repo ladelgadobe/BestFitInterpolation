@@ -17,3 +17,6 @@ build/
 dist/
 *.egg-info/
 
+# Installed locally on first use of machine-learning methods.
+bestfitinterpolator/_deps/
+

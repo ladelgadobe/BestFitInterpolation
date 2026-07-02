@@ -104,10 +104,25 @@ Use this workflow when auxiliary raster layers or environmental covariates are a
 
 ## Installation
 
-1. Download or clone this repository.
-2. Copy the plugin folder into your QGIS plugins directory.
-3. Open QGIS.
-4. Enable **Best Fit Interpolator** in the QGIS Plugin Manager.
+### From the QGIS Plugin Repository
+
+1. Open **Plugins > Manage and Install Plugins** in QGIS.
+2. Search for **Best Fit Interpolator**.
+3. Select the plugin and click **Install Plugin**.
+
+### From a ZIP release
+
+1. Download the plugin ZIP from the [latest GitHub release](https://github.com/ladelgadobe/BestFitInterpolation/releases/latest).
+2. In QGIS, open **Plugins > Manage and Install Plugins > Install from ZIP**.
+3. Select the downloaded ZIP and click **Install Plugin**.
+
+Machine-learning and hybrid methods require additional Python packages. If they
+are not already available, the plugin asks for permission to install them into
+its local `_deps` directory the first time one of these methods is used. This
+step requires an internet connection but does not require administrator access.
+
+Developers can also clone this repository and copy the `bestfitinterpolator`
+folder into their QGIS plugins directory.
 
 Typical QGIS plugin directory on Windows:
 
