@@ -7,7 +7,7 @@ All code comments are in English.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 try:
     from .kriging_reml import _HAS_SCIPY as _REML_SCIPY
@@ -79,7 +79,7 @@ class OKStrategySelector:
             mode="MoM",
             sample_count=n,
             reason=(
-                f"Using MoM because REML is unavailable" if not self.reml_available
+                "Using MoM because REML is unavailable" if not self.reml_available
                 else f"Using MoM because n >= {self.automatic_reml_threshold}"
             ),
         )

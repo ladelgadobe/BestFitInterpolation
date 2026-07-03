@@ -25,7 +25,6 @@ import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.path import Path as MplPath
 from matplotlib.patches import Polygon as MplPolygon
 
 from qgis.PyQt.QtCore import Qt, QCoreApplication

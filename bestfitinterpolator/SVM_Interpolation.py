@@ -11,9 +11,7 @@ import math
 import random
 
 import numpy as np
-import pandas as pd
 
-from sklearn.base import clone
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline

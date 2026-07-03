@@ -16,13 +16,11 @@ import numpy as np
 
 try:
     from .array_shape_utils import (
-        ensure_xy_2d,
         ensure_xy_components,
         ensure_values_1d,
     )
 except Exception:  # pragma: no cover
     from array_shape_utils import (  # type: ignore
-        ensure_xy_2d,
         ensure_xy_components,
         ensure_values_1d,
     )

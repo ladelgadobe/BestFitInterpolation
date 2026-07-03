@@ -2688,8 +2688,6 @@ class MachineLearningTabController:
         Convert RF grid predictions to a GeoTIFF and add it as a QGIS layer.
         """
         xmin = grid_meta["xmin"]
-        ymin = grid_meta["ymin"]
-        xmax = grid_meta["xmax"]
         ymax = grid_meta["ymax"]
         n_cols = grid_meta["n_cols"]
         n_rows = grid_meta["n_rows"]
@@ -2998,7 +2996,7 @@ class MachineLearningTabController:
         except Exception:
             pass
 
-        msg = f"RF interpolation finished."
+        msg = "RF interpolation finished."
         if best_params is not None:
             msg += f" Best: ntree={best_params.get('ntree')}, mtry={best_params.get('mtry')}, nodesize={best_params.get('nodesize')}."
         if (train_mae is not None) and (train_rmse is not None):
@@ -3750,8 +3748,6 @@ class MachineLearningTabController:
     def _write_svm_raster_from_grid_df(self, grid_df, grid_meta, target_column):
         """Convert SVM grid predictions to a GeoTIFF and add it as a QGIS layer."""
         xmin = grid_meta["xmin"]
-        ymin = grid_meta["ymin"]
-        xmax = grid_meta["xmax"]
         ymax = grid_meta["ymax"]
         n_cols = grid_meta["n_cols"]
         n_rows = grid_meta["n_rows"]

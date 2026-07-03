@@ -388,8 +388,6 @@ class FrameworkSDIDialog(QDialog):
         seeded_nugget = None
         seeded_psill = None
         seeded_range = None
-        seeded_lags = max(6, min(15, int(round(math.sqrt(len(z))))))
-
         persisted = None
         if persisted is not None:
             try:
@@ -401,8 +399,6 @@ class FrameworkSDIDialog(QDialog):
                     seeded_psill = float(persisted["psill"])
                 if persisted.get("range") not in (None, ""):
                     seeded_range = float(persisted["range"])
-                if persisted.get("lag_count") not in (None, ""):
-                    seeded_lags = int(persisted["lag_count"])
                 if persisted.get("max_distance") not in (None, ""):
                     cutoff = float(persisted["max_distance"])
                 if persisted.get("fit_method") not in (None, ""):
@@ -739,7 +735,6 @@ class FrameworkSDIDialog(QDialog):
             nugget0, psill0, rng0 = 0.0, float(np.var(z, ddof=1) if z.size > 1 else 1.0), max(self._cutoff * 0.5, 1.0)
 
         model_txt = self._model_text_from_token(self._normalize_model_token(self.cmb_model.currentText()))
-        coords = np.column_stack([x, y])
         try:
             reml_res = fit_ok_reml_interface(
                 sample_xyz=np.column_stack([x, y, z]),
@@ -814,13 +809,9 @@ class FrameworkSDIDialog(QDialog):
             gamma_plot = gamma[1:] if gamma.size > 1 else gamma
             if lags_plot.size > 0:
                 ax.plot(lags_plot, gamma_plot, 'o', label="Experimental", color=EXP_COLOR)
-                h_start = float(lags_plot.min())
-            else:
-                h_start = 0.0
         else:
             lags_plot = np.asarray([], dtype=float)
             gamma_plot = np.asarray([], dtype=float)
-            h_start = 0.0
 
         nugget = float(self.spin_nugget.value())
         psill = float(self.spin_psill.value())
@@ -1013,7 +1004,6 @@ class FrameworkSDIDialog(QDialog):
         tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
 
         first_bin = float(first_vals[0]) if first_vals.size else 0.0
-        first_med = float(np.nanmedian(first_vals)) if first_vals.size else first_bin
         first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
 
         nugget_intercept = first_bin

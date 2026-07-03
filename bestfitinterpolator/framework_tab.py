@@ -16,7 +16,6 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 import glob
 import html
-import io
 import math
 import os
 import tempfile
@@ -52,7 +51,7 @@ try:
     )
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
-    from qgis.core import QgsProject, QgsMapLayer, QgsRasterLayer, QgsWkbTypes
+    from qgis.core import QgsProject, QgsRasterLayer
 except Exception:  # pragma: no cover
     from PyQt5.QtCore import QObject, Qt, QCoreApplication
     from PyQt5.QtGui import QIcon, QPixmap, QTextDocument
@@ -83,7 +82,7 @@ except Exception:  # pragma: no cover
     )
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
-    from qgis.core import QgsProject, QgsMapLayer, QgsRasterLayer, QgsWkbTypes
+    from qgis.core import QgsProject, QgsRasterLayer
 
 try:
     from .framework_sdi_dialog import FrameworkSDIDialog
@@ -1288,7 +1287,6 @@ class FrameworkTabController(QObject):
         tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
 
         first_bin = float(first_vals[0]) if first_vals.size else 0.0
-        first_med = float(np.nanmedian(first_vals)) if first_vals.size else first_bin
         first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
         nugget_intercept = first_bin
         if lags.size >= 2:

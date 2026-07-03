@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from .ok_base_utils import OKStrategySelector, count_valid_samples, same_layer
+from .ok_base_utils import OKStrategySelector, count_valid_samples
 from .ok_mom_integration import OKMoMController
 from .ok_reml_integration import OKREMLController
 

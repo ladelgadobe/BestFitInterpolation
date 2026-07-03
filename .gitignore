@@ -9,6 +9,7 @@ __pycache__/
 *.tmp
 *.bak
 *.swp
+.Rhistory
 
 .pytest_cache/
 .mypy_cache/
@@ -19,4 +20,3 @@ dist/
 
 # Installed locally on first use of machine-learning methods.
 bestfitinterpolator/_deps/
-

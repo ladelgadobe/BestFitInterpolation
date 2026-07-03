@@ -23,7 +23,7 @@ import numpy as np
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QEvent
 from qgis.PyQt.QtGui import QCursor, QPixmap
 from qgis.PyQt.QtWidgets import (
-    QProgressDialog, QFileDialog, QMenu, QGridLayout, QHBoxLayout, QToolTip,
+    QProgressDialog, QFileDialog, QMenu, QToolTip,
     QDialog, QMessageBox, QSizePolicy, QTableWidget, QTableWidgetItem,
     QHeaderView,
 )
@@ -903,7 +903,6 @@ class OKTabController:
         tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
 
         first_bin = float(first_vals[0]) if first_vals.size else 0.0
-        first_med = float(np.nanmedian(first_vals)) if first_vals.size else first_bin
         first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
 
         # Linear back-extrapolation using the first two bins when possible.
@@ -1302,7 +1301,6 @@ class OKTabController:
         ax.set_xlabel("Lag distance (h)", fontsize=9)
         ax.set_ylabel("Semivariance γ(h)", fontsize=9)
         xmax_plot = max(cutoff, (lags_plot.max() if lags_plot.size else 1.0))
-        xmin_plot = float(lags_plot.min()) if lags_plot.size else 0.0
         ax.set_xlim(left=0.0, right=xmax_plot)
         ax.set_ylim(bottom=0.0)
         ax.xaxis.set_major_locator(MaxNLocator(nbins=8))

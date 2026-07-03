@@ -884,7 +884,6 @@ class OKTabController:
         first_vals = gamma[:max(1, min(3, gamma.size))]
         tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
         first_bin = float(first_vals[0]) if first_vals.size else 0.0
-        first_med = float(np.nanmedian(first_vals)) if first_vals.size else first_bin
         first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
 
         nugget_intercept = first_bin

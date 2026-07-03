@@ -10,26 +10,21 @@ import uuid
 import tempfile
 import math
 import numpy as np
-import matplotlib.pyplot as plt
 import random
-import pandas as pd
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QVariant, Qt, QSize
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QVariant, Qt
 from qgis.PyQt.QtGui import QIcon, QPixmap
 from qgis.PyQt.QtWidgets import (
     QAction, QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget,
-    QPushButton, QWidget, QProgressDialog, QFileDialog, QMenu, QMessageBox,
+    QProgressDialog, QFileDialog, QMenu, QMessageBox,
     QSizePolicy, QGroupBox, QLabel
 )
-from matplotlib.ticker import FuncFormatter
-
 from qgis.core import (
     QgsProject,
     QgsMapLayer,
     QgsWkbTypes,
     QgsRasterLayer,
-    QgsSettings,
     QgsUnitTypes,
 )
 
@@ -40,13 +35,11 @@ from matplotlib.figure import Figure
 
 from osgeo import gdal, osr
 
-from .resources import *
+from . import resources  # noqa: F401 - registers Qt resources on import
 from .IDW_optimized import idw_interpolation, optimize_idw
 from .kriging_ordinary import ordinary_kriging_interpolation  # <-- used for OK CV and export
 from .reml_bridge import fit_ok_reml_interface, predict_ok_reml_interface, cv_ok_reml_interface
 from .array_shape_utils import (
-    InterpolationShapeError,
-    ensure_xy_components,
     ensure_xy_2d,
     ensure_values_1d,
     finite_training_arrays,
@@ -1278,8 +1271,6 @@ class BestFitInterpolator:
                 return None
 
             xmin = float(grid_meta["xmin"])
-            ymin = float(grid_meta["ymin"])
-            xmax = float(grid_meta["xmax"])
             ymax = float(grid_meta["ymax"])
             n_cols = int(grid_meta["n_cols"])
             n_rows = int(grid_meta["n_rows"])

@@ -108,7 +108,6 @@ def _restricted_loglik(theta: np.ndarray, coords: np.ndarray, y: np.ndarray, X: 
         v = np.linalg.solve(L, B)
         return np.linalg.solve(L.T, v)
 
-    n, p = y.size, X.shape[1]
     Ci_y = chol_solve(y)
     Ci_X = chol_solve(X)
     XtCiX = X.T @ Ci_X
@@ -143,7 +142,6 @@ def fit_variogram_reml(
     anisotropy: dict | None = None,
     random_state: int | None = None,
 ) -> dict:
-    rng = np.random.default_rng(random_state)
     XY = _ensure_2d_coords(coords)
     y = np.asarray(values, dtype=float).ravel()
     X = _design_matrix(XY, trend_degree)

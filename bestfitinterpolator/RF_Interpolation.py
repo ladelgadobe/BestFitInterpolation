@@ -106,9 +106,6 @@ def _tune_random_forest(
             "Random Forest requires scikit-learn, but it could not be imported."
         ) from e
 
-    # Force single-process execution for stability inside QGIS on Windows.
-    n_jobs = 1
-
     if progress_fn is not None:
         progress_fn(0, 100, "Preparing Random Forest hyperparameter search…")
 
