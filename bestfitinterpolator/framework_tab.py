@@ -201,6 +201,9 @@ class FrameworkTabController(QObject):
         "RFE": "chkFrameworkRFE",
         "RK": "chkFrameworkRK",
     }
+    REML_SAMPLE_LIMIT = 100
+    MANUAL_REML_SAMPLE_LIMIT = 500
+
     def __init__(self, dialog: QWidget, plugin: Optional[Any] = None) -> None:
         super().__init__(dialog)
         self.dlg = dialog
@@ -1049,7 +1052,7 @@ class FrameworkTabController(QObject):
             lags_plot = persisted.get("lags")
             gamma_plot = persisted.get("gamma")
         else:
-            if z.size < 100 and self._has_reml():
+            if z.size < self.REML_SAMPLE_LIMIT and self._has_reml():
                 fit_method = "REML"
                 nugget, psill, rng = self._fit_reml_from_mom_seed(x, y, z, lags, gamma, cutoff, model_name)
             elif lags.size > 0:
@@ -1110,6 +1113,11 @@ class FrameworkTabController(QObject):
     def _has_reml() -> bool:
         return bool(_HAS_REML and fit_ok_reml_interface is not None)
 
+    def _resolve_ok_fit_method(self, sample_count: int) -> str:
+        if self._has_reml() and int(sample_count or 0) < self.REML_SAMPLE_LIMIT:
+            return "REML"
+        return "MoM"
+
     def _persisted_variogram_state(self) -> Optional[Dict[str, Any]]:
         state = getattr(self, "state", None)
         if state is None:
@@ -1152,7 +1160,7 @@ class FrameworkTabController(QObject):
         try:
             result = fit_ok_reml_interface(
                 sample_xyz=np.column_stack([x, y, z]),
-                model=model_name,
+                model=self._ok_model_token_for_reml(model_name),
                 init_from_mom={"nugget": nugget0, "psill": psill0, "range": rng0},
                 random_state=123,
             )
@@ -2428,7 +2436,7 @@ class FrameworkTabController(QObject):
         lagw = float(self.state.__dict__.get("lag_width") or self._nearest_neighbor_dist(x, y))
         lagw = self._safe_lag_width(x, y, cutoff, lagw)
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
-        if z.size < 100 and self._has_reml():
+        if self._resolve_ok_fit_method(z.size) == "REML":
             fit_method = "REML"
             nugget, psill, rng = self._fit_reml_from_mom_seed(x, y, z, lags, gamma, cutoff, model_name)
             lags_store, gamma_store = [], []
@@ -3206,6 +3214,10 @@ class FrameworkTabController(QObject):
             return "Gaussian"
         return "Exponential"
 
+    def _ok_model_token_for_reml(self, model_text: str) -> str:
+        token = self._normalize_model_token(model_text)
+        return {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}.get(token, "Exp")
+
     def _is_ok_model_auto(self, model_name: str) -> bool:
         return str(model_name or "").strip().lower().startswith("auto")
 
@@ -3286,11 +3298,12 @@ class FrameworkTabController(QObject):
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
         nugget, psill, rng = self._guess_initial_params(lags, gamma, cutoff, model=self._normalize_model_token(model_name))
 
-        if z.size < 100 and self._has_reml() and cv_ok_reml_interface is not None:
+        selected_fit = self._resolve_ok_fit_method(z.size)
+        if selected_fit == "REML" and cv_ok_reml_interface is not None:
             sample_xyz = np.column_stack([x, y, z])
             fit = fit_ok_reml_interface(
                 sample_xyz=sample_xyz,
-                model=model_name,
+                model=self._ok_model_token_for_reml(model_name),
                 init_from_mom={"nugget": nugget, "psill": psill, "range": rng},
                 random_state=123,
             )
@@ -3298,6 +3311,8 @@ class FrameworkTabController(QObject):
             pred = cv.get("y_pred", cv.get("pred"))
             if pred is not None:
                 return np.asarray(pred, dtype=float)
+        elif selected_fit == "REML":
+            self._show_warning("Framework OK validation", "REML cross-validation is not available. MoM will be used instead.")
 
         if ordinary_kriging_interpolation is None:
             raise ValueError("Ordinary Kriging backend is not available.")

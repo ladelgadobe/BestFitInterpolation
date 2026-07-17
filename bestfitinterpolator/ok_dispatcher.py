@@ -20,11 +20,12 @@ class OKDispatcherController:
     double-connecting signals and duplicated side effects.
     """
 
-    def __init__(self, iface, dlg, plugin_dir=None, r_folder_path=None, strategy_selector: Optional[OKStrategySelector] = None):
+    def __init__(self, iface, dlg, plugin_dir=None, r_folder_path=None, strategy_selector: Optional[OKStrategySelector] = None, plugin=None):
         self.iface = iface
         self.dlg = dlg
         self.plugin_dir = plugin_dir
         self.r_folder_path = r_folder_path
+        self.plugin = plugin
         self.selector = strategy_selector or OKStrategySelector()
 
         self._active = None
@@ -43,6 +44,7 @@ class OKDispatcherController:
     def _build_controller(self, mode: str):
         controller_cls = OKREMLController if mode == "REML" else OKMoMController
         ctrl = controller_cls(self.iface, self.dlg, plugin_dir=self.plugin_dir, r_folder_path=self.r_folder_path)
+        ctrl.parent_plugin = self.plugin
         ctrl.run_ok_cv_function = self.run_ok_cv_function
         return ctrl
 

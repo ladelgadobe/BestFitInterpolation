@@ -1740,6 +1740,9 @@ class OKTabController:
             var_label = self.z_field or "Z"
             self._maybe_export_ok_raster(result, xmin, xmax, ymin, ymax, pixel, poly_layer, var_label, model)
             self._plot_kriging_map(result, xmin, xmax, ymin, ymax, poly_layer, var_label=var_label)
+            self._record_ok_interpolation_for_validation(
+                "MoM", x, y, z, model, nugget, psill, rng, pixel, poly_layer, var_label
+            )
             self.iface.messageBar().pushMessage("Kriging", "Interpolation complete.", level=0)
 
             # MUY IMPORTANTE: solo redibujamos el modelo con LOS VALORES ACTUALES,
@@ -1762,6 +1765,34 @@ class OKTabController:
                 self._interpolate_btn.setEnabled(True)
             except Exception:
                 pass
+
+    def _record_ok_interpolation_for_validation(self, backend, x, y, z, model, nugget, psill, rng, pixel, poly_layer, var_label):
+        plugin = getattr(self, "parent_plugin", None)
+        if plugin is None or not hasattr(plugin, "_record_ok_interpolation"):
+            return
+        try:
+            points_name = self.points_layer.name() if self.points_layer is not None and hasattr(self.points_layer, "name") else ""
+        except Exception:
+            points_name = ""
+        try:
+            polygon_name = poly_layer.name() if poly_layer is not None and hasattr(poly_layer, "name") else ""
+        except Exception:
+            polygon_name = ""
+        try:
+            plugin._record_ok_interpolation(
+                backend,
+                points_name,
+                var_label or self.z_field or "Z",
+                polygon_name,
+                float(pixel),
+                np.column_stack((x, y, z)),
+                model,
+                nugget,
+                psill,
+                rng,
+            )
+        except Exception:
+            pass
 
     def _resolve_polygon_layer(self):
         """Try common widget names to get selected polygon layer by name."""

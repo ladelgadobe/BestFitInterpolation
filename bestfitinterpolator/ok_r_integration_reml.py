@@ -1545,6 +1545,9 @@ class OKTabController:
 
         self._maybe_export_ok_raster(result, xmin, xmax, ymin, ymax, pixel, poly_layer, (self.z_field or "Z"), model)
         self._plot_kriging_map(result, xmin, xmax, ymin, ymax, poly_layer, var_label=(self.z_field or "Z"))
+        self._record_ok_interpolation_for_validation(
+            "MoM", x, y, z, model, nugget, psill, rng, pixel, poly_layer, (self.z_field or "Z")
+        )
 
 
     def _build_ok_raster_path(self, variable_name: str, model_token: str) -> str:
@@ -1681,6 +1684,34 @@ class OKTabController:
         except Exception:
             pass
         return None
+
+    def _record_ok_interpolation_for_validation(self, backend, x, y, z, model, nugget, psill, rng, pixel, poly_layer, var_label):
+        plugin = getattr(self, "parent_plugin", None)
+        if plugin is None or not hasattr(plugin, "_record_ok_interpolation"):
+            return
+        try:
+            points_name = self.points_layer.name() if self.points_layer is not None and hasattr(self.points_layer, "name") else ""
+        except Exception:
+            points_name = ""
+        try:
+            polygon_name = poly_layer.name() if poly_layer is not None and hasattr(poly_layer, "name") else ""
+        except Exception:
+            polygon_name = ""
+        try:
+            plugin._record_ok_interpolation(
+                backend,
+                points_name,
+                var_label or self.z_field or "Z",
+                polygon_name,
+                float(pixel),
+                np.column_stack((x, y, z)),
+                model,
+                nugget,
+                psill,
+                rng,
+            )
+        except Exception:
+            pass
 
     def _resolve_pixel_size(self):
         """Try to fetch pixel size from common widgets (kriging or deterministic)."""

@@ -1566,7 +1566,7 @@ class BestFitInterpolator:
 
         if self.ok_ctrl is None:
             try:
-                self.ok_ctrl = OKDispatcherController(self.iface, self.dlg, plugin_dir=self.plugin_dir, r_folder_path=None)
+                self.ok_ctrl = OKDispatcherController(self.iface, self.dlg, plugin_dir=self.plugin_dir, r_folder_path=None, plugin=self)
                 try:
                     self.ok_ctrl.run_ok_cv_function = self.run_ok_cv
                 except Exception:
