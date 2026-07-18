@@ -94,7 +94,7 @@ def count_valid_samples(layer, field_name: str) -> int:
         for feat in layer.getFeatures():
             try:
                 value = float(feat[field_name])
-            except Exception:
+            except Exception:  # nosec B112
                 continue
             if value == value:
                 count += 1

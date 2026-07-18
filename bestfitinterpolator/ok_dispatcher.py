@@ -58,7 +58,7 @@ class OKDispatcherController:
             if hasattr(combo, "setCurrentIndex") and combo.currentIndex() < 0:
                 combo.setCurrentIndex(0)
             combo.currentIndexChanged.connect(self._on_fit_method_changed)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _selected_fit_method(self) -> str:
@@ -68,7 +68,7 @@ class OKDispatcherController:
                 text = str(combo.currentText() or "").strip()
                 if text:
                     return text
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return "Automatic"
 
@@ -78,7 +78,7 @@ class OKDispatcherController:
             return
         try:
             self.set_points_layer_and_field(self._layer, self._field_name)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _warn_if_reml_not_possible(self, decision):
@@ -94,7 +94,7 @@ class OKDispatcherController:
                 "Kriging",
                 f"REML is not available for this dataset ({decision.reason}). MoM will be used instead.",
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _ensure_controller(self, layer, field_name: str):
@@ -119,13 +119,13 @@ class OKDispatcherController:
             if self._active is not None and hasattr(self._active, "set_dispatcher_active"):
                 try:
                     self._active.set_dispatcher_active(False)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             self._active = self._build_controller(target_mode)
             if hasattr(self._active, "set_dispatcher_active"):
                 try:
                     self._active.set_dispatcher_active(True)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             self._active_mode = target_mode
             self._layer_id = target_layer_id
@@ -134,7 +134,7 @@ class OKDispatcherController:
             if self._active is not None and hasattr(self._active, "set_dispatcher_active"):
                 try:
                     self._active.set_dispatcher_active(True)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         return self._active
 

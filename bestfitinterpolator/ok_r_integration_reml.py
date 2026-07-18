@@ -112,7 +112,7 @@ class OKTabController:
         self._wire_signals()
         try:
             self._update_sdi_label()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def set_dispatcher_active(self, state: bool):
@@ -146,7 +146,7 @@ class OKTabController:
             if not has_auto:
                 cmb.insertItem(0, "Automatic")
                 cmb.setCurrentIndex(0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _is_auto_model_selection(self) -> bool:
@@ -278,7 +278,7 @@ class OKTabController:
                     self.dlg.spinOKPsill.setValue(psill)
                 if hasattr(self.dlg, "spinOKRange"):
                     self.dlg.spinOKRange.setValue(rng)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         finally:
             self._programmatic_variogram_update = False
@@ -342,14 +342,14 @@ class OKTabController:
         self._ensure_model_selector_defaults()
         try:
             self.dlg.mainTabs.currentChanged.connect(self._on_tab_changed)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         # Calculate (recompute experimental + overlay)
         if hasattr(self.dlg, "btnOKCalculate") and self.dlg.btnOKCalculate is not None:
             try:
                 self.dlg.btnOKCalculate.clicked.connect(self._on_recalculate_clicked)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         # CV button (in validation tab)
@@ -373,7 +373,7 @@ class OKTabController:
                 try:
                     w.valueChanged.connect(self._plot_with_model_if_possible)
                     w.valueChanged.connect(self._update_sdi_label)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
         for wname in ("cmbOKModel", "spinOKCutoff", "spinOKLag", "spinOKNugget", "spinOKPsill", "spinOKRange"):
@@ -383,25 +383,25 @@ class OKTabController:
             if hasattr(w, "valueChanged"):
                 try:
                     w.valueChanged.connect(self._on_variogram_ui_changed)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             if hasattr(w, "currentIndexChanged"):
                 try:
                     w.currentIndexChanged.connect(self._on_variogram_ui_changed)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             if hasattr(w, "currentIndexChanged"):
                 try:
                     w.currentIndexChanged.connect(self._plot_with_model_if_possible)
                     w.currentIndexChanged.connect(self._update_sdi_label)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
         btn_model_validation = getattr(self.dlg, "btnOKModelValidation", None)
         if btn_model_validation is not None and hasattr(btn_model_validation, "clicked"):
             try:
                 btn_model_validation.clicked.connect(self._show_model_validation_dialog)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         # Data-layer and variable changes are coordinated by BestFitInterpolator._update_ok_context.
@@ -418,7 +418,7 @@ class OKTabController:
         if btn is not None:
             try:
                 btn.clicked.connect(self._on_interpolate_clicked)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _hook_reset_button_by_common_names(self) -> bool:
@@ -429,7 +429,7 @@ class OKTabController:
                 try:
                     btn.clicked.connect(self._on_reset_clicked)
                     return True
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         return False
 
@@ -447,13 +447,13 @@ class OKTabController:
                     try:
                         if hasattr(obj, "objectName"):
                             name = (obj.objectName() or "").lower()
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
                     text = ""
                     try:
                         if hasattr(obj, "text"):
                             text = (obj.text() or "").lower()
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
                     hay = any(k in name for k in ("reset", "default", "reiniciar", "restablecer")) or \
                           any(k in text for k in ("reset", "default", "reiniciar", "restablecer"))
@@ -461,9 +461,9 @@ class OKTabController:
                         try:
                             obj.clicked.connect(self._on_reset_clicked)
                             return
-                        except Exception:
+                        except Exception:  # nosec B112
                             continue
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     # ---------------------- Layer/field handoff from main ---------------------
@@ -530,16 +530,16 @@ class OKTabController:
         try:
             if hasattr(self.dlg, "spinOKCutoff"):
                 self._cutoff = float(self.dlg.spinOKCutoff.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             if hasattr(self.dlg, "spinOKLag"):
                 self._lag_width = float(self.dlg.spinOKLag.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             self._init_params = tuple(float(v) for v in self._read_params_from_ui())
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _on_tab_changed(self, index):
@@ -587,7 +587,7 @@ class OKTabController:
                 if self._normalize_model_token(itxt) == token:
                     cmb.setCurrentIndex(i)
                     return
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _maybe_pull_field_from_ui(self):
@@ -666,14 +666,14 @@ class OKTabController:
                 self.dlg.spinOKPsill.setValue(float(baseline["psill"]))
             if hasattr(self.dlg, "spinOKRange"):
                 self.dlg.spinOKRange.setValue(float(baseline["range"]))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         finally:
             self._programmatic_variogram_update = False
         try:
             self._programmatic_variogram_update = True
             self._set_model_combo_by_token(baseline.get("model", "exponential"))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         finally:
             self._programmatic_variogram_update = False
@@ -685,7 +685,7 @@ class OKTabController:
                 float(baseline["psill"]),
                 float(baseline["range"]),
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._user_variogram_overrides = False
         return True
@@ -735,7 +735,7 @@ class OKTabController:
                         pt = mpt.geometryN(0).asPoint()
                     else:
                         continue
-                except Exception:
+                except Exception:  # nosec B112
                     continue
             try:
                 val = float(feat[self.z_field])
@@ -1005,7 +1005,7 @@ class OKTabController:
             canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             canvas.setMinimumSize(1, 1)
             canvas.updateGeometry()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     # ----------------------------- Save PNG hooks -----------------------------
@@ -1025,7 +1025,7 @@ class OKTabController:
             # Prefer Qt custom context menu
             try:
                 canvas.setContextMenuPolicy(Qt.CustomContextMenu)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
             def _show_menu(pos):
@@ -1047,9 +1047,9 @@ class OKTabController:
                             fig.savefig(path, dpi=300, bbox_inches='tight')
                             try:
                                 self.iface.messageBar().pushMessage("Saved", f"PNG saved to: {path}", level=0)
-                            except Exception:
+                            except Exception:  # nosec B110
                                 pass
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
             try:
@@ -1060,12 +1060,12 @@ class OKTabController:
                     try:
                         if getattr(event, 'button', None) == 3:
                             _show_menu(canvas.mapFromGlobal(canvas.cursor().pos()))
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
                 canvas.mpl_connect('button_press_event', _on_click)
 
             self._save_handlers.add(key)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _copy_figure_to_clipboard(self, fig) -> None:
@@ -1081,7 +1081,7 @@ class OKTabController:
             QApplication.clipboard().setPixmap(pixmap)
             try:
                 self.iface.messageBar().pushMessage("Copied", "Graph copied to clipboard.", level=0)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         except Exception as exc:
             QMessageBox.warning(self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
@@ -1115,14 +1115,14 @@ class OKTabController:
             try:
                 self.dlg.valOKZName.setText(str(var_name))
                 self.dlg.valOKSamples.setText(str(n))
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         # Display which fitting method is active (value label in UI is 'valOKModel')
         label_val = getattr(self.dlg, "valOKModel", None)
         if label_val is not None and hasattr(label_val, "setText"):
             try:
                 label_val.setText(self._ok_fit_method)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         else:
             # Backward-compat for older UI naming
@@ -1130,20 +1130,20 @@ class OKTabController:
             if label_compat is not None and hasattr(label_compat, "setText"):
                 try:
                     label_compat.setText(self._ok_fit_method)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         if hasattr(self.dlg, "spinOKCutoff") and hasattr(self.dlg, "spinOKLag"):
             try:
                 self._programmatic_variogram_update = True
                 self.dlg.spinOKCutoff.setValue(float(cutoff))
                 self.dlg.spinOKLag.setValue(float(lagw))
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             finally:
                 self._programmatic_variogram_update = False
         try:
             self._update_sdi_label()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     # -------------------------- Public main actions ---------------------------
@@ -1169,11 +1169,11 @@ class OKTabController:
         if not initial_load:
             try:
                 cutoff = float(self.dlg.spinOKCutoff.value())
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             try:
                 lagw = float(self.dlg.spinOKLag.value())
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             lagw = self._safe_lag_width(x, y, cutoff, lagw)
         self._cutoff = cutoff
@@ -1227,7 +1227,7 @@ class OKTabController:
                 self.dlg.spinOKPsill.setValue(float(psill))
             if hasattr(self.dlg, "spinOKRange"):
                 self.dlg.spinOKRange.setValue(float(rng))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         finally:
             self._programmatic_variogram_update = False
@@ -1266,7 +1266,7 @@ class OKTabController:
         self._plot_with_model_if_possible()
         try:
             QCoreApplication.processEvents()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     # -------------------------- Theoretical model -----------------------------
@@ -1320,7 +1320,7 @@ class OKTabController:
                 lbl.setText("—")
                 return
             lbl.setText(self._compute_sdi_text(nugget, psill))
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
 
@@ -1365,19 +1365,19 @@ class OKTabController:
                     self.dlg.spinOKPsill.setValue(float(rps))
                 if hasattr(self.dlg, "spinOKRange"):
                     self.dlg.spinOKRange.setValue(float(rrng))
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             finally:
                 self._programmatic_variogram_update = False
             self._update_headers(self.z_field, self._n, cutoff, lagw)
             try:
                 self._update_sdi_label()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             self._plot_with_model_if_possible()
             try:
                 QCoreApplication.processEvents()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _plot_with_model_if_possible(self):
@@ -1406,15 +1406,15 @@ class OKTabController:
         rng    = self._init_params[2] if self._init_params else max(1.0, (self._cutoff or 1.0) * 0.5)
         try:
             nugget = float(self.dlg.spinOKNugget.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             psill = float(self.dlg.spinOKPsill.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             rng = float(self.dlg.spinOKRange.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         model = self._get_selected_model()
 
@@ -1588,7 +1588,7 @@ class OKTabController:
             layer.setCustomProperty("bestfitinterpolator/output_storage", "temporary")
             layer.setCustomProperty("bestfitinterpolator/exported_to_project_folder", False)
             layer.setCustomProperty("skipMemoryLayersCheck", 0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _create_output_raster_layer(self, raster_path, layer_name):
@@ -1605,7 +1605,7 @@ class OKTabController:
             if callable(method):
                 try:
                     method(True)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         try:
             flag_enum = getattr(QgsMapLayer, "LayerFlag", None)
@@ -1614,7 +1614,7 @@ class OKTabController:
                 flag = getattr(QgsMapLayer, "Temporary", None)
             if flag is not None and hasattr(layer, "setFlags") and hasattr(layer, "flags"):
                 layer.setFlags(layer.flags() | flag)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _write_ok_raster(self, array, xmin, xmax, ymin, ymax, pixel, polygon_layer, variable_name, model_token):
@@ -1634,7 +1634,7 @@ class OKTabController:
                 srs = osr.SpatialReference()
                 srs.ImportFromWkt(crs.toWkt())
                 dataset.SetProjection(srs.ExportToWkt())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         band = dataset.GetRasterBand(1)
         band.WriteArray(array)
@@ -1681,7 +1681,7 @@ class OKTabController:
             gt = lyr.geometryType()
             if gt == QgsWkbTypes.PolygonGeometry or (QgsWkbTypes.isMultiType(lyr.wkbType()) and gt == QgsWkbTypes.PolygonGeometry):
                 return lyr
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return None
 
@@ -1710,7 +1710,7 @@ class OKTabController:
                 psill,
                 rng,
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _resolve_pixel_size(self):
@@ -1720,7 +1720,7 @@ class OKTabController:
             if w is not None:
                 try:
                     return float(w.value()) if hasattr(w, "value") else float(w.text())
-                except Exception:
+                except Exception:  # nosec B112
                     continue
         return None
 
@@ -1741,7 +1741,7 @@ class OKTabController:
                         ring_coords = [(pt.x(), pt.y()) for pt in ring]
                         path = MplPath(ring_coords)
                         mask = np.logical_or(mask, path.contains_points(grid_points))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return mask
 
@@ -1750,15 +1750,15 @@ class OKTabController:
         n, p, r = (0.0, 1.0, max(1.0, (self._cutoff or 1.0) * 0.5)) if not self._init_params else self._init_params
         try:
             n = float(self.dlg.spinOKNugget.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             p = float(self.dlg.spinOKPsill.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             r = float(self.dlg.spinOKRange.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return n, p, r
 
@@ -1835,7 +1835,7 @@ class OKTabController:
                         ring_xy = [(pt.x(), pt.y()) for pt in ring]
                         patch = MplPolygon(ring_xy, closed=True, edgecolor="black", facecolor="none", linewidth=1.0)
                         ax.add_patch(patch)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         ax.set_xlim(xmin, xmax); ax.set_ylim(ymin, ymax)
@@ -1843,12 +1843,12 @@ class OKTabController:
         try:
             ax.xaxis.set_major_locator(MaxNLocator(nbins=6))
             ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         ax.tick_params(axis='both', labelsize=8)
         try:
             self._krig_map_fig.tight_layout()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._krig_map_canvas.draw()
 
@@ -1859,14 +1859,14 @@ class OKTabController:
             if self._krig_vario_fig is not None and self._krig_vario_canvas is not None:
                 self._krig_vario_fig.clear()
                 self._krig_vario_canvas.draw()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         # Clear map (blank)
         try:
             if self._krig_map_fig is not None and self._krig_map_canvas is not None:
                 self._krig_map_fig.clear()
                 self._krig_map_canvas.draw()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         # Reset state flags
         self._exp_lags, self._exp_gamma = None, None

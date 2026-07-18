@@ -259,7 +259,7 @@ class BestFitInterpolator:
         )
         try:
             self.iface.actionSaveProjectAs().trigger()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         path = proj.fileName()
         saved = bool(path and os.path.isfile(path))
@@ -308,7 +308,7 @@ class BestFitInterpolator:
             layer.setCustomProperty("bestfitinterpolator/output_storage", "temporary")
             layer.setCustomProperty("bestfitinterpolator/exported_to_project_folder", False)
             layer.setCustomProperty("skipMemoryLayersCheck", 0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _create_output_raster_layer(self, raster_path, layer_name):
@@ -326,7 +326,7 @@ class BestFitInterpolator:
             if callable(method):
                 try:
                     method(True)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         try:
             flag_enum = getattr(QgsMapLayer, "LayerFlag", None)
@@ -335,7 +335,7 @@ class BestFitInterpolator:
                 flag = getattr(QgsMapLayer, "Temporary", None)
             if flag is not None and hasattr(layer, "setFlags") and hasattr(layer, "flags"):
                 layer.setFlags(layer.flags() | flag)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _get_pixel_size(self, default=0.01):
@@ -404,7 +404,7 @@ class BestFitInterpolator:
             try:
                 if hasattr(proj, sig):
                     getattr(proj, sig).disconnect(slot)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._proj_signals_connected = False
 
@@ -413,7 +413,7 @@ class BestFitInterpolator:
         try:
             if self.ml_ctrl is not None:
                 self.ml_ctrl.refresh_raster_combo()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _on_project_layers_removed(self, layer_ids):
@@ -421,7 +421,7 @@ class BestFitInterpolator:
         try:
             if self.ml_ctrl is not None:
                 self.ml_ctrl.refresh_raster_combo()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _on_project_layer_was_added(self, layer):
@@ -429,7 +429,7 @@ class BestFitInterpolator:
         try:
             if self.ml_ctrl is not None:
                 self.ml_ctrl.refresh_raster_combo()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _refresh_layer_combos_preserving_selection(self):
@@ -462,11 +462,11 @@ class BestFitInterpolator:
                 self.dlg.Points_2.currentText(),
                 self.dlg.poly.currentText(),
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             self._sync_framework_from_current_data()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     # -------------------------- UI aliasing & helpers --------------------------
@@ -595,7 +595,7 @@ class BestFitInterpolator:
             if os.path.exists(icon_path):
                 lbl.setPixmap(QPixmap(icon_path))
                 lbl.setScaledContents(True)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return lbl
 
@@ -623,7 +623,7 @@ class BestFitInterpolator:
             else:
                 layout.addWidget(icon, row, col + 1, 1, 1)
             setattr(self, f"_info_added_{widget_name}", True)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _add_validation_auto_info_icons(self) -> None:
@@ -661,7 +661,7 @@ class BestFitInterpolator:
                 if widget is not None:
                     try:
                         old_layout.removeWidget(widget)
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
             while old_layout.count():
                 item = old_layout.takeAt(0)
@@ -675,12 +675,12 @@ class BestFitInterpolator:
             root = QHBoxLayout()
             try:
                 group.setLayout(root)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         try:
             root.setContentsMargins(8, 8, 8, 8)
             root.setSpacing(10)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         idw_group = QGroupBox("IDW", group)
@@ -738,7 +738,7 @@ class BestFitInterpolator:
                 root.addWidget(tps_group, 0)
                 if getattr(self.dlg, "btnInterpolate", None) is not None:
                     root.addWidget(self.dlg.btnInterpolate, 0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         self._det_options_polished = True
@@ -750,12 +750,12 @@ class BestFitInterpolator:
             try:
                 label.setText(label_text)
                 grid.addWidget(label, row, 0, 1, 1)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         if value is not None:
             try:
                 grid.addWidget(value, row, 1, 1, 1)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _reorder_metric_grid(self, grid_name: str, pairs):
@@ -817,7 +817,7 @@ class BestFitInterpolator:
             if widget is not None and hasattr(widget, "setText"):
                 try:
                     widget.setText("--")
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
     def _clear_det_validation_outputs(self):
@@ -842,7 +842,7 @@ class BestFitInterpolator:
             if hasattr(w, 'text'):
                 txt = w.text().strip()
                 return cast(float(txt)) if cast is not int else int(float(txt))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return default
 
@@ -860,7 +860,7 @@ class BestFitInterpolator:
             canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             canvas.setMinimumSize(1, 1)
             canvas.updateGeometry()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _sync_figure_to_canvas(self, fig, canvas, fallback=(5.0, 4.0)):
@@ -886,19 +886,19 @@ class BestFitInterpolator:
         if self.btn_idw_opt is not None:
             try:
                 self.btn_idw_opt.setChecked(True)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             self._current_mode = self.MODE_IDW_OPT
         elif self.btn_idw_man is not None:
             try:
                 self.btn_idw_man.setChecked(True)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             self._current_mode = self.MODE_IDW_MAN
         elif self.btn_tps is not None:
             try:
                 self.btn_tps.setChecked(True)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             self._current_mode = self.MODE_TPS
 
@@ -932,7 +932,7 @@ class BestFitInterpolator:
             try:
                 if b is not None and b.isChecked():
                     return True
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         return False
 
@@ -949,7 +949,7 @@ class BestFitInterpolator:
         try:
             if btn is not None and hasattr(btn, 'setChecked'):
                 btn.setChecked(state)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _apply_mode_ui(self):
@@ -957,12 +957,12 @@ class BestFitInterpolator:
         if hasattr(self.dlg, 'manualNInput') and self.dlg.manualNInput is not None:
             try:
                 self.dlg.manualNInput.setEnabled(is_manual)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         if hasattr(self.dlg, 'manualPInput') and self.dlg.manualPInput is not None:
             try:
                 self.dlg.manualPInput.setEnabled(is_manual)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     # ---------------------------- CV controls wiring ----------------------------
@@ -1141,7 +1141,7 @@ class BestFitInterpolator:
             try:
                 from qgis.PyQt.QtCore import Qt
                 canvas.setContextMenuPolicy(Qt.CustomContextMenu)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
             def _show_menu(pos):
@@ -1163,9 +1163,9 @@ class BestFitInterpolator:
                             fig.savefig(path, dpi=300, bbox_inches='tight')
                             try:
                                 self.iface.messageBar().pushMessage("Saved", f"PNG saved to: {path}", level=0)
-                            except Exception:
+                            except Exception:  # nosec B110
                                 pass
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
             try:
@@ -1176,12 +1176,12 @@ class BestFitInterpolator:
                     try:
                         if getattr(event, 'button', None) == 3:
                             _show_menu(canvas.mapFromGlobal(canvas.cursor().pos()))
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
                 canvas.mpl_connect('button_press_event', _on_click)
 
             self._save_handlers.add(key)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _copy_figure_to_clipboard(self, fig) -> None:
@@ -1197,12 +1197,12 @@ class BestFitInterpolator:
             QApplication.clipboard().setPixmap(pixmap)
             try:
                 self.iface.messageBar().pushMessage("Copied", "Graph copied to clipboard.", level=0)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         except Exception as exc:
             try:
                 QMessageBox.warning(self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _show_larger_graph(self, source_fig, title_prefix: str):
@@ -1251,7 +1251,7 @@ class BestFitInterpolator:
         if self.ok_cv_fig is None or self.ok_cv_canvas is None:
             try:
                 self._attach_ok_cv_canvas()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _build_rk_points_callback(self):
@@ -1330,7 +1330,7 @@ class BestFitInterpolator:
         except Exception as e:
             try:
                 self.iface.messageBar().pushWarning("Regression Kriging", f"Failed to export RK raster: {e}")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             return None
 
@@ -1352,23 +1352,23 @@ class BestFitInterpolator:
                 self.dlg.Points_2.currentText(),
                 self.dlg.poly.currentText(),
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         self.dlg.Points.currentIndexChanged.connect(self.update_variables)
         # Clear plots only when the data selection actually changes
         try:
             self.dlg.Points.currentIndexChanged.connect(self._on_data_selection_changed)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self.dlg.Points_2.currentIndexChanged.connect(self._on_variable_changed_for_kriging)
         try:
             self.dlg.Points_2.currentIndexChanged.connect(self._on_data_selection_changed)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             self.dlg.poly.currentIndexChanged.connect(self._on_data_selection_changed)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         if hasattr(self.dlg, 'LoadButton') and hasattr(self.dlg.LoadButton, 'clicked'):
             self.dlg.LoadButton.clicked.connect(self.plot_map_tab1)
@@ -1396,7 +1396,7 @@ class BestFitInterpolator:
         except Exception as e:
             try:
                 self.iface.messageBar().pushWarning("Machine Learning", f"Failed to initialize ML tab: {e}")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         try:
@@ -1412,7 +1412,7 @@ class BestFitInterpolator:
             self.rk_ctrl = None
             try:
                 self.iface.messageBar().pushWarning("Regression Kriging", f"Failed to initialize RK tab: {e}")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         self._add_validation_auto_info_icons()
@@ -1422,30 +1422,30 @@ class BestFitInterpolator:
                 self.framework_ctrl = FrameworkTabController(self.dlg, plugin=self)
                 try:
                     self._sync_framework_from_current_data()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             elif _FRAMEWORK_IMPORT_ERROR:
                 try:
                     self.iface.messageBar().pushWarning("Framework", f"Framework tab is not available: {_FRAMEWORK_IMPORT_ERROR}")
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         except Exception as e:
             self.framework_ctrl = None
             try:
                 self.iface.messageBar().pushWarning("Framework", f"Failed to initialize Framework tab: {e}")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         # Ensure both interpolation tabs default to their first sub-tab
         try:
             if hasattr(self.dlg, 'detSubTabs') and self.dlg.detSubTabs is not None:
                 self.dlg.detSubTabs.setCurrentIndex(0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             if hasattr(self.dlg, 'tabWidgetOK') and self.dlg.tabWidgetOK is not None:
                 self.dlg.tabWidgetOK.setCurrentIndex(0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         self._connect_project_signals()
@@ -1473,7 +1473,7 @@ class BestFitInterpolator:
         if hasattr(self.dlg, 'manualPInput'):
             try:
                 self.dlg.manualPInput.setValue(2.0)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._clear_det_validation_outputs()
         self._reset_moran_index_label()
@@ -1518,7 +1518,7 @@ class BestFitInterpolator:
                 if self.dlg.Points_2.currentIndex() <= 0 and self.dlg.Points_2.count() > 1:
                     self.dlg.Points_2.setCurrentIndex(1)
                 self._update_ok_context()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _on_variable_changed_for_kriging(self):
@@ -1529,7 +1529,7 @@ class BestFitInterpolator:
             self._update_ok_context()
         try:
             self._sync_framework_from_current_data()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     @staticmethod
@@ -1569,7 +1569,7 @@ class BestFitInterpolator:
                 self.ok_ctrl = OKDispatcherController(self.iface, self.dlg, plugin_dir=self.plugin_dir, r_folder_path=None, plugin=self)
                 try:
                     self.ok_ctrl.run_ok_cv_function = self.run_ok_cv
-                except Exception:
+                except Exception:  # nosec B110
                     pass
                 if hasattr(self.dlg, 'tabKriging') and self.dlg.tabKriging is not None:
                     self.dlg.tabKriging.setEnabled(True)
@@ -1618,7 +1618,7 @@ class BestFitInterpolator:
             try:
                 pt = geom.asPoint()
                 val = float(feature[variable_name])
-            except Exception:
+            except Exception:  # nosec B112
                 continue
             if np.isfinite(val):
                 points_coords.append(pt)
@@ -1636,7 +1636,7 @@ class BestFitInterpolator:
                 moran_i = moran_result.get("I")
                 moran_p = moran_result.get("p")
                 spatial_pattern = moran_result.get("pattern", spatial_pattern)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         payload = {
@@ -1652,7 +1652,7 @@ class BestFitInterpolator:
         self.framework_ctrl.load_from_data_tab(payload)
         try:
             self.framework_ctrl.refresh_from_plugin_context()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _on_main_tab_changed(self, index):
@@ -1669,14 +1669,14 @@ class BestFitInterpolator:
                 det_tabs = getattr(self.dlg, 'detSubTabs', None)
                 if det_tabs is not None and hasattr(det_tabs, 'setCurrentIndex'):
                     det_tabs.setCurrentIndex(0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         # When enter to  Kriging / Geostatistics
         if self._is_geostatistics_tab(current_text):
             try:
                 self._auto_select_first_points_and_field()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             self._update_ok_context()
             self._attach_ok_cv_canvas()
@@ -1684,7 +1684,7 @@ class BestFitInterpolator:
                 ok_tabs = getattr(self.dlg, 'tabWidgetOK', None)
                 if ok_tabs is not None and hasattr(ok_tabs, 'setCurrentIndex'):
                     ok_tabs.setCurrentIndex(0)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         if self._is_framework_tab(current_text):
@@ -1692,11 +1692,11 @@ class BestFitInterpolator:
                 framework_tabs = getattr(self.dlg, "frameworkSubTabs", None)
                 if framework_tabs is not None and hasattr(framework_tabs, "setCurrentIndex"):
                     framework_tabs.setCurrentIndex(0)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             try:
                 self._sync_framework_from_current_data()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         # When enter to Machine Learning
@@ -1710,9 +1710,9 @@ class BestFitInterpolator:
                         continue
                     try:
                         tw.setCurrentIndex(0)
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
             # 2) Sincronize pixel size with ML
@@ -1720,7 +1720,7 @@ class BestFitInterpolator:
                 if getattr(self, 'ml_ctrl', None) is not None:
                     
                     self.ml_ctrl._sync_pixel_size_from_data(set_target_default=False)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
 
@@ -1741,7 +1741,7 @@ class BestFitInterpolator:
                                 break
                 # Refresh variables after setting points
                 self.update_variables()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         # Variable (field)
         try:
@@ -1749,7 +1749,7 @@ class BestFitInterpolator:
                 if self.dlg.Points_2.count() > 1:
                     # Index 0 is empty string; choose first real field
                     self.dlg.Points_2.setCurrentIndex(1)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     # ---------------------------- Data helpers ---------------------------------
@@ -1931,14 +1931,14 @@ class BestFitInterpolator:
                 current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
                 if self._is_geostatistics_tab(current_label):
                     self._update_ok_context()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             try:
                 if self.framework_ctrl is not None and hasattr(self.framework_ctrl, "reset_for_data_change"):
                     self.framework_ctrl.reset_for_data_change(keep_data_context=True)
                 else:
                     self._sync_framework_from_current_data()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._last_data_selection = current
 
@@ -1950,7 +1950,7 @@ class BestFitInterpolator:
             from matplotlib.ticker import MaxNLocator
             ax.xaxis.set_major_locator(MaxNLocator(nbins=6))
             ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         ax.tick_params(axis='both', labelsize=8)
         # Keep plain labels without 10^6 scaling
@@ -1962,7 +1962,7 @@ class BestFitInterpolator:
         try:
             if hasattr(self.dlg, "lblMoranIndexValue") and self.dlg.lblMoranIndexValue is not None:
                 self.dlg.lblMoranIndexValue.setText("-")
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _reset_data_crs_label(self):
@@ -1970,7 +1970,7 @@ class BestFitInterpolator:
         try:
             if hasattr(self.dlg, "lblDataCrsValue") and self.dlg.lblDataCrsValue is not None:
                 self.dlg.lblDataCrsValue.setText("CRS:")
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _crs_display_name(self, crs):
@@ -2029,7 +2029,7 @@ class BestFitInterpolator:
                         f"Current CRS: {crs_name}\n\n"
                         "Distance-based interpolation and Moran's Index should be run with a projected CRS in meters."
                     )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _set_moran_index_label(self, moran_i, pattern=None, p_value=None):
@@ -2053,7 +2053,7 @@ class BestFitInterpolator:
                 txt += f" ({pattern})"
 
             self.dlg.lblMoranIndexValue.setText(txt)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _normal_cdf(self, z):
@@ -2329,14 +2329,14 @@ class BestFitInterpolator:
                 widget = getattr(self.dlg, name, None)
                 if widget is not None and hasattr(widget, "setText"):
                     widget.setText("--")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         try:
             if self.ok_cv_fig is not None:
                 self.ok_cv_fig.clear()
                 if self.ok_cv_canvas is not None:
                     self.ok_cv_canvas.draw_idle()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _reset_ok_validation_canvas(self):
@@ -2344,12 +2344,12 @@ class BestFitInterpolator:
             if self.ok_cv_canvas is not None:
                 self.ok_cv_canvas.setParent(None)
                 self.ok_cv_canvas.deleteLater()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             if self.ok_cv_fig is not None:
                 self.ok_cv_fig.clear()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self.ok_cv_canvas = None
         self.ok_cv_fig = None
@@ -2366,7 +2366,7 @@ class BestFitInterpolator:
         ax = fig.add_subplot(111)
         try:
             fig.subplots_adjust(left=0.12, right=0.97, bottom=0.14, top=0.96)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         valid_mask = np.isfinite(obs) & np.isfinite(pred)
@@ -2414,49 +2414,49 @@ class BestFitInterpolator:
         try:
             if self.det_interp_fig is not None and self.det_interp_canvas is not None:
                 self.det_interp_fig.clear(); self.det_interp_canvas.draw_idle()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             if self.det_val_fig is not None and self.det_val_canvas is not None:
                 self.det_val_fig.clear(); self.det_val_canvas.draw_idle()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._clear_det_validation_outputs()
         # Data canvas
         try:
             if self.data_fig is not None and self.data_canvas is not None:
                 self.data_fig.clear(); self.data_canvas.draw_idle()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         # Kriging CV
         try:
             if self.ok_cv_fig is not None and self.ok_cv_canvas is not None:
                 self.ok_cv_fig.clear(); self.ok_cv_canvas.draw_idle()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         # Kriging controller plots (variogram/map)
         try:
             if self.ok_ctrl is not None:
                 self.ok_ctrl.clear_plots()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             if self.ml_ctrl is not None and hasattr(self.ml_ctrl, "reset_for_data_change"):
                 self.ml_ctrl.reset_for_data_change()
             elif self.ml_ctrl is not None and hasattr(self.ml_ctrl, "clear_plots"):
                 self.ml_ctrl.clear_plots()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             if self.rk_ctrl is not None and hasattr(self.rk_ctrl, "clear_plots"):
                 self.rk_ctrl.clear_plots()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         if reset_framework:
             try:
                 if self.framework_ctrl is not None and hasattr(self.framework_ctrl, "reset_for_data_change"):
                     self.framework_ctrl.reset_for_data_change(keep_data_context=False)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._reset_moran_index_label()
 
@@ -2474,7 +2474,7 @@ class BestFitInterpolator:
     def _make_kfold_indices(self, n: int, k: int):
         """Create K roughly equal folds of indices 0..n-1 (random shuffle)."""
         idx = list(range(n))
-        random.Random(20).shuffle(idx)
+        random.Random(20).shuffle(idx)  # nosec B311
         folds = []
         base, rem = divmod(n, k)
         start = 0

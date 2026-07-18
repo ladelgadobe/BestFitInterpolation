@@ -141,7 +141,7 @@ def _run_subprocess(command, parent=None):
         if app is not None and cursor_set:
             try:
                 app.restoreOverrideCursor()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
 

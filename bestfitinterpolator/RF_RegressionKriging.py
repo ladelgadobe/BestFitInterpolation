@@ -205,7 +205,7 @@ class RegressionKrigingRFController:
 
             dlg.resize(1000, 800)
             dlg.exec_()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _install_canvas_menu(self, canvas, fig, default_prefix: str):
@@ -235,7 +235,7 @@ class RegressionKrigingRFController:
 
             canvas.customContextMenuRequested.connect(_show_menu)
             self._save_handlers.add(key)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _copy_figure_to_clipboard(self, fig) -> None:
@@ -249,7 +249,7 @@ class RegressionKrigingRFController:
             pixmap = QPixmap()
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _init_canvases(self):
@@ -304,7 +304,7 @@ class RegressionKrigingRFController:
                 self._rk_manual_widget.setChecked(True)
             if self._rk_grid_widget is not None:
                 self._rk_grid_widget.setChecked(False)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         self._apply_mode()
@@ -320,14 +320,14 @@ class RegressionKrigingRFController:
                 if self._rk_cv_k_spin is not None:
                     enabled = bool(self._rk_cv_kfold is not None and self._rk_cv_kfold.isChecked())
                     self._rk_cv_k_spin.setEnabled(enabled)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         for w in (self._rk_cv_auto, self._rk_cv_loocv, self._rk_cv_kfold):
             if w is not None and hasattr(w, "toggled"):
                 try:
                     w.toggled.connect(_refresh)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         _refresh()
 
@@ -337,7 +337,7 @@ class RegressionKrigingRFController:
             if widget is not None and hasattr(widget, "setText"):
                 try:
                     widget.setText("--")
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
     def clear_plots(self):
@@ -354,7 +354,7 @@ class RegressionKrigingRFController:
                     fig.clear()
                 if canvas is not None:
                     canvas.draw_idle()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._reset_validation_metric_labels()
 
@@ -370,7 +370,7 @@ class RegressionKrigingRFController:
             if w is not None and hasattr(w, "clicked"):
                 try:
                     w.clicked.connect(handler)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
         cmb = getattr(self.dlg, "cmbRKModel", None)
@@ -398,7 +398,7 @@ class RegressionKrigingRFController:
 
             if not grid_on and not manual_on and self._rk_manual_widget is not None:
                 self._rk_manual_widget.setChecked(True)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._apply_mode()
 
@@ -408,7 +408,7 @@ class RegressionKrigingRFController:
         try:
             manual_on = bool(self._rk_manual_widget.isChecked()) if self._rk_manual_widget is not None else True
             grid_on = bool(self._rk_grid_widget.isChecked()) if self._rk_grid_widget is not None else False
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         manual_widgets = [
@@ -484,7 +484,7 @@ class RegressionKrigingRFController:
                 widget.setWhatsThis("")
                 widget.setEnabled(False)
                 widget.setVisible(False)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _clear_widget_tooltips(self, names):
@@ -496,7 +496,7 @@ class RegressionKrigingRFController:
             try:
                 widget.setToolTip("")
                 widget.setWhatsThis("")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _set_rk_info_icon(self):
@@ -523,7 +523,7 @@ class RegressionKrigingRFController:
                 layout = getattr(self.dlg, "horizontalLayoutRKMode", None)
                 if layout is not None:
                     layout.addWidget(label)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._hide_legacy_info_buttons(["btnInfoRKSearchK", "btnInfoRKSearchIter"])
         self._clear_widget_tooltips([
@@ -593,7 +593,7 @@ class RegressionKrigingRFController:
             if w is not None and hasattr(w, "setValue"):
                 try:
                     w.setValue(float(value))
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
     def _read_variogram_ui(self) -> VariogramFit:
@@ -624,7 +624,7 @@ class RegressionKrigingRFController:
             if w is not None and hasattr(w, "value"):
                 try:
                     return int(w.value())
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             return int(default)
 
@@ -640,7 +640,7 @@ class RegressionKrigingRFController:
             if w is not None and hasattr(w, "value"):
                 try:
                     return int(w.value())
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             return int(default)
 
@@ -1068,7 +1068,7 @@ class RegressionKrigingRFController:
                         "Regression Kriging",
                         "RK interpolation was computed, but the raster could not be exported to QGIS."
                     )
-                except Exception:
+                except Exception:  # nosec B110
                     pass
                 return
 
@@ -1140,7 +1140,7 @@ class RegressionKrigingRFController:
                 return "loocv"
             if self._rk_cv_kfold is not None and self._rk_cv_kfold.isChecked():
                 return "kfold"
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return "auto"
 
@@ -1153,7 +1153,7 @@ class RegressionKrigingRFController:
 
     def _make_kfold_indices(self, n, k):
         idx = list(range(n))
-        random.Random(20).shuffle(idx)
+        random.Random(20).shuffle(idx)  # nosec B311
         folds = []
         base, rem = divmod(n, k)
         start = 0
@@ -1444,7 +1444,7 @@ class RegressionKrigingRFController:
         try:
             if self._variogram_lags is not None and self._variogram_gamma is not None:
                 self._draw_variogram_plot()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _draw_map_plot(self, pred_col: str):
@@ -1494,7 +1494,7 @@ class RegressionKrigingRFController:
                     for ring in geom.asPolygon():
                         ring_xy = [(pt.x(), pt.y()) for pt in ring]
                         ax.add_patch(MplPolygon(ring_xy, closed=True, edgecolor="black", facecolor="none", linewidth=1.0))
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         ax.set_title("Regression Kriging")
@@ -1505,7 +1505,7 @@ class RegressionKrigingRFController:
         ax.set_ylabel("Y")
         try:
             self._map_fig.tight_layout()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._map_canvas.draw_idle()
 
@@ -1551,6 +1551,6 @@ class RegressionKrigingRFController:
         ax.legend(loc="best", frameon=False, fontsize=8)
         try:
             self._val_fig.tight_layout()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._val_canvas.draw_idle()

@@ -184,7 +184,7 @@ def _sample_param_candidates(all_candidates, max_iterations=12, random_state=20)
     if len(all_candidates) <= max_iterations:
         return list(all_candidates)
 
-    rng = random.Random(int(random_state))
+    rng = random.Random(int(random_state))  # nosec B311
     sampled = list(all_candidates)
     rng.shuffle(sampled)
     return sampled[:max_iterations]

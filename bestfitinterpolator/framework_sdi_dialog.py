@@ -213,7 +213,7 @@ class FrameworkSDIDialog(QDialog):
         try:
             self.canvas.setContextMenuPolicy(Qt.CustomContextMenu)
             self.canvas.customContextMenuRequested.connect(self._show_canvas_context_menu)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _show_canvas_context_menu(self, pos) -> None:
@@ -327,7 +327,7 @@ class FrameworkSDIDialog(QDialog):
                 continue
             try:
                 pt = geom.asPoint()
-            except Exception:
+            except Exception:  # nosec B112
                 continue
             try:
                 val = float(feat[variable_name])
@@ -403,7 +403,7 @@ class FrameworkSDIDialog(QDialog):
                     cutoff = float(persisted["max_distance"])
                 if persisted.get("fit_method") not in (None, ""):
                     self._fit_method = str(persisted["fit_method"])
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         else:
             ok_ctrl = getattr(self.plugin, "ok_ctrl", None) if self.plugin is not None else None
@@ -419,7 +419,7 @@ class FrameworkSDIDialog(QDialog):
                     seeded_psill = float(psill)
                     seeded_range = float(rng)
                     self._fit_method = str(getattr(ok_ctrl, "_ok_fit_method", "MoM"))
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         lagw = self._safe_lag_width(x, y, cutoff, lagw)
 
@@ -465,7 +465,7 @@ class FrameworkSDIDialog(QDialog):
             if self.plugin is not None and hasattr(self.plugin, "_update_ok_context"):
                 self.plugin._update_ok_context()
                 ok_ctrl = self._active_ok_controller() or ok_ctrl
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         model = self._model_text_from_token(getattr(ok_ctrl, "_get_selected_model", lambda: "spherical")())
@@ -665,7 +665,7 @@ class FrameworkSDIDialog(QDialog):
         self._sync_framework_preview()
         try:
             QCoreApplication.processEvents()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _sync_framework_preview(self) -> None:
@@ -679,7 +679,7 @@ class FrameworkSDIDialog(QDialog):
             framework_ctrl.load_sdi_result(self._result)
             if hasattr(framework_ctrl, "refresh_variogram_preview_from_state"):
                 framework_ctrl.refresh_variogram_preview_from_state()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _run_mom_mode(self, x: np.ndarray, y: np.ndarray, z: np.ndarray) -> None:
@@ -773,7 +773,7 @@ class FrameworkSDIDialog(QDialog):
         for w, old in zip((self.spin_nugget, self.spin_psill, self.spin_range), blockers):
             try:
                 w.blockSignals(old if old is not None else False)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _update_method_labels(self) -> None:

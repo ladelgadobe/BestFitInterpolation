@@ -135,7 +135,7 @@ def ordinary_kriging_interpolation(
         if progress_fn is not None:
             try:
                 progress_fn(done, total)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     return preds

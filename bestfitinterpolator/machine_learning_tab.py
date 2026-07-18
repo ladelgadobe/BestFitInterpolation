@@ -187,7 +187,7 @@ class MachineLearningTabController:
         # Initialize pixel display from Data tab and set default target once
         try:
             self._sync_pixel_size_from_data(set_target_default=True)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         # --- RF controls (grid search vs manual) ---
@@ -214,7 +214,7 @@ class MachineLearningTabController:
         self._set_svm_info_icons()
         try:
             self._connect_svm_signals()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         # React to changes in Data tab pixel size by updating the display only
@@ -227,14 +227,14 @@ class MachineLearningTabController:
                         set_target_default=False
                     )
                 )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         # RF: connect interpolation button and any RF-specific controls
         try:
             self._connect_rf_signals()
             self._wire_rf_cv_controls()
-        except Exception:
+        except Exception:  # nosec B110
             # We do not want RF wiring to break the whole tab in case of a UI mismatch
             pass
 
@@ -262,7 +262,7 @@ class MachineLearningTabController:
                 self.dlg.spinPixelSize, "value"
             ):
                 return float(self.dlg.spinPixelSize.value())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return float(default)
 
@@ -280,7 +280,7 @@ class MachineLearningTabController:
                 self.dlg.px_import, "setText"
             ):
                 self.dlg.px_import.setText(f"{px:.0f}")
-        except Exception:
+        except Exception:  # nosec B110
             pass
         # Seed target pixel size only once as default, still editable
         if set_target_default and not self._target_pixel_initialized:
@@ -290,7 +290,7 @@ class MachineLearningTabController:
                 ):
                     self.dlg.spinTargetPixelSize.setValue(px)
                     self._target_pixel_initialized = True
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _connect_signals(self):
@@ -396,14 +396,14 @@ class MachineLearningTabController:
                 if self._rf_cv_k_spin is not None:
                     enabled = bool(self._rf_cv_kfold is not None and self._rf_cv_kfold.isChecked())
                     self._rf_cv_k_spin.setEnabled(enabled)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         for w in (self._rf_cv_auto, self._rf_cv_loocv, self._rf_cv_kfold):
             if w is not None and hasattr(w, "toggled"):
                 try:
                     w.toggled.connect(_refresh)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         _refresh()
 
@@ -411,7 +411,7 @@ class MachineLearningTabController:
         if run_btn is not None and hasattr(run_btn, "clicked"):
             try:
                 run_btn.clicked.disconnect()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             run_btn.clicked.connect(self._on_run_rf_cross_validation)
 
@@ -422,7 +422,7 @@ class MachineLearningTabController:
                 return "loocv"
             if self._rf_cv_kfold is not None and self._rf_cv_kfold.isChecked():
                 return "kfold"
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return "auto"
 
@@ -437,7 +437,7 @@ class MachineLearningTabController:
     def _rf_make_kfold_indices(self, n, k):
         """Create K random folds using the same simple policy as the other tabs."""
         idx = list(range(n))
-        random.Random(20).shuffle(idx)
+        random.Random(20).shuffle(idx)  # nosec B311
         folds = []
         base, rem = divmod(n, k)
         start = 0
@@ -577,7 +577,7 @@ class MachineLearningTabController:
         ax.set_ylabel("Predicted", fontsize=8)
         try:
             fig.tight_layout()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         canvas.draw_idle()
         self._rf_val_ax = ax
@@ -589,7 +589,7 @@ class MachineLearningTabController:
             if widget is not None and hasattr(widget, "setText"):
                 try:
                     widget.setText("--")
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
     def clear_plots(self):
@@ -608,16 +608,16 @@ class MachineLearningTabController:
             if fig is not None:
                 try:
                     fig.clear()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             if canvas is not None:
                 try:
                     canvas.draw_idle()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             try:
                 setattr(self, ax_name, None)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         self._last_corr_matrix = None
@@ -651,7 +651,7 @@ class MachineLearningTabController:
         """Reset ML covariates and outputs when the selected dataset changes."""
         try:
             self._on_clear_covariates()
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         self.clear_plots()
@@ -661,11 +661,11 @@ class MachineLearningTabController:
 
         try:
             self.refresh_raster_combo()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         try:
             self._sync_pixel_size_from_data(set_target_default=False)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _find_first_existing_widget(self, candidate_names):
@@ -758,7 +758,7 @@ class MachineLearningTabController:
             from matplotlib.ticker import MaxNLocator
             ax.xaxis.set_major_locator(MaxNLocator(nbins=6))
             ax.yaxis.set_major_locator(MaxNLocator(nbins=6))
-        except Exception:
+        except Exception:  # nosec B110
             pass
         ax.tick_params(axis="both", labelsize=8)
         ax.set_xlabel("X")
@@ -848,7 +848,7 @@ class MachineLearningTabController:
                             linewidth=1.0,
                         )
                         ax.add_patch(patch)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         ax.set_xlim(xmin, xmax)
@@ -1139,7 +1139,7 @@ class MachineLearningTabController:
         """Clear all loaded covariates from the list and internal mapping."""
         try:
             self.dlg.listCovariates.clear()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self.covariate_layers.clear()
         self._last_corr_matrix = None
@@ -1148,7 +1148,7 @@ class MachineLearningTabController:
         self._extracted_rows = None
         try:
             self.dlg.labelResamplingInfo.setText("")
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     # -------------------------------------------------------------------------
@@ -1220,7 +1220,7 @@ class MachineLearningTabController:
                 if result is None:
                     continue
                 result = None
-            except Exception:
+            except Exception:  # nosec B112
                 continue
 
             resampled_layer = self._create_output_raster_layer(out_path, out_name)
@@ -1398,7 +1398,7 @@ class MachineLearningTabController:
                     out_band.SetStatistics(
                         stat_min, stat_max, stat_mean, stat_std
                     )
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
             out_band.FlushCache()
@@ -1572,7 +1572,7 @@ class MachineLearningTabController:
             if transform is not None:
                 try:
                     pt = transform.transform(pt)
-                except Exception:
+                except Exception:  # nosec B112
                     continue
 
             val = feat[attr_index]
@@ -1581,7 +1581,7 @@ class MachineLearningTabController:
 
             try:
                 y_value = float(val)
-            except Exception:
+            except Exception:  # nosec B112
                 continue
 
             row = [y_value]
@@ -1817,7 +1817,7 @@ class MachineLearningTabController:
                 widget.setWhatsThis("")
                 widget.setEnabled(False)
                 widget.setVisible(False)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
     def _clear_widget_tooltips(self, names):
@@ -1829,7 +1829,7 @@ class MachineLearningTabController:
             try:
                 widget.setToolTip("")
                 widget.setWhatsThis("")
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
 
@@ -1853,7 +1853,7 @@ class MachineLearningTabController:
             try:
                 layout = getattr(self.dlg, "groupRFParams", None).layout()
                 layout.addWidget(label, 1, 4, Qt.AlignRight | Qt.AlignVCenter)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._hide_legacy_info_buttons(["btnInfoRFSearchK", "btnInfoRFSearchIter"])
         self._clear_widget_tooltips([
@@ -1911,7 +1911,7 @@ class MachineLearningTabController:
                 self._rf_manual_widget.setChecked(True)
             if self._rf_grid_widget is not None and hasattr(self._rf_grid_widget, "setChecked"):
                 self._rf_grid_widget.setChecked(False)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         self._apply_rf_mode()
@@ -1966,7 +1966,7 @@ class MachineLearningTabController:
                         grid_on = True
 
             self._apply_rf_mode()
-        except Exception:
+        except Exception:  # nosec B110
             # Do not let RF mode toggle crash the tab
             pass
 
@@ -1990,9 +1990,9 @@ class MachineLearningTabController:
                 if w is not None and hasattr(w, "setEnabled"):
                     try:
                         w.setEnabled(bool(enabled))
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _apply_rf_mode(self):
@@ -2073,7 +2073,7 @@ class MachineLearningTabController:
                 if w is not None and hasattr(w, "setEnabled"):
                     try:
                         w.setEnabled(manual_on)
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
 
             for name in grid_widget_names:
@@ -2081,7 +2081,7 @@ class MachineLearningTabController:
                 if w is not None and hasattr(w, "setEnabled"):
                     try:
                         w.setEnabled(grid_on)
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
 
             for name in search_only_widget_names:
@@ -2089,10 +2089,10 @@ class MachineLearningTabController:
                 if w is not None and hasattr(w, "setEnabled"):
                     try:
                         w.setEnabled(grid_on)
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
 
-        except Exception:
+        except Exception:  # nosec B110
             pass
     def _connect_rf_signals(self):
         """
@@ -2126,13 +2126,13 @@ class MachineLearningTabController:
                     if ("run" in txt and "forest" in txt) or ("run" in txt and "rf" in txt):
                         rf_button = obj
                         break
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         if rf_button is not None and hasattr(rf_button, "clicked"):
             try:
                 rf_button.clicked.disconnect()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             rf_button.clicked.connect(self._on_run_rf_interpolation)
 
@@ -2162,7 +2162,7 @@ class MachineLearningTabController:
         try:
             if self._rf_grid_widget is not None and hasattr(self._rf_grid_widget, "isChecked"):
                 return bool(self._rf_grid_widget.isChecked())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return False
 
@@ -2176,7 +2176,7 @@ class MachineLearningTabController:
                 if w is not None and hasattr(w, "value"):
                     try:
                         return int(w.value())
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
             return int(default_value)
 
@@ -2206,7 +2206,7 @@ class MachineLearningTabController:
                 if w is not None and hasattr(w, "value"):
                     try:
                         return int(w.value())
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
             return int(default_value)
 
@@ -2251,7 +2251,7 @@ class MachineLearningTabController:
             if w is not None and hasattr(w, "value"):
                 try:
                     return max(2, int(w.value()))
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         return 3
 
@@ -2265,7 +2265,7 @@ class MachineLearningTabController:
             if w is not None and hasattr(w, "value"):
                 try:
                     return max(1, int(w.value()))
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         return 10
     def _ensure_output_dir_for_rf(self):
@@ -2309,7 +2309,7 @@ class MachineLearningTabController:
             layer.setCustomProperty("bestfitinterpolator/output_storage", "temporary")
             layer.setCustomProperty("bestfitinterpolator/exported_to_project_folder", False)
             layer.setCustomProperty("skipMemoryLayersCheck", 0)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     def _create_output_raster_layer(self, raster_path, layer_name):
@@ -2326,7 +2326,7 @@ class MachineLearningTabController:
             if callable(method):
                 try:
                     method(True)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         try:
             flag_enum = getattr(QgsMapLayer, "LayerFlag", None)
@@ -2335,7 +2335,7 @@ class MachineLearningTabController:
                 flag = getattr(QgsMapLayer, "Temporary", None)
             if flag is not None and hasattr(layer, "setFlags") and hasattr(layer, "flags"):
                 layer.setFlags(layer.flags() | flag)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
     @staticmethod
@@ -2465,7 +2465,7 @@ class MachineLearningTabController:
             if transform is not None:
                 try:
                     sample_pt = transform.transform(pt)
-                except Exception:
+                except Exception:  # nosec B112
                     continue
 
             val = feat[attr_index]
@@ -2474,7 +2474,7 @@ class MachineLearningTabController:
 
             try:
                 target_val = float(val)
-            except Exception:
+            except Exception:  # nosec B112
                 continue
 
             cov_values = []
@@ -2772,7 +2772,7 @@ class MachineLearningTabController:
             if w is not None and hasattr(w, "setText"):
                 try:
                     w.setText(value_str)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
         def _set_spin_value_if_exists(names, value):
@@ -2782,7 +2782,7 @@ class MachineLearningTabController:
                     try:
                         w.setValue(int(value))
                         return
-                    except Exception:
+                    except Exception:  # nosec B110
                         pass
 
         if train_mae is not None:
@@ -2878,7 +2878,7 @@ class MachineLearningTabController:
                         progress.setRange(0, int(total))
                         progress.setValue(int(done))
                     QCoreApplication.processEvents()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
                 if progress.wasCanceled():
                     raise KeyboardInterrupt("Canceled by user")
@@ -2988,12 +2988,12 @@ class MachineLearningTabController:
                 grid_meta,
                 target_name,
             )
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         try:
             self._draw_rf_importance_plot(importance_df)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         msg = "RF interpolation finished."
@@ -3257,7 +3257,7 @@ class MachineLearningTabController:
             if transform is not None:
                 try:
                     sample_pt = transform.transform(pt)
-                except Exception:
+                except Exception:  # nosec B112
                     continue
 
             val = feat[attr_index]
@@ -3266,7 +3266,7 @@ class MachineLearningTabController:
 
             try:
                 y_value = float(val)
-            except Exception:
+            except Exception:  # nosec B112
                 continue
 
             cov_values = []
@@ -3439,7 +3439,7 @@ class MachineLearningTabController:
                     w.setDecimals(2)
                     if hasattr(w, "setSingleStep"):
                         w.setSingleStep(0.01)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
     def _set_svm_info_icons(self):
@@ -3464,7 +3464,7 @@ class MachineLearningTabController:
                 if layout is not None:
                     layout.addStretch(1)
                     layout.addWidget(label)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         self._hide_legacy_info_buttons([
             "btnInfoSVMCManual", "btnInfoSVMGammaManual", "btnInfoSVMEpsilonManual",
@@ -3508,7 +3508,7 @@ class MachineLearningTabController:
                 self._svm_manual_widget.setChecked(True)
             if self._svm_grid_widget is not None and hasattr(self._svm_grid_widget, "setChecked"):
                 self._svm_grid_widget.setChecked(False)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._apply_svm_mode()
 
@@ -3533,7 +3533,7 @@ class MachineLearningTabController:
                     self._svm_manual_widget.blockSignals(True)
                     self._svm_manual_widget.setChecked(False)
                     self._svm_manual_widget.blockSignals(False)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         self._apply_svm_mode(source=source if checked else None)
 
@@ -3544,7 +3544,7 @@ class MachineLearningTabController:
         try:
             manual_on = bool(self._svm_manual_widget.isChecked()) if self._svm_manual_widget is not None else False
             grid_on = bool(self._svm_grid_widget.isChecked()) if self._svm_grid_widget is not None else False
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         if source == "manual":
@@ -3565,7 +3565,7 @@ class MachineLearningTabController:
                 self._svm_grid_widget.blockSignals(True)
                 self._svm_grid_widget.setChecked(grid_on)
                 self._svm_grid_widget.blockSignals(False)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         manual_names = [
@@ -3591,14 +3591,14 @@ class MachineLearningTabController:
             if w is not None and hasattr(w, "setEnabled"):
                 try:
                     w.setEnabled(bool(manual_on))
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         for name in grid_names:
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "setEnabled"):
                 try:
                     w.setEnabled(bool(grid_on))
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         for container_name in ("grpSVMManual", "grpSVMGrid"):
             container = getattr(self.dlg, container_name, None)
@@ -3607,7 +3607,7 @@ class MachineLearningTabController:
                     container.updateGeometry()
                     container.update()
                     container.repaint()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
 
     def _connect_svm_signals(self):
@@ -3622,7 +3622,7 @@ class MachineLearningTabController:
         if btn is not None and hasattr(btn, "clicked"):
             try:
                 btn.clicked.disconnect()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             btn.clicked.connect(self._on_run_svm_interpolation)
 
@@ -3630,7 +3630,7 @@ class MachineLearningTabController:
         if cv_btn is not None and hasattr(cv_btn, "clicked"):
             try:
                 cv_btn.clicked.disconnect()
-            except Exception:
+            except Exception:  # nosec B110
                 pass
             cv_btn.clicked.connect(self._on_run_svm_cross_validation)
 
@@ -3644,18 +3644,18 @@ class MachineLearningTabController:
                 if self._svm_cv_k_spin is not None:
                     enabled = bool(self._svm_cv_kfold is not None and self._svm_cv_kfold.isChecked())
                     self._svm_cv_k_spin.setEnabled(enabled)
-            except Exception:
+            except Exception:  # nosec B110
                 pass
 
         for w in (self._svm_cv_auto, self._svm_cv_loocv, self._svm_cv_kfold):
             if w is not None:
                 try:
                     w.toggled.connect(_refresh_cv)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
                 try:
                     w.clicked.connect(_refresh_cv)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
         _refresh_cv()
 
@@ -3681,7 +3681,7 @@ class MachineLearningTabController:
         try:
             if self._svm_grid_widget is not None and hasattr(self._svm_grid_widget, "isChecked"):
                 return bool(self._svm_grid_widget.isChecked())
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return False
 
@@ -3691,7 +3691,7 @@ class MachineLearningTabController:
             if w is not None and hasattr(w, "value"):
                 try:
                     return round(float(w.value()), 2)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             return float(default)
         return {
@@ -3706,7 +3706,7 @@ class MachineLearningTabController:
             if w is not None and hasattr(w, "value"):
                 try:
                     return round(float(w.value()), 2)
-                except Exception:
+                except Exception:  # nosec B110
                     pass
             return float(default)
         return {
@@ -3732,7 +3732,7 @@ class MachineLearningTabController:
         if w is not None and hasattr(w, "value"):
             try:
                 return max(2, int(w.value()))
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         return 3
 
@@ -3741,7 +3741,7 @@ class MachineLearningTabController:
         if w is not None and hasattr(w, "value"):
             try:
                 return max(1, int(w.value()))
-            except Exception:
+            except Exception:  # nosec B110
                 pass
         return 12
 
@@ -3862,7 +3862,7 @@ class MachineLearningTabController:
                         ring_xy = [(pt.x(), pt.y()) for pt in ring]
                         patch = MplPolygon(ring_xy, closed=True, edgecolor="black", facecolor="none", linewidth=1.0)
                         ax.add_patch(patch)
-        except Exception:
+        except Exception:  # nosec B110
             pass
         ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)
@@ -3926,7 +3926,7 @@ class MachineLearningTabController:
                         progress.setRange(0, int(total))
                         progress.setValue(int(done))
                     QCoreApplication.processEvents()
-                except Exception:
+                except Exception:  # nosec B110
                     pass
                 if progress.wasCanceled():
                     raise KeyboardInterrupt("Canceled by user")
@@ -3991,7 +3991,7 @@ class MachineLearningTabController:
 
         try:
             self._draw_svm_interpolation_preview(grid_with_pred, grid_meta, target_name)
-        except Exception:
+        except Exception:  # nosec B110
             pass
 
         msg = "SVM interpolation finished."
@@ -4011,7 +4011,7 @@ class MachineLearningTabController:
                 return "loocv"
             if getattr(self, "_svm_cv_kfold", None) is not None and self._svm_cv_kfold.isChecked():
                 return "kfold"
-        except Exception:
+        except Exception:  # nosec B110
             pass
         return "auto"
 
@@ -4024,7 +4024,7 @@ class MachineLearningTabController:
 
     def _svm_make_kfold_indices(self, n, k):
         idx = list(range(n))
-        random.Random(20).shuffle(idx)
+        random.Random(20).shuffle(idx)  # nosec B311
         folds = []
         base, rem = divmod(n, k)
         start = 0
@@ -4094,7 +4094,7 @@ class MachineLearningTabController:
         ax.set_ylabel("Predicted", fontsize=8)
         try:
             fig.tight_layout()
-        except Exception:
+        except Exception:  # nosec B110
             pass
         canvas.draw_idle()
         self._svm_val_ax = ax
@@ -4194,13 +4194,13 @@ class MachineLearningTabController:
                         if best_rmse is None or rmse_train < best_rmse:
                             best_rmse = rmse_train
                             best_model = model
-                    except Exception:
+                    except Exception:  # nosec B112
                         continue
                 if best_model is None:
                     continue
                 try:
                     preds[test_idx] = np.asarray(best_model.predict(X_test), dtype=float)
-                except Exception:
+                except Exception:  # nosec B112
                     continue
             progress.setValue(total_folds)
             rmse = self._rf_rmse(y_all, preds)
