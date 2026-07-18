@@ -30,7 +30,7 @@ from qgis.core import (
 
 from matplotlib.path import Path
 from matplotlib.patches import Polygon as MplPolygon
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from osgeo import gdal, osr

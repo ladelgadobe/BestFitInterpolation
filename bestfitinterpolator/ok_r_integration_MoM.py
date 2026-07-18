@@ -30,7 +30,7 @@ from qgis.PyQt.QtWidgets import (
 
 from qgis.PyQt.QtWidgets import QVBoxLayout
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.ticker import MaxNLocator, ScalarFormatter
 from matplotlib.path import Path as MplPath
 from matplotlib.patches import Polygon as MplPolygon

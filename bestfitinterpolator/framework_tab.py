@@ -49,14 +49,14 @@ try:
         QVBoxLayout,
         QWidget,
     )
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
     from qgis.core import QgsProject, QgsRasterLayer
 except Exception:  # pragma: no cover
-    from PyQt5.QtCore import QObject, Qt, QCoreApplication
-    from PyQt5.QtGui import QIcon, QPixmap, QTextDocument
-    from PyQt5.QtPrintSupport import QPrinter
-    from PyQt5.QtWidgets import (
+    from qgis.PyQt.QtCore import QObject, Qt, QCoreApplication
+    from qgis.PyQt.QtGui import QIcon, QPixmap, QTextDocument
+    from qgis.PyQt.QtPrintSupport import QPrinter
+    from qgis.PyQt.QtWidgets import (
         QFileDialog,
         QCheckBox,
         QComboBox,
@@ -80,7 +80,7 @@ except Exception:  # pragma: no cover
         QVBoxLayout,
         QWidget,
     )
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
     from qgis.core import QgsProject, QgsRasterLayer
 
@@ -767,7 +767,7 @@ class FrameworkTabController(QObject):
         try:
             from qgis.PyQt.QtWidgets import QVBoxLayout
         except Exception:  # pragma: no cover
-            from PyQt5.QtWidgets import QVBoxLayout
+            from qgis.PyQt.QtWidgets import QVBoxLayout
         layout = frame.layout()
         if layout is None:
             layout = QVBoxLayout(frame)
@@ -2776,7 +2776,7 @@ class FrameworkTabController(QObject):
         try:
             from qgis.PyQt.QtWidgets import QTableWidgetItem
         except Exception:  # pragma: no cover
-            from PyQt5.QtWidgets import QTableWidgetItem
+            from qgis.PyQt.QtWidgets import QTableWidgetItem
 
         for r, row in enumerate(rows):
             values = [

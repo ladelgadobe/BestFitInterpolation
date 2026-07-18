@@ -29,7 +29,7 @@ import numpy as np
 import matplotlib
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.path import Path  # <- for polygon masking
 from matplotlib.patches import Polygon as MplPolygon
 from osgeo import gdalconst

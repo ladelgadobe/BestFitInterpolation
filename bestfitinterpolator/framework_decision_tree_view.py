@@ -44,8 +44,8 @@ try:
         QVBoxLayout,
     )
 except Exception:  # pragma: no cover
-    from PyQt5.QtCore import QPointF, QRectF, Qt
-    from PyQt5.QtGui import (
+    from qgis.PyQt.QtCore import QPointF, QRectF, Qt
+    from qgis.PyQt.QtGui import (
         QBrush,
         QColor,
         QFont,
@@ -55,7 +55,7 @@ except Exception:  # pragma: no cover
         QPen,
         QPolygonF,
     )
-    from PyQt5.QtWidgets import (
+    from qgis.PyQt.QtWidgets import (
         QFileDialog,
         QGraphicsDropShadowEffect,
         QGraphicsItem,
@@ -601,7 +601,7 @@ class FrameworkDecisionTreeView(QGraphicsView):
         try:
             from qgis.PyQt.QtWidgets import QApplication
         except Exception:  # pragma: no cover
-            from PyQt5.QtWidgets import QApplication
+            from qgis.PyQt.QtWidgets import QApplication
         QApplication.clipboard().setImage(image)
 
     def resizeEvent(self, event) -> None:

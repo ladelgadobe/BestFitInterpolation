@@ -37,12 +37,12 @@ try:
         QDialogButtonBox,
         QWidget,
     )
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
     from matplotlib.ticker import MaxNLocator, ScalarFormatter
 except Exception:  # pragma: no cover
-    from PyQt5.QtCore import Qt, QCoreApplication
-    from PyQt5.QtWidgets import (
+    from qgis.PyQt.QtCore import Qt, QCoreApplication
+    from qgis.PyQt.QtWidgets import (
         QDialog,
         QVBoxLayout,
         QHBoxLayout,
@@ -58,7 +58,7 @@ except Exception:  # pragma: no cover
         QDialogButtonBox,
         QWidget,
     )
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
     from matplotlib.ticker import MaxNLocator, ScalarFormatter
 
