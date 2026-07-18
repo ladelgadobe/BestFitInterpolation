@@ -4,12 +4,12 @@
 name=Best Fit Interpolator
 qgisMinimumVersion=3.14
 description=Decision-support plugin for selecting, validating, and applying spatial interpolation methods in QGIS.
-version=1.0.2
+version=1.0.3
 author=Laura Delgado Bejarano and Lucas Rios do Amaral
 email=ladelgadobe@unal.edu.co
 
 about=Best Fit Interpolator supports spatial interpolation workflows for environmental, soil, and precision-agriculture data. The plugin compares deterministic, geostatistical, machine-learning, and hybrid approaches, including IDW, TPS, ordinary kriging, REML-assisted kriging, Random Forest, SVM, and Regression Kriging. It provides data diagnostics, semivariogram visualization, validation metrics, observed-vs-predicted plots, interpolation maps, and a framework-guided decision workflow based on: Delgado Bejarano, L., Loureiro Goncalves Oliveira, A., Fiolo Pozzuto, J. V., Castaneda Sanchez, D., and Rios do Amaral, L. (2026). Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 27(1), 10. https://doi.org/10.1007/s11119-025-10311-8. Contact: ladelgadobe@unal.edu.co. LinkedIn: Laura Delgado Bejarano - https://www.linkedin.com/in/laura-delgado-bejarano-09b6681a2/; Lucas Rios do Amaral - https://www.linkedin.com/in/lucas-rios-do-amaral-bb302449/.
-changelog=Version 1.0.2: Restores the Framework interpolation action, keeps automatic Framework REML/MoM classification at n < 100, preserves the n < 500 limit for manually selected REML in the geostatistics workflow, and records MoM/OK interpolation state so kriging validation can run immediately after interpolation. Version 1.0.1 removed development artifacts flagged by the QGIS scanner and cleaned low-risk code-quality issues.
+changelog=Version 1.0.3: Restores the Framework interpolation action, aligns Framework Ordinary Kriging validation with the geostatistics workflow, keeps automatic Framework REML/MoM classification at n < 100, preserves the n < 500 limit for manually selected REML in the geostatistics workflow, records MoM/OK interpolation state so kriging validation can run immediately after interpolation, fixes QGIS security-scan false positives, fixes Qt6 compatibility scan issues, and packages the plugin ZIP with QGIS-compliant paths. Version 1.0.1 removed development artifacts flagged by the QGIS scanner and cleaned low-risk code-quality issues.
 
 tracker=https://github.com/ladelgadobe/BestFitInterpolation/issues
 repository=https://github.com/ladelgadobe/BestFitInterpolation
