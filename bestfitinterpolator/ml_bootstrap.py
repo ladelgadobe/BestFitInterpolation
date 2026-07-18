@@ -7,7 +7,7 @@ All code comments are in English.
 import os
 import sys
 import site
-import subprocess
+import subprocess  # nosec B404
 import importlib
 
 from qgis.PyQt.QtCore import Qt
@@ -130,7 +130,7 @@ def _run_subprocess(command, parent=None):
             app.setOverrideCursor(Qt.WaitCursor)
             cursor_set = True
 
-        process = subprocess.run(
+        process = subprocess.run(  # nosec B603
             command,
             capture_output=True,
             text=True,

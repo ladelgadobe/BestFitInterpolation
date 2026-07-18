@@ -211,21 +211,21 @@ class OKTabController:
             return "--"
         return f"{value:.{decimals}f}{suffix}"
 
-    def _evaluate_model_cv(self, model_token: str, x, y, z, cutoff, lagw):
+    def _evaluate_model_cv(self, model_key: str, x, y, z, cutoff, lagw):
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
-        nugget, psill, rng = self._guess_initial_params(lags, gamma, cutoff, model=model_token)
+        nugget, psill, rng = self._guess_initial_params(lags, gamma, cutoff, model=model_key)
         preds = np.full(z.size, np.nan, dtype=float)
         for i in range(z.size):
             train = np.ones(z.size, dtype=bool)
             train[i] = False
             preds[i] = float(np.asarray(ordinary_kriging_interpolation(
                 x[train], y[train], z[train], [x[i]], [y[i]],
-                nugget=nugget, psill=psill, var_range=rng, model=model_token
+                nugget=nugget, psill=psill, var_range=rng, model=model_key
             )).ravel()[0])
         metrics = self._validation_metrics(z, preds)
         metrics.update({
-            "model": self._model_text_from_token(model_token),
-            "token": model_token,
+            "model": self._model_text_from_token(model_key),
+            "model_key": model_key,
             "nugget": float(nugget),
             "psill": float(psill),
             "range": float(rng),
@@ -234,13 +234,13 @@ class OKTabController:
 
     def _choose_best_model_by_validation(self, x, y, z, cutoff, lagw):
         rows = []
-        for token in self._candidate_model_tokens():
+        for model_key in self._candidate_model_tokens():
             try:
-                rows.append(self._evaluate_model_cv(token, x, y, z, cutoff, lagw))
+                rows.append(self._evaluate_model_cv(model_key, x, y, z, cutoff, lagw))
             except Exception as exc:
                 rows.append({
-                    "model": self._model_text_from_token(token),
-                    "token": token,
+                    "model": self._model_text_from_token(model_key),
+                    "model_key": model_key,
                     "rmse": float("nan"),
                     "rmse_pct": float("nan"),
                     "mae": float("nan"),
@@ -256,9 +256,9 @@ class OKTabController:
                 float(r.get("rmse")) if np.isfinite(float(r.get("rmse", float("nan")))) else 1e300,
             ),
         )
-        best = ranked[0] if ranked else {"token": "exponential"}
+        best = ranked[0] if ranked else {"model_key": "exponential"}
         self._model_validation_results = ranked
-        self._auto_selected_model = str(best.get("token") or "exponential")
+        self._auto_selected_model = str(best.get("model_key") or "exponential")
         try:
             nugget = float(best.get("nugget"))
             psill = float(best.get("psill"))

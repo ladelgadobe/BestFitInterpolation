@@ -1160,7 +1160,7 @@ class FrameworkTabController(QObject):
         try:
             result = fit_ok_reml_interface(
                 sample_xyz=np.column_stack([x, y, z]),
-                model=self._ok_model_token_for_reml(model_name),
+                model=self._ok_model_code_for_reml(model_name),
                 init_from_mom={"nugget": nugget0, "psill": psill0, "range": rng0},
                 random_state=123,
             )
@@ -2485,16 +2485,16 @@ class FrameworkTabController(QObject):
         })
         return params
 
-    def _model_token_for_ok_dialog(self, model_text: str) -> str:
-        token = self._normalize_model_token(model_text)
-        return {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}.get(token, "Sph")
+    def _model_code_for_ok_dialog(self, model_text: str) -> str:
+        model_key = self._normalize_model_token(model_text)
+        return {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}.get(model_key, "Sph")
 
     def _push_ok_params_to_dialog(self, params: Dict[str, Any]) -> None:
         """Write Framework variogram params into the OK UI before interpolation."""
         if self.plugin is None or getattr(self.plugin, "dlg", None) is None:
             return
         dlg = self.plugin.dlg
-        model_short = self._model_token_for_ok_dialog(params.get("model", "Spherical"))
+        model_short = self._model_code_for_ok_dialog(params.get("model", "Spherical"))
         combo = getattr(dlg, "cmbOKModel", None)
         if combo is not None and hasattr(combo, "findText"):
             idx = combo.findText(model_short)
@@ -3206,34 +3206,34 @@ class FrameworkTabController(QObject):
         return row
 
     @staticmethod
-    def _ok_model_text_from_token(token: str) -> str:
-        token = str(token or "").strip().lower()
-        if token.startswith("sph"):
+    def _ok_model_text_from_key(model_key: str) -> str:
+        model_key = str(model_key or "").strip().lower()
+        if model_key.startswith("sph"):
             return "Spherical"
-        if token.startswith("gau"):
+        if model_key.startswith("gau"):
             return "Gaussian"
         return "Exponential"
 
-    def _ok_model_token_for_reml(self, model_text: str) -> str:
-        token = self._normalize_model_token(model_text)
-        return {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}.get(token, "Exp")
+    def _ok_model_code_for_reml(self, model_text: str) -> str:
+        model_key = self._normalize_model_token(model_text)
+        return {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}.get(model_key, "Exp")
 
     def _is_ok_model_auto(self, model_name: str) -> bool:
         return str(model_name or "").strip().lower().startswith("auto")
 
     def _select_best_ok_variogram_model(self, x: np.ndarray, y: np.ndarray, z: np.ndarray) -> str:
         rows = []
-        for token in ("spherical", "exponential", "gaussian"):
-            model_name = self._ok_model_text_from_token(token)
+        for model_key in ("spherical", "exponential", "gaussian"):
+            model_name = self._ok_model_text_from_key(model_key)
             try:
                 preds = self._run_ok_framework_cv(x, y, z, model_name=model_name)
                 row = self._validation_row_from_predictions(model_name, z, preds)
-                row["token"] = token
+                row["model_key"] = model_key
                 rows.append(row)
             except Exception as exc:
                 rows.append({
                     "method": model_name,
-                    "token": token,
+                    "model_key": model_key,
                     "rmse": "",
                     "rmse_pct": "",
                     "mae": "",
@@ -3303,7 +3303,7 @@ class FrameworkTabController(QObject):
             sample_xyz = np.column_stack([x, y, z])
             fit = fit_ok_reml_interface(
                 sample_xyz=sample_xyz,
-                model=self._ok_model_token_for_reml(model_name),
+                model=self._ok_model_code_for_reml(model_name),
                 init_from_mom={"nugget": nugget, "psill": psill, "range": rng},
                 random_state=123,
             )
