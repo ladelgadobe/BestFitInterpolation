@@ -1015,6 +1015,112 @@ class FrameworkTabController(QObject):
         self.point_map_fig.tight_layout(pad=0.7)
         self.point_map_canvas.draw_idle()
 
+    def _geostatistics_variogram_state(self, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Return the exact variogram currently used by the Geostatistics tab."""
+        if self.plugin is None:
+            return None
+
+        # Framework can be opened before Geostatistics. Initialize its controller
+        # here so the preview does not depend on opening another tab or popup first.
+        try:
+            if hasattr(self.plugin, "_update_ok_context"):
+                self.plugin._update_ok_context()
+        except Exception:  # nosec B110
+            pass
+
+        dispatcher = getattr(self.plugin, "ok_ctrl", None)
+        if dispatcher is None:
+            return None
+        active_ok = getattr(dispatcher, "_active", None) or dispatcher
+
+        expected_field = str(data.get("variable_name") or "")
+        active_field = getattr(active_ok, "z_field", None) or getattr(dispatcher, "_field_name", None)
+        if expected_field and active_field and str(active_field) != expected_field:
+            return None
+
+        expected_layer = data.get("point_layer")
+        active_layer = getattr(active_ok, "points_layer", None) or getattr(dispatcher, "_layer", None)
+        if expected_layer is not None and active_layer is not None:
+            try:
+                if expected_layer.id() != active_layer.id():
+                    return None
+            except Exception:
+                if expected_layer is not active_layer:
+                    return None
+
+        try:
+            if hasattr(active_ok, "_ensure_variogram_ready"):
+                active_ok._ensure_variogram_ready()
+            model_token = active_ok._get_selected_model()
+            nugget, psill, rng = (float(v) for v in active_ok._read_params_from_ui())
+        except Exception:
+            return None
+
+        if not all(np.isfinite(v) for v in (nugget, psill, rng)):
+            return None
+        if nugget < 0 or psill < 0 or rng <= 0 or (nugget + psill) <= 0:
+            return None
+
+        x = np.asarray(data.get("x", []), dtype=float)
+        y = np.asarray(data.get("y", []), dtype=float)
+        try:
+            cutoff = float(getattr(active_ok, "_cutoff"))
+        except Exception:
+            dmax = float(np.nanmax(self._pairwise_distances(x, y))) if x.size > 1 else 1.0
+            cutoff = 0.5 * dmax
+        if not np.isfinite(cutoff) or cutoff <= 0:
+            return None
+
+        try:
+            lagw = float(getattr(active_ok, "_lag_width"))
+        except Exception:
+            lagw = self._nearest_neighbor_dist(x, y)
+        lagw = self._safe_lag_width(x, y, cutoff, lagw)
+
+        use_reml = bool(getattr(active_ok, "_use_reml", False))
+        fit_method = str(
+            getattr(active_ok, "_ok_fit_method", None)
+            or getattr(active_ok, "strategy_name", None)
+            or getattr(dispatcher, "strategy_name", None)
+            or "MoM"
+        )
+        if use_reml:
+            fit_method = "REML"
+
+        lags = np.asarray([], dtype=float)
+        gamma = np.asarray([], dtype=float)
+        if not use_reml:
+            try:
+                lags = np.asarray(getattr(active_ok, "_exp_lags"), dtype=float).ravel()
+                gamma = np.asarray(getattr(active_ok, "_exp_gamma"), dtype=float).ravel()
+            except Exception:
+                lags = np.asarray([], dtype=float)
+                gamma = np.asarray([], dtype=float)
+            size = min(lags.size, gamma.size)
+            lags = lags[:size]
+            gamma = gamma[:size]
+            finite = np.isfinite(lags) & np.isfinite(gamma)
+            lags = lags[finite]
+            gamma = gamma[finite]
+            # Geostatistics keeps an artificial (0, 0) point internally for fitting
+            # but omits it from its plot. Omit it here as well.
+            if lags.size and np.isclose(lags[0], 0.0) and np.isclose(gamma[0], 0.0):
+                lags = lags[1:]
+                gamma = gamma[1:]
+
+        model_name = self._ok_model_text_from_key(self._normalize_model_token(model_token))
+        return {
+            "model": model_name,
+            "nugget": nugget,
+            "psill": psill,
+            "range": rng,
+            "fit_method": fit_method,
+            "max_distance": cutoff,
+            "lag_width": lagw,
+            "lags": lags if lags.size else None,
+            "gamma": gamma if gamma.size else None,
+        }
+
     def _draw_framework_variogram_preview(self, data: Dict[str, Any], use_state: bool = False) -> None:
         if getattr(self, "variogram_fig", None) is None:
             return
@@ -1039,7 +1145,11 @@ class FrameworkTabController(QObject):
         lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
 
-        persisted = self._persisted_variogram_state() if use_state else None
+        persisted = (
+            self._persisted_variogram_state()
+            if use_state
+            else self._geostatistics_variogram_state(data)
+        )
         if persisted is not None:
             model_name = persisted["model"]
             nugget = persisted["nugget"]
@@ -1072,18 +1182,16 @@ class FrameworkTabController(QObject):
         if fit_method != "REML" and lags_plot is not None and getattr(lags_plot, "size", 0) > 0:
             ax.plot(lags_plot, gamma_plot, 'o', color="#2f0dee", markersize=4, label="Experimental")
 
-        xmax = max(
-            float(cutoff) if cutoff is not None else 1.0,
-            float(np.nanmax(lags_plot)) if lags_plot is not None and getattr(lags_plot, "size", 0) > 0 else 1.0,
-            float(rng) if rng is not None else 1.0,
-        )
+        xmax = max(float(cutoff) if cutoff is not None else 1.0, 1.0)
         h_line = np.linspace(0.0, xmax, 200)
-        th = self._model_func(h_line, self._normalize_model_token(model_name), float(nugget), float(psill), float(rng))
-        ax.plot(h_line, th, '-', color='black', linewidth=1.8, label=f"Theoretical ({fit_method})")
+        model_token = self._normalize_model_token(model_name)
+        model_label = self._ok_model_text_from_key(model_token)
+        th = self._model_func(h_line, model_token, float(nugget), float(psill), float(rng))
+        ax.plot(h_line, th, '-', color='black', linewidth=1.8, label=f"Theoretical ({model_label})")
 
         ax.set_title("Semivariogram preview", fontsize=9)
         ax.set_xlabel("Lag distance (h)", fontsize=8)
-        ax.set_ylabel("Semivariance Î³(h)", fontsize=8)
+        ax.set_ylabel(r"Semivariance $\gamma$(h)", fontsize=8)
         ax.tick_params(axis='both', labelsize=7)
         ax.grid(True, linestyle='--', linewidth=0.4, alpha=0.5)
         ax.legend(fontsize=7, frameon=False, loc='best')
@@ -1864,6 +1972,14 @@ class FrameworkTabController(QObject):
         if not method:
             self._show_warning("Interpolation", "No interpolation method is available yet.")
             return
+        if (
+            self.plugin is not None
+            and hasattr(self.plugin, "_validate_current_interpolation_coverage")
+            and not self.plugin._validate_current_interpolation_coverage(
+                "Framework interpolation"
+            )
+        ):
+            return
         self.state.__dict__["selected_method"] = method
         if not self._dispatch_interpolation_method(method):
             self._show_warning("Interpolation", f"Could not dispatch interpolation for method: {method}.")
@@ -2240,7 +2356,7 @@ class FrameworkTabController(QObject):
         body = "".join(rows) or "<tr><td colspan='8'>Validation metrics pending</td></tr>"
         return (
             "<table>"
-            "<tr><th>Rank</th><th>Method</th><th>RMSE</th><th>RMSE%</th><th>MAE</th><th>R2</th><th>Pearson</th><th>LCCC</th></tr>"
+            "<tr><th>Rank</th><th>Method</th><th>RMSE</th><th>RMSE%</th><th>MAE</th><th>R\u00b2</th><th>Pearson</th><th>LCCC</th></tr>"
             f"{body}"
             "</table>"
         )
@@ -2768,7 +2884,7 @@ class FrameworkTabController(QObject):
         if not self.table_validation:
             return
 
-        headers = ["Rank", "Method", "RMSE", "RMSE%", "MAE", "R2", "Pearson", "LCCC"]
+        headers = ["Rank", "Method", "RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
         self.table_validation.setColumnCount(len(headers))
         self.table_validation.setHorizontalHeaderLabels(headers)
         self.table_validation.setRowCount(len(rows))
@@ -3264,7 +3380,7 @@ class FrameworkTabController(QObject):
         dlg.setWindowTitle("Framework kriging model validation")
         layout = QVBoxLayout(dlg)
         table = QTableWidget(dlg)
-        headers = ["Model", "RMSE", "RMSE%", "MAE", "R2", "Pearson", "LCCC"]
+        headers = ["Model", "RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
         table.setColumnCount(len(headers))
         table.setHorizontalHeaderLabels(headers)
         table.setRowCount(len(rows))

@@ -35,6 +35,7 @@ import matplotlib
 from .RF_Interpolation import _tune_random_forest
 from .kriging_ordinary import ordinary_kriging_interpolation
 from .ml_bootstrap import ensure_ml_ready
+from .validation_policy import decide_automatic_cv
 
 
 @dataclass
@@ -1003,6 +1004,15 @@ class RegressionKrigingRFController:
     # ------------------------------------------------------------------
 
     def _run_rk_prediction(self, progress_fn=None):
+        plugin = getattr(self, "parent_plugin", None)
+        if (
+            plugin is not None
+            and hasattr(plugin, "_validate_current_interpolation_coverage")
+            and not plugin._validate_current_interpolation_coverage(
+                "Regression Kriging"
+            )
+        ):
+            return False
         if self._rf_model is None:
             raise ValueError("Fit the RF stage first.")
         if self._variogram_lags is None or self._variogram_gamma is None:
@@ -1145,11 +1155,7 @@ class RegressionKrigingRFController:
         return "auto"
 
     def _decide_auto_cv(self, n):
-        if n <= 100:
-            return "loocv", None
-        if n <= 1000:
-            return "kfold", 10
-        return "kfold", 5
+        return decide_automatic_cv(n)
 
     def _make_kfold_indices(self, n, k):
         idx = list(range(n))

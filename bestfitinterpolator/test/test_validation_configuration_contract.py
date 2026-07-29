@@ -55,5 +55,5 @@ def test_validation_uses_saved_interpolation_configuration():
     assert "fixed_variogram_fit" in rk_cv
 
     ui = (ROOT / "BestFitInterpolator_dialog_base.ui").read_text(encoding="utf-8-sig")
-    assert "btnFrameworkRunInterpolation" not in ui
-    assert "Run interpolation" not in ui
+    assert "btnFrameworkRunInterpolation" in ui
+    assert "Run interpolation" in ui
