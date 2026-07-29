@@ -5,6 +5,15 @@ Best Fit Interpolator is a QGIS plugin for selecting, validating, and applying s
 
 The plugin supports deterministic, geostatistical, machine-learning, and hybrid methods, including IDW, TPS, Ordinary Kriging, REML-assisted kriging, Random Forest, SVM, and Regression Kriging.
 
+Version 1.1
+-----------
+- Synchronized Framework and Geostatistics semivariogram previews.
+- Spatial compatibility checks before interpolation.
+- Popup alerts for warnings and errors.
+- TPS and REML interpolation fixes.
+- Standardized R² validation labels.
+- About tab with documentation, support, article, and author links.
+
 Main features
 -------------
 - Data diagnostics and spatial-pattern support.
@@ -32,7 +41,7 @@ https://www.linkedin.com/in/lucas-rios-do-amaral-bb302449/
 
 Reference article
 -----------------
-Delgado Bejarano, L., Loureiro Goncalves Oliveira, A., Fiolo Pozzuto, J. V., Castaneda Sanchez, D., & Rios do Amaral, L. (2026). Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 27(1), 10.
+Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 27, Article 10.
 
 DOI:
 https://doi.org/10.1007/s11119-025-10311-8

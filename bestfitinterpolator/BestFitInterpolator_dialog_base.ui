@@ -340,7 +340,7 @@
               <item row="7" column="0" colspan="2">
                <widget class="QRadioButton" name="radCVAuto">
                 <property name="toolTip">
-                 <string>Automatically select CV method based on sample size (LOOCV for n &lt;= 100, K-Fold otherwise).</string>
+                 <string>Automatic uses LOOCV for n &lt;= 100 and changes to K-Fold from n = 101 (10 folds through n = 1000; 5 folds above 1000).</string>
                 </property>
                 <property name="text">
                  <string>Auto</string>
@@ -374,7 +374,7 @@
               <item row="3" column="0">
                <widget class="QLabel" name="lblR2">
                 <property name="text">
-                 <string>R2:</string>
+                 <string>R²:</string>
                 </property>
                </widget>
               </item>
@@ -949,7 +949,7 @@
                      <item row="3" column="0">
                       <widget class="QLabel" name="lblvalOKR2">
                        <property name="text">
-                        <string>R2</string>
+                        <string>R²</string>
                        </property>
                       </widget>
                      </item>
@@ -1841,7 +1841,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                          <item row="3" column="0">
                           <widget class="QLabel" name="labelRFR2">
                            <property name="text">
-                            <string>R2</string>
+                            <string>R²</string>
                            </property>
                           </widget>
                          </item>
@@ -2744,7 +2744,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                   <item row="3" column="0">
                    <widget class="QLabel" name="labelSVMR2">
                     <property name="text">
-                     <string>R2</string>
+                     <string>R²</string>
                     </property>
                    </widget>
                   </item>
@@ -3513,7 +3513,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                     <item row="3" column="0">
                      <widget class="QLabel" name="labelRKR2">
                       <property name="text">
-                       <string>R2</string>
+                       <string>R²</string>
                       </property>
                      </widget>
                     </item>
@@ -3944,33 +3944,33 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                </item>
               </layout>
              </widget>
-             <widget class="QGroupBox" name="groupFrameworkVariogramPreview">
-              <property name="minimumSize">
-               <size>
-                <width>420</width>
-                <height>320</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>520</width>
-                <height>500</height>
-               </size>
-              </property>
-              <property name="title">
-               <string>Semivariogram</string>
-              </property>
+              <widget class="QGroupBox" name="groupFrameworkVariogramPreview">
+               <property name="minimumSize">
+                <size>
+                 <width>420</width>
+                 <height>320</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>520</width>
+                 <height>500</height>
+                </size>
+               </property>
+               <property name="title">
+                <string>Semivariogram</string>
+               </property>
               <layout class="QVBoxLayout" name="verticalLayout_frameworkVariogramPreview">
                <item>
                 <widget class="QFrame" name="frameFrameworkVariogramPreview">
-                 <property name="minimumSize">
-                  <size>
-                   <width>400</width>
-                   <height>280</height>
-                  </size>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
+                  <property name="minimumSize">
+                   <size>
+                    <width>400</width>
+                    <height>280</height>
+                   </size>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
@@ -3978,14 +3978,14 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                  <layout class="QVBoxLayout" name="verticalLayout_frameFrameworkVariogramPreview">
                   <item>
                    <widget class="QLabel" name="lblFrameworkVariogramPlaceholder">
-                    <property name="minimumSize">
-                     <size>
-                      <width>380</width>
-                      <height>240</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string>Semivariogram preview placeholder</string>
+                     <property name="minimumSize">
+                      <size>
+                       <width>380</width>
+                       <height>240</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Semivariogram preview placeholder</string>
                     </property>
                     <property name="alignment">
                      <set>Qt::AlignCenter</set>
@@ -4514,7 +4514,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                     </column>
                     <column>
                      <property name="text">
-                      <string>R2</string>
+                      <string>R²</string>
                      </property>
                     </column>
                     <column>

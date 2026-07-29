@@ -252,8 +252,7 @@ def ok_predict(coords, values, params, pred_coords, return_var=True, trend_degre
     if not return_var:
         return pred, None
     Ci_K = Ci(K)
-    XTCi = X.T @ Ci
-    XTCiK = XTCi(K)
+    XTCiK = X.T @ Ci_K
     middle = Xp.T - XTCiK
     term_gls = np.einsum("ij,jk,ki->i", middle.T, XtCiX_inv, middle)
     kCik = np.sum(K * Ci_K, axis=0)

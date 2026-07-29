@@ -32,11 +32,20 @@ The plugin combines deterministic, geostatistical, machine-learning, and hybrid 
 
 - Data diagnostics for point samples, variables, polygon limits, sample size, and spatial pattern.
 - Semivariogram preview and geostatistical tools for kriging workflows.
-- Cross-validation with RMSE, RMSE %, MAE, Pearson r, R2, and LCCC.
+- Cross-validation with RMSE, RMSE %, MAE, Pearson r, R², and LCCC.
 - Observed-vs-predicted plots for comparing model behavior.
 - Framework-guided method selection inspired by the reference article.
 - Interpolation map generation directly inside QGIS.
 - PDF report support for framework validation outputs.
+
+## Version 1.1
+
+- Keeps the Framework semivariogram preview synchronized with Geostatistics.
+- Blocks interpolation for incompatible CRS or missing spatial overlap.
+- Presents warnings and errors as popup alerts without interrupting routine information messages.
+- Fixes TPS routing and REML prediction errors.
+- Standardizes R² labels and automatic cross-validation guidance.
+- Adds an About tab with documentation, support, article, and author links.
 
 ## Framework Guidance
 
@@ -87,7 +96,7 @@ Contact: [ladelgadobe@unal.edu.co](mailto:ladelgadobe@unal.edu.co)
 
 ## Citation
 
-Delgado Bejarano, L., Loureiro Goncalves Oliveira, A., Fiolo Pozzuto, J. V., Castaneda Sanchez, D., & Rios do Amaral, L. (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. Precision Agriculture, 27(1), 10. https://doi.org/10.1007/s11119-025-10311-8
+Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. Precision Agriculture, 27, Article 10. https://doi.org/10.1007/s11119-025-10311-8
 
 ## Repository
 

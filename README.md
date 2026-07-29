@@ -10,6 +10,7 @@ Best Fit Interpolator helps users compare deterministic, geostatistical, machine
 
 [![QGIS](https://img.shields.io/badge/QGIS-3.14%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![Version](https://img.shields.io/badge/version-1.1-1565C0?style=for-the-badge)](https://github.com/ladelgadobe/BestFitInterpolation/releases/tag/v1.1)
 [![Article](https://img.shields.io/badge/Reference%20Article-Precision%20Agriculture-1B5E20?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
 
 [Reference article](https://doi.org/10.1007/s11119-025-10311-8) |
@@ -81,7 +82,7 @@ Use this workflow when auxiliary raster layers or environmental covariates are a
 | Data and Diagnostics | Validation and Maps | Reporting |
 | --- | --- | --- |
 | Point sample reading | LOOCV and K-fold validation | Framework report preview |
-| Variable selection | RMSE, RMSE %, MAE, Pearson r, R2, LCCC | PDF report export |
+| Variable selection | RMSE, RMSE %, MAE, Pearson r, R², LCCC | PDF report export |
 | Polygon boundary support | Observed-vs-predicted plots | Article citation included |
 | Pixel size control | Interpolation raster generation | Visual framework figures |
 | Moran's I support | Semivariogram preview | Method-selection summary |
@@ -99,6 +100,18 @@ Use this workflow when auxiliary raster layers or environmental covariates are a
 6. Generate the final interpolation map.
 7. Export a report when needed.
 ```
+
+---
+
+## Version 1.1
+
+- Keeps the Framework semivariogram preview synchronized with the active Geostatistics model.
+- Prevents interpolation when the point and polygon layers have incompatible CRS or no usable spatial overlap.
+- Uses popup windows for warnings and errors while keeping routine information in the QGIS message bar.
+- Shows incomplete-data warnings only once per selected layer and variable.
+- Fixes TPS interpolation routing and the REML prediction matrix error.
+- Standardizes R² labels and explains when automatic validation changes from LOOCV to K-fold.
+- Adds an About tab with version, authors, manual, article, GitHub, Issues, email, and LinkedIn links.
 
 ---
 
@@ -151,7 +164,7 @@ Contact: [ladelgadobe@unal.edu.co](mailto:ladelgadobe@unal.edu.co)
 
 ## Reference Article
 
-Delgado Bejarano, L., Loureiro Goncalves Oliveira, A., Fiolo Pozzuto, J. V., Castaneda Sanchez, D., & Rios do Amaral, L. (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. **Precision Agriculture, 27(1), 10**. https://doi.org/10.1007/s11119-025-10311-8
+Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. **Precision Agriculture, 27, Article 10**. https://doi.org/10.1007/s11119-025-10311-8
 
 If you use this plugin in academic work, please cite the reference article.
 

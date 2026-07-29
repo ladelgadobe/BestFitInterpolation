@@ -286,7 +286,7 @@ class OKTabController:
         if btn is not None and hasattr(btn, "setToolTip"):
             btn.setToolTip(
                 f"Best automatic model: {self._model_text_from_token(self._auto_selected_model)} "
-                f"(R2={self._fmt_metric(best.get('r2'))}). Click to view all model validation results."
+                f"(R\u00b2={self._fmt_metric(best.get('r2'))}). Click to view all model validation results."
             )
         return self._auto_selected_model
 
@@ -308,7 +308,7 @@ class OKTabController:
             dlg.setWindowTitle("Kriging model validation")
             layout = QVBoxLayout(dlg)
             table = QTableWidget(dlg)
-            headers = ["Model", "RMSE", "RMSE%", "MAE", "R2", "Pearson", "LCCC"]
+            headers = ["Model", "RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
             rows = list(self._model_validation_results or [])
             table.setColumnCount(len(headers))
             table.setHorizontalHeaderLabels(headers)
@@ -1469,6 +1469,13 @@ class OKTabController:
         poly_layer = self._resolve_polygon_layer()
         if poly_layer is None:
             self.iface.messageBar().pushMessage("Kriging", "Select a polygon layer.", level=2)
+            return
+        plugin = getattr(self, "parent_plugin", None)
+        if (
+            plugin is not None
+            and hasattr(plugin, "_validate_current_interpolation_coverage")
+            and not plugin._validate_current_interpolation_coverage("Kriging")
+        ):
             return
 
         pixel = self._resolve_pixel_size()

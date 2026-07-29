@@ -59,6 +59,7 @@ from qgis.core import (
 from osgeo import gdal, osr
 
 from .ml_bootstrap import ensure_ml_ready
+from .validation_policy import decide_automatic_cv
 
 try:
     from statistics import NormalDist
@@ -428,11 +429,7 @@ class MachineLearningTabController:
 
     def _rf_decide_auto_cv(self, n):
         """Match the auto CV policy used in the deterministic/geostatistical tabs."""
-        if n <= 100:
-            return "loocv", None
-        elif n <= 1000:
-            return "kfold", 10
-        return "kfold", 5
+        return decide_automatic_cv(n)
 
     def _rf_make_kfold_indices(self, n, k):
         """Create K random folds using the same simple policy as the other tabs."""
@@ -2820,6 +2817,13 @@ class MachineLearningTabController:
         """
         if not ensure_ml_ready(parent=self.dlg, method_name="Random Forest"):
             return
+        plugin = getattr(self, "parent_plugin", None)
+        if (
+            plugin is not None
+            and hasattr(plugin, "_validate_current_interpolation_coverage")
+            and not plugin._validate_current_interpolation_coverage("Random Forest")
+        ):
+            return
 
         rf_interpolation = self._import_rf_interpolation(show_message=True)
         if rf_interpolation is None:
@@ -3877,6 +3881,13 @@ class MachineLearningTabController:
         """Entry point for the SVM interpolation button."""
         if not ensure_ml_ready(parent=self.dlg, method_name="Support Vector Machine"):
             return
+        plugin = getattr(self, "parent_plugin", None)
+        if (
+            plugin is not None
+            and hasattr(plugin, "_validate_current_interpolation_coverage")
+            and not plugin._validate_current_interpolation_coverage("SVM")
+        ):
+            return
 
         svm_interpolation = self._import_svm_interpolation(show_message=True)
         if svm_interpolation is None:
@@ -4016,11 +4027,7 @@ class MachineLearningTabController:
         return "auto"
 
     def _svm_decide_auto_cv(self, n):
-        if n <= 100:
-            return "loocv", None
-        if n <= 1000:
-            return "kfold", 10
-        return "kfold", 5
+        return decide_automatic_cv(n)
 
     def _svm_make_kfold_indices(self, n, k):
         idx = list(range(n))
