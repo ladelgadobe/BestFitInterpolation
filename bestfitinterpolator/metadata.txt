@@ -15,7 +15,7 @@ changelog=Version 1.1: Synchronizes the Framework semivariogram preview with the
 
 tracker=https://github.com/ladelgadobe/BestFitInterpolation/issues
 repository=https://github.com/ladelgadobe/BestFitInterpolation
-manual=https://github.com/ladelgadobe/BestFitInterpolation/blob/main/BestFitInterpolation_PluginV1.1.pdf
+manual=https://github.com/ladelgadobe/BestFitInterpolation/blob/main/BestFitInterpolation_PluginV1.0.2.pdf
 article=https://link.springer.com/article/10.1007/s11119-025-10311-8
 article_title=Performance of interpolation methods in digital soil mapping: the influence of data characteristics
 article_citation=Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 27, Article 10. https://doi.org/10.1007/s11119-025-10311-8

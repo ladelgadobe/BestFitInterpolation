@@ -72,7 +72,7 @@ def test_about_links_open_externally_and_manual_is_configured():
 
     assert general["manual"] == (
         "https://github.com/ladelgadobe/BestFitInterpolation/"
-        "blob/main/BestFitInterpolation_PluginV1.1.pdf"
+        "blob/main/BestFitInterpolation_PluginV1.0.2.pdf"
     )
     assert general["repository"].startswith("https://github.com/")
     assert general["tracker"].endswith("/issues")

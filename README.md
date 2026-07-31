@@ -14,7 +14,7 @@ Best Fit Interpolator helps users compare deterministic, geostatistical, machine
 [![Article](https://img.shields.io/badge/Reference%20Article-Precision%20Agriculture-1B5E20?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
 
 [Reference article](https://doi.org/10.1007/s11119-025-10311-8) |
-[Tutorial PDF](BestFitInterpolation_PluginV1.1.pdf) |
+[Tutorial PDF](BestFitInterpolation_PluginV1.0.2.pdf) |
 [Issues](https://github.com/ladelgadobe/BestFitInterpolation/issues) |
 [Contact](mailto:ladelgadobe@unal.edu.co)
 
@@ -163,9 +163,17 @@ Contact: [ladelgadobe@unal.edu.co](mailto:ladelgadobe@unal.edu.co)
 
 ---
 
+## Reference Article
+
+Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. **Precision Agriculture, 27, Article 10**. https://doi.org/10.1007/s11119-025-10311-8
+
+If you use this plugin in academic work, please cite the reference article.
+
+---
+
 ## Cite this article
 
-If you use this plugin in academic work, please cite the reference article. Expand a citation style below, then use the copy button in the citation box.
+Expand a citation style below, then use the copy button in the citation box.
 
 <details open>
 <summary><strong>APA 7th edition</strong></summary>
