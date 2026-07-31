@@ -163,11 +163,51 @@ Contact: [ladelgadobe@unal.edu.co](mailto:ladelgadobe@unal.edu.co)
 
 ---
 
-## Reference Article
+## Cite this article
 
-Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. **Precision Agriculture, 27, Article 10**. https://doi.org/10.1007/s11119-025-10311-8
+If you use this plugin in academic work, please cite the reference article. Expand a citation style below, then use the copy button in the citation box.
 
-If you use this plugin in academic work, please cite the reference article.
+<details open>
+<summary><strong>APA 7th edition</strong></summary>
+
+```text
+Delgado Bejarano, L., Loureiro Gonçalves Oliveira, A., Fiolo Pozzuto, J. V., Castañeda Sánchez, D., & Rios do Amaral, L. (2026). Performance of interpolation methods in digital soil mapping: The influence of data characteristics. Precision Agriculture, 27(1), Article 10. https://doi.org/10.1007/s11119-025-10311-8
+```
+
+</details>
+
+<details>
+<summary><strong>Vancouver</strong></summary>
+
+```text
+Delgado Bejarano L, Loureiro Gonçalves Oliveira A, Fiolo Pozzuto JV, Castañeda Sánchez D, Rios do Amaral L. Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture. 2026;27(1):10. doi:10.1007/s11119-025-10311-8.
+```
+
+</details>
+
+<details>
+<summary><strong>ISO 690</strong></summary>
+
+```text
+DELGADO BEJARANO, Laura; LOUREIRO GONÇALVES OLIVEIRA, Agda; FIOLO POZZUTO, João Vitor; CASTAÑEDA SÁNCHEZ, Dario; RIOS DO AMARAL, Lucas. Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, 2026, vol. 27, no. 1, article 10. DOI 10.1007/s11119-025-10311-8. Available at: https://doi.org/10.1007/s11119-025-10311-8.
+```
+
+</details>
+
+<details>
+<summary><strong>ABNT NBR 6023:2018</strong></summary>
+
+```text
+DELGADO BEJARANO, Laura; LOUREIRO GONÇALVES OLIVEIRA, Agda; FIOLO POZZUTO, João Vitor; CASTAÑEDA SÁNCHEZ, Dario; RIOS DO AMARAL, Lucas. Performance of interpolation methods in digital soil mapping: the influence of data characteristics. Precision Agriculture, v. 27, n. 1, art. 10, 2026. DOI: https://doi.org/10.1007/s11119-025-10311-8.
+```
+
+</details>
+
+### Download citation files
+
+[Download BibTeX (.bib)](CITATION.bib) | [Download RefMan / RIS (.ris)](CITATION.ris) | [Open the article DOI](https://doi.org/10.1007/s11119-025-10311-8)
+
+GitHub also provides its native **Cite this repository** option from [`CITATION.cff`](CITATION.cff).
 
 ---
 
