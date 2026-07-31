@@ -14,6 +14,7 @@ Best Fit Interpolator helps users compare deterministic, geostatistical, machine
 [![Article](https://img.shields.io/badge/Reference%20Article-Precision%20Agriculture-1B5E20?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
 
 [Reference article](https://doi.org/10.1007/s11119-025-10311-8) |
+[Tutorial PDF](BestFitInterpolation_PluginV1.1.pdf) |
 [Issues](https://github.com/ladelgadobe/BestFitInterpolation/issues) |
 [Contact](mailto:ladelgadobe@unal.edu.co)
 
