@@ -24,9 +24,6 @@ def classFactory(iface):
     if extlibs_manager.needs_provision():
         extlibs_manager.start_download()
 
-    # TODO(restructure): switch to `from .plugin import BestFitInterpolatorPlugin`
-    # when the new plugin shell lands (phase 7).
-    from . import resources  # noqa: F401
-    from .BestFitInterpolator import BestFitInterpolator
+    from .plugin import BestFitInterpolatorPlugin
 
-    return BestFitInterpolator(iface)
+    return BestFitInterpolatorPlugin(iface)

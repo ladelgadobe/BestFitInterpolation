@@ -169,6 +169,58 @@ class OKModel:
         return pred, var
 
 
+def choose_best_model_by_validation(data: TrainingData, *, cutoff=None, lag_width=None,
+                                    progress=None, should_stop=None):
+    """LOOCV each variogram model (spherical/exponential/gaussian) with its
+    MoM fit and rank by R² then RMSE — the legacy automatic-model rule
+    (_choose_best_model_by_validation). Returns ranked list of dicts."""
+    from ..cv import run_cross_validation
+    from ..types import CVPlan
+
+    method = OrdinaryKrigingMethod()
+    rows = []
+    tokens = ("spherical", "exponential", "gaussian")
+    for i, token in enumerate(tokens):
+        if should_stop is not None and should_stop():
+            raise OperationCancelled()
+        try:
+            vgm = fit_variogram_mom(
+                data.x, data.y, data.values, model=token,
+                cutoff=cutoff, lag_width=lag_width,
+            )
+            params = {
+                "strategy": "MoM", "model": token,
+                "nugget": vgm.nugget, "psill": vgm.psill, "range": vgm.range_,
+            }
+            cv = run_cross_validation(
+                method, data, params, CVPlan(mode="loocv"), should_stop=should_stop
+            )
+            rows.append({
+                "model_key": token,
+                "nugget": vgm.nugget, "psill": vgm.psill, "range": vgm.range_,
+                "rmse": cv.metrics.rmse, "rmse_pct": cv.metrics.rmse_pct,
+                "mae": cv.metrics.mae, "r2": cv.metrics.r2,
+                "pearson": cv.metrics.pearson_r, "lccc": cv.metrics.lccc,
+            })
+        except OperationCancelled:
+            raise
+        except Exception as exc:
+            rows.append({"model_key": token, "error": str(exc),
+                         "rmse": float("nan"), "r2": float("nan")})
+        if progress is not None:
+            progress(i + 1, len(tokens))
+
+    def _rank_key(r):
+        r2 = float(r.get("r2", float("nan")))
+        rmse = float(r.get("rmse", float("nan")))
+        return (
+            -(r2 if np.isfinite(r2) else -1e300),
+            rmse if np.isfinite(rmse) else 1e300,
+        )
+
+    return sorted(rows, key=_rank_key)
+
+
 class OrdinaryKrigingMethod(InterpolationMethod):
     info = MethodInfo(
         key="ok",

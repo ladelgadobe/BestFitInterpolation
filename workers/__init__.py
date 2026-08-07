@@ -8,6 +8,7 @@ from .cv_worker import CVWorker
 from .fit_worker import FitWorker
 from .framework_worker import FrameworkWorker
 from .interpolation_worker import InterpolationWorker
+from .model_validation_worker import ModelValidationWorker
 
 __all__ = [
     "BaseWorker",
@@ -15,4 +16,5 @@ __all__ = [
     "FitWorker",
     "FrameworkWorker",
     "InterpolationWorker",
+    "ModelValidationWorker",
 ]

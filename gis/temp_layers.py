@@ -14,6 +14,30 @@ from ..logger import get_logger
 logger = get_logger(__name__)
 
 
+def ensure_output_dir() -> str:
+    """BestFitInterpolation folder inside the project directory, or '' when
+    the project is unsaved (legacy behavior: fall back to temp)."""
+    proj_path = QgsProject.instance().fileName()
+    if not proj_path:
+        return ""
+    out_dir = os.path.join(os.path.dirname(proj_path), "BestFitInterpolation")
+    os.makedirs(out_dir, exist_ok=True)
+    return out_dir
+
+
+def choose_raster_output_path(method_tag, variable_name, *, exported: bool) -> str:
+    """<method>_<variable>_<uuid6>.tif in the project output folder (when
+    exporting and the project is saved) else the system temp dir."""
+    import uuid
+
+    base_name = f"{method_tag}_{variable_name}_{uuid.uuid4().hex[:6]}.tif"
+    if exported:
+        out_dir = ensure_output_dir()
+        if out_dir:
+            return os.path.join(out_dir, base_name)
+    return os.path.join(tempfile.gettempdir(), base_name)
+
+
 class BestFitTemporaryRasterLayer(QgsRasterLayer):
     """Raster layer wrapper so QGIS identifies plugin temp outputs."""
 

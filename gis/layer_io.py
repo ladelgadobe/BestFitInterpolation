@@ -130,6 +130,26 @@ def extract_boundary_wkts(polygon_layer):
     return wkts, bounds, crs_wkt
 
 
+def extract_boundary_rings(polygon_layer):
+    """All rings as (m, 2) coordinate lists — plain data for plotting."""
+    import numpy as np  # local alias for clarity; np already imported
+
+    rings = []
+    if polygon_layer is None:
+        return rings
+    for feat in polygon_layer.getFeatures():
+        geom = feat.geometry()
+        if geom is None or geom.isEmpty():
+            continue
+        polygons = geom.asMultiPolygon() if geom.isMultipart() else [geom.asPolygon()]
+        for part in polygons:
+            for ring in part:
+                coords = np.array([(pt.x(), pt.y()) for pt in ring], dtype=float)
+                if coords.shape[0] >= 3:
+                    rings.append(coords)
+    return rings
+
+
 def same_layer(layer_a, layer_b) -> bool:
     """Safely compare two QGIS layers (legacy verbatim)."""
     if layer_a is None or layer_b is None:
