@@ -51,7 +51,7 @@ def build_boundary_mask(grid: GridSpec, wkts) -> np.ndarray:
             srs = osr.SpatialReference()
             srs.ImportFromWkt(grid.crs_wkt)
 
-        drv = ogr.GetDriverByName("Memory")
+        drv = ogr.GetDriverByName("MEM") or ogr.GetDriverByName("Memory")
         mem_ds = drv.CreateDataSource("boundary")
         layer = mem_ds.CreateLayer("boundary", srs=srs, geom_type=ogr.wkbMultiPolygon)
         for wkt in wkts:
