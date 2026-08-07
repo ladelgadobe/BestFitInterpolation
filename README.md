@@ -44,6 +44,23 @@ The plugin combines deterministic, geostatistical, machine-learning, and hybrid 
 - Interpolation map generation directly inside QGIS.
 - PDF report support for framework validation outputs.
 
+## Version 2.0.0 (FARM Analytica fork)
+
+Full backend restructure of this fork:
+
+- All interpolation, cross-validation, and raster generation run in background
+  threads with cancel support — QGIS stays responsive during computation.
+- One method registry (IDW, TPS, OK, RF, SVM, RK) drives every tab and the
+  Framework; the Framework reports failed methods explicitly instead of
+  treating them as successful.
+- Polygon interior rings (holes) are now excluded from interpolation masks.
+- Cancelling a run never leaves a truncated raster on disk.
+- TPS fits its spline once per run instead of once per raster chunk and per
+  validation fold; covariate rasters are read in blocks instead of per cell.
+- scikit-learn is provisioned automatically into an ABI-tagged `extlibs`
+  folder; output GeoTIFFs are LZW-compressed and tiled; errors are logged to
+  the QGIS Log Messages panel under "Best Fit Interpolator".
+
 ## Version 1.1
 
 - Keeps the Framework semivariogram preview synchronized with Geostatistics.

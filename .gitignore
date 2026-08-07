@@ -18,5 +18,9 @@ build/
 dist/
 *.egg-info/
 
-# Installed locally on first use of machine-learning methods.
-bestfitinterpolator/_deps/
+# Runtime-provisioned third-party dependencies (extlibs_manager).
+extlibs/
+_extlibs_dl.zip
+
+# Legacy install target of the removed ml_bootstrap flow.
+_deps/
