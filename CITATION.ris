@@ -16,3 +16,16 @@ SN  - 1385-2256
 SN  - 1573-1618
 PB  - Springer Nature
 ER  -
+
+TY  - COMP
+TI  - Best Fit Interpolator
+AU  - Delgado Bejarano, Laura
+AU  - Rios do Amaral, Lucas
+PY  - 2026
+DA  - 2026/08/11
+PB  - Zenodo
+ET  - Version 1.1
+DO  - 10.5281/zenodo.21891225
+UR  - https://doi.org/10.5281/zenodo.21891225
+N1  - QGIS plugin for selecting, validating, and applying spatial interpolation methods based on data characteristics.
+ER  -

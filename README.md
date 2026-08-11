@@ -167,7 +167,11 @@ Contact: [ladelgadobe@unal.edu.co](mailto:ladelgadobe@unal.edu.co)
 
 Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. **Precision Agriculture, 27, Article 10**. https://doi.org/10.1007/s11119-025-10311-8
 
-If you use this plugin in academic work, please cite the reference article.
+If you use this plugin in academic work, please cite both the software and the reference article.
+
+### Cite the software
+
+Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator* (Version 1.1) [QGIS plugin]. Zenodo. https://doi.org/10.5281/zenodo.21891225
 
 ---
 
@@ -213,7 +217,7 @@ DELGADO BEJARANO, Laura; LOUREIRO GONÇALVES OLIVEIRA, Agda; FIOLO POZZUTO, Joã
 
 ### Download citation files
 
-[Download BibTeX (.bib)](CITATION.bib) | [Download RefMan / RIS (.ris)](CITATION.ris) | [Open the article DOI](https://doi.org/10.1007/s11119-025-10311-8)
+[Download BibTeX (.bib)](CITATION.bib) | [Download RefMan / RIS (.ris)](CITATION.ris) | [Open the software DOI](https://doi.org/10.5281/zenodo.21891225) | [Open the article DOI](https://doi.org/10.1007/s11119-025-10311-8)
 
 GitHub also provides its native **Cite this repository** option from [`CITATION.cff`](CITATION.cff).
 
