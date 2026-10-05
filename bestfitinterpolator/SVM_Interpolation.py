@@ -11,6 +11,26 @@ import math
 import random
 
 import numpy as np
+import pandas as pd
+
+try:
+    from .performance_policy import (
+        DENSE_SVM_APPROX_THRESHOLD,
+        DENSE_SVM_NYSTROEM_COMPONENTS,
+        dense_search_limits,
+        predict_in_chunks,
+        svm_nystroem_components,
+        tuning_subset,
+    )
+except Exception:  # pragma: no cover
+    from performance_policy import (  # type: ignore
+        DENSE_SVM_APPROX_THRESHOLD,
+        DENSE_SVM_NYSTROEM_COMPONENTS,
+        dense_search_limits,
+        predict_in_chunks,
+        svm_nystroem_components,
+        tuning_subset,
+    )
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import KFold
@@ -102,8 +122,36 @@ def _build_param_grid(grid_params):
     ]
 
 
-def _make_pipeline(params):
+def _make_pipeline(params, sample_count=None):
     """Create a scaler + SVR pipeline with radial kernel."""
+    if sample_count is not None and int(sample_count) > DENSE_SVM_APPROX_THRESHOLD:
+        from sklearn.kernel_approximation import Nystroem
+        from sklearn.svm import LinearSVR
+
+        return Pipeline(
+            steps=[
+                ("scaler", StandardScaler()),
+                (
+                    "rbf_features",
+                    Nystroem(
+                        kernel="rbf",
+                        gamma=float(params["gamma"]),
+                        n_components=min(svm_nystroem_components(sample_count), int(sample_count)),
+                        random_state=20,
+                    ),
+                ),
+                (
+                    "svr",
+                    LinearSVR(
+                        C=float(params["C"]),
+                        epsilon=float(params["epsilon"]),
+                        random_state=20,
+                        max_iter=3000,
+                        tol=1e-3,
+                    ),
+                ),
+            ]
+        )
     return Pipeline(
         steps=[
             ("scaler", StandardScaler()),
@@ -124,7 +172,7 @@ def _cv_rmse_for_params(X, y, params, cv_folds=3, random_state=20):
     """Evaluate one SVM parameter combination with K-fold CV."""
     n = len(y)
     if n < 3:
-        model = _make_pipeline(params)
+        model = _make_pipeline(params, sample_count=len(y))
         model.fit(X, y)
         pred = model.predict(X)
         rmse = float(math.sqrt(mean_squared_error(y, pred)))
@@ -135,7 +183,7 @@ def _cv_rmse_for_params(X, y, params, cv_folds=3, random_state=20):
 
     rmses = []
     for train_idx, test_idx in splitter.split(X):
-        model = _make_pipeline(params)
+        model = _make_pipeline(params, sample_count=len(train_idx))
         model.fit(X[train_idx], y[train_idx])
         pred = model.predict(X[test_idx])
         rmse = float(math.sqrt(mean_squared_error(y[test_idx], pred)))
@@ -154,7 +202,11 @@ def _prepare_feature_matrices(points_df, grid_df, target_column, covariate_colum
     if not feature_columns:
         raise ValueError("Select at least one predictor for SVM interpolation.")
     train_columns = list(dict.fromkeys([x_col, y_col, target_column] + feature_columns))
-    predict_columns = list(dict.fromkeys([x_col, y_col] + feature_columns))
+    grid_extra_cols = [
+        col for col in ("__flat_index", "__grid_row", "__grid_col")
+        if col in grid_df.columns
+    ]
+    predict_columns = list(dict.fromkeys([x_col, y_col] + grid_extra_cols + feature_columns))
 
     train_df = points_df[train_columns].copy()
     train_df = train_df.replace([np.inf, -np.inf], np.nan).dropna().reset_index(drop=True)
@@ -211,10 +263,16 @@ def _tune_svm(
             "epsilon": float(manual_params.get("epsilon", 0.1)),
         }
         _safe_progress(progress_fn, 1, 1, "Fitting manual SVM model…")
-        model = _make_pipeline(params)
+        model = _make_pipeline(params, sample_count=len(y))
         model.fit(X, y)
         return model, params
 
+    cv_folds, max_iterations, _ = dense_search_limits(
+        len(y), cv_folds, max_iterations
+    )
+    X_search, y_search, subset_used = tuning_subset(
+        X, y, random_state=random_state
+    )
     all_candidates = _build_param_grid(grid_params or {})
     candidates = _sample_param_candidates(
         all_candidates,
@@ -229,8 +287,8 @@ def _tune_svm(
     for idx, params in enumerate(candidates, start=1):
         _safe_progress(progress_fn, idx - 1, total, f"SVM tuning {idx}/{total}…")
         rmse = _cv_rmse_for_params(
-            X,
-            y,
+            X_search,
+            y_search,
             params,
             cv_folds=cv_folds,
             random_state=random_state,
@@ -241,9 +299,22 @@ def _tune_svm(
 
     if best_params is None:
         best_params = {"C": 1.0, "gamma": 0.1, "epsilon": 0.1}
+    else:
+        best_params = dict(best_params)
+    best_params.update(
+        {
+            "cv_rmse": float(best_rmse),
+            "cv_folds": int(cv_folds),
+            "search_n": int(len(candidates)),
+            "search_subset_n": int(len(y_search)),
+            "search_full_n": int(len(y)),
+        }
+    )
 
     _safe_progress(progress_fn, total, total, "Fitting best SVM model…")
-    model = _make_pipeline(best_params)
+    model = _make_pipeline(best_params, sample_count=len(y))
+    # Hyperparameter selection may use a bounded representative subset, but
+    # the production model always consumes every valid observation.
     model.fit(X, y)
     return model, best_params
 
@@ -322,14 +393,25 @@ def svm_interpolation(
     )
 
     _safe_progress(progress_fn, 0, 0, "Predicting SVM interpolation grid…")
-    pred_train = model.predict(X_train)
-    pred_grid = model.predict(X_pred)
+    pred_train = predict_in_chunks(
+        model, X_train, progress_fn=progress_fn, label="Evaluating SVM training fit…"
+    )
+    pred_grid = predict_in_chunks(
+        model, X_pred, progress_fn=progress_fn, label="Predicting SVM interpolation grid…"
+    )
 
     train_mae = float(mean_absolute_error(y_train, pred_train))
     train_rmse = float(math.sqrt(mean_squared_error(y_train, pred_train)))
 
     grid_with_pred = pred_df.copy()
     grid_with_pred[f"{target_column}_pred"] = np.asarray(pred_grid, dtype=float)
+    if "__flat_index" in grid_df.columns and "__flat_index" in grid_with_pred.columns:
+        grid_with_pred = pd.merge(
+            grid_df.copy(),
+            grid_with_pred[["__flat_index", f"{target_column}_pred"]],
+            on="__flat_index",
+            how="left",
+        )
 
     return {
         "model": model,

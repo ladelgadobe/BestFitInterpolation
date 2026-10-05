@@ -20,3 +20,7 @@ dist/
 
 # Installed locally on first use of machine-learning methods.
 bestfitinterpolator/_deps/
+
+# Generated compatibility evidence is published as CI artifacts.
+compatibility-results/
+ci/.cache/

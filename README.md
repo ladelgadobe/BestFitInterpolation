@@ -229,3 +229,7 @@ GitHub also provides its native **Cite this repository** option from [`CITATION.
 Spatial interpolation support for digital soil mapping and precision agriculture.
 
 </div>
+# Development compatibility verification
+
+The current development plugin includes the interface refinements and temporary browser HTML report. Automated QGIS compatibility uses official Docker images, a fast/full GitHub Actions matrix, numerical regression fixtures and the read-only QGIS 4 checker. See [methodology and verified evidence](docs/qgis_compatibility.md) and the [pre-change audit](docs/qgis_compatibility_audit.md). Existing metadata eligibility is not a claim that every version has passed. A compatibility badge will be added only after the workflow is stable.
+

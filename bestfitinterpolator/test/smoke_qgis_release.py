@@ -29,7 +29,7 @@ print(f"Tabs: {tabs}")
 print(f"About version: {version}")
 
 assert tabs[-1] == "About"
-assert version == "Version 1.1"
+assert version == "Version 1.2"
 
 dialog.deleteLater()
 app.exitQgis()

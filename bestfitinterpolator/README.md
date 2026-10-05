@@ -38,6 +38,18 @@ The plugin combines deterministic, geostatistical, machine-learning, and hybrid 
 - Interpolation map generation directly inside QGIS.
 - PDF report support for framework validation outputs.
 
+## Version 1.2 Local Evaluation
+
+- Framework can prepare, validate, and run RF, SVM, and RK without first running their individual method pages.
+- Framework observed-vs-predicted plots use shared axes across methods; RF/SVM previews use observed target-value limits to avoid misleading SVM-only autoscaling.
+- Runtime profiles are classified as normal (up to 500 valid samples), dense (501 to 10,000), and massive/productivity-scale (above 10,000).
+- Massive datasets above 10,000 valid samples use up to 10,000 spatially representative samples for Framework method-comparison validation; point maps use rasterized scatter or hexbin views so the display can use all points without creating thousands of interactive vector markers.
+- Moran's I uses all valid samples, keeps k=8 and 199 permutations, and is optimized with spatial indexing plus exact-result caching instead of sample-based approximation.
+- Productivity-scale datasets above 10,000 samples activate the massive profile: RF is capped at 300 trees with minimum leaf size 5, SVM uses a 128-component Nyström approximation, massive ML validation uses a reproducible hold-out split, semivariograms use fewer legible lags, and IDW/Moran/variogram stages avoid dense pairwise distance matrices.
+- RF/SVM final interpolation writes GeoTIFF rasters in row blocks with tiled/BigTIFF output and switches the in-plugin map preview to sampled or hexbin drawing for large grids, so a completed model fit does not have to allocate a full display raster in memory.
+- Data and Framework diagnostics stop early with a CRS alert when point and polygon layers do not share the same CRS.
+- Dense-method choices are disclosed to the user and written to raster metadata where applicable.
+
 ## Version 1.1
 
 - Keeps the Framework semivariogram preview synchronized with Geostatistics.
@@ -102,3 +114,18 @@ Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Poz
 
 - Homepage: https://github.com/ladelgadobe/BestFitInterpolation
 - Issues: https://github.com/ladelgadobe/BestFitInterpolation/issues
+
+
+## Development delivery — 2026-10-03
+
+This incremental development ZIP adds Spatial Data Diagnostics, shared advanced semivariogram settings, Framework Map Comparison and a paginated Report Builder. Verified in QGIS 3.44.8; other versions remain untested. See [implementation report](docs/IMPLEMENTATION_REPORT.md) and [compatibility matrix](docs/COMPATIBILITY_MATRIX.md). Metadata remains 1.2; this is not a published release.
+
+
+## Interface refinement — 2026-10-03
+
+Clean session reset on reopening; Data → Outlier diagnostic; gradient palettes in popup settings; synchronized Larger View; compact RK controls; evaluated-method Comparison; explicit executed-method provenance. See [UI revision report](docs/UI_REVISION_REPORT.md).
+
+
+## Interface feedback — 2026-10-03
+
+Validation has no palette controls. IDW/TPS have separate subtle borders. RF runs only from Interpolation; RK panels stay side by side with a shared Adjust semivariogram dialog. Framework starts empty and isolates standalone results. Compare maps retains full grid extents. Report includes a navigable session summary and portable HTML export with embedded images.

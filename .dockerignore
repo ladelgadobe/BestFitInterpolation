@@ -1,0 +1,6 @@
+.git
+.pytest_cache
+**/__pycache__
+**/_deps
+compatibility-results
+*.zip

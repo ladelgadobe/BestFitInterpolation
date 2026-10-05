@@ -1,0 +1,8 @@
+{
+  "fast": ["3.14", "3.44", "4.0", "latest4"],
+  "full": ["3.14", "3.16", "3.22", "3.28", "3.34", "3.40", "3.44", "4.0", "4.2", "latest4"],
+  "required": ["3.14", "3.44", "4.0", "latest4"],
+  "pdf": ["3.44", "4.0", "latest4"],
+  "official_repository": "qgis/qgis",
+  "checker_image": "ghcr.io/qgis/pyqgis4-checker:main-ubuntu"
+}

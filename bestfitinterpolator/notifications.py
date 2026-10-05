@@ -47,7 +47,11 @@ class PopupMessageBar:
         if duration is not None:
             call_kwargs["duration"] = duration
         if level is not None:
-            call_kwargs["level"] = level
+            from qgis.core import Qgis
+            from .compat import enum_value
+            names=("Info","Warning","Critical","Success")
+            value=getattr(level,"value",level)
+            call_kwargs["level"]=enum_value(Qgis,"MessageLevel",names[max(0,min(3,int(value)))])
         args = (title,) if message in (None, "") else (title, message)
         return method(*args, **call_kwargs)
 
@@ -62,7 +66,7 @@ class PopupMessageBar:
         """Display alerts as popups and informational messages in the QGIS bar."""
         window_title, text = self._title_and_text(title, message)
         try:
-            numeric_level = int(level)
+            numeric_level = int(getattr(level,"value",level))
         except Exception:
             numeric_level = 0
 

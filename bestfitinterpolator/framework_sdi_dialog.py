@@ -10,6 +10,10 @@ All code comments are in English.
 """
 
 from __future__ import annotations
+from .theme import save_figure
+from .compat import enum_value, qt_exec
+from .semivariogram_engine import SemivariogramEngine
+from .theme import COLORS
 
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
@@ -18,6 +22,21 @@ import math
 import os
 import tempfile
 import numpy as np
+
+try:
+    from .variogram_utils import (
+        bin_experimental_variogram,
+        max_pairwise_distance,
+        nearest_neighbor_distance,
+        safe_lag_width,
+    )
+except Exception:  # pragma: no cover
+    from variogram_utils import (  # type: ignore
+        bin_experimental_variogram,
+        max_pairwise_distance,
+        nearest_neighbor_distance,
+        safe_lag_width,
+    )
 
 try:
     from qgis.PyQt.QtCore import Qt, QCoreApplication
@@ -37,8 +56,11 @@ try:
         QDialogButtonBox,
         QWidget,
     )
-    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
+    try:
+        from .mpl_compat import FigureCanvas
+    except Exception:  # pragma: no cover
+        from mpl_compat import FigureCanvas  # type: ignore
     from matplotlib.ticker import MaxNLocator, ScalarFormatter
 except Exception:  # pragma: no cover
     from qgis.PyQt.QtCore import Qt, QCoreApplication
@@ -58,8 +80,11 @@ except Exception:  # pragma: no cover
         QDialogButtonBox,
         QWidget,
     )
-    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
+    try:
+        from .mpl_compat import FigureCanvas
+    except Exception:  # pragma: no cover
+        from mpl_compat import FigureCanvas  # type: ignore
     from matplotlib.ticker import MaxNLocator, ScalarFormatter
 
 try:
@@ -89,9 +114,15 @@ class SemivariogramInputs:
 class FrameworkSDIDialog(QDialog):
     """Popup dialog used to compute SDI from the current Framework dataset."""
 
-    def __init__(self, parent: Optional[QWidget] = None, plugin: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        plugin: Optional[Any] = None,
+        framework_ctrl: Optional[Any] = None,
+    ) -> None:
         super().__init__(parent)
         self.plugin = plugin
+        self.framework_ctrl = framework_ctrl or getattr(plugin, "framework_ctrl", None)
         self.setWindowTitle("Framework SDI / Semivariogram")
         self.resize(1080, 690)
 
@@ -138,15 +169,11 @@ class FrameworkSDIDialog(QDialog):
 
         self.cmb_model = QComboBox()
         self.cmb_model.addItems(["Automatic", "Spherical", "Exponential", "Gaussian"])
-        self.btn_model_validation = QPushButton("View validation")
-        self.btn_model_validation.setToolTip(
-            "View the Framework validation used to compare the Spherical, Exponential, and Gaussian kriging models."
-        )
+        self.btn_model_validation = None
         model_row = QWidget()
         model_layout = QHBoxLayout(model_row)
         model_layout.setContentsMargins(0, 0, 0, 0)
         model_layout.addWidget(self.cmb_model)
-        model_layout.addWidget(self.btn_model_validation)
 
         self.spin_nugget = self._make_double_spin(0.0, 1e12, 6)
         self.spin_psill = self._make_double_spin(0.0, 1e12, 6)
@@ -194,7 +221,7 @@ class FrameworkSDIDialog(QDialog):
         top_layout.addLayout(right_col, 1)
         root.addLayout(top_layout, 1)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Close)
+        self.button_box = QDialogButtonBox(enum_value(QDialogButtonBox, "StandardButton", "Close"))
         root.addWidget(self.button_box)
 
         self.btn_autofill.clicked.connect(self._autofill_from_plugin)
@@ -203,7 +230,6 @@ class FrameworkSDIDialog(QDialog):
         self.button_box.rejected.connect(self.reject)
 
         self.cmb_model.currentIndexChanged.connect(self._on_model_changed)
-        self.btn_model_validation.clicked.connect(self._on_model_validation_clicked)
         for w in (self.spin_nugget, self.spin_psill, self.spin_range):
             w.valueChanged.connect(self._on_manual_params_changed)
         self.spin_lag_width.valueChanged.connect(self._on_structure_control_changed)
@@ -211,7 +237,7 @@ class FrameworkSDIDialog(QDialog):
 
     def _install_canvas_menu(self) -> None:
         try:
-            self.canvas.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.canvas.setContextMenuPolicy(enum_value(Qt, "ContextMenuPolicy", "CustomContextMenu"))
             self.canvas.customContextMenuRequested.connect(self._show_canvas_context_menu)
         except Exception:  # nosec B110
             pass
@@ -221,14 +247,14 @@ class FrameworkSDIDialog(QDialog):
         act_view = menu.addAction("View larger view")
         act_copy = menu.addAction("Copy graph")
         act_save = menu.addAction("Save graph")
-        chosen = menu.exec_(self.canvas.mapToGlobal(pos))
+        chosen = qt_exec(menu, self.canvas.mapToGlobal(pos))
         if chosen == act_copy:
             self._copy_figure_to_clipboard()
         elif chosen == act_save:
             suggested = os.path.join(tempfile.gettempdir(), "framework_sdi_semivariogram.png")
             path, _ = QFileDialog.getSaveFileName(self, "Save graph", suggested, "PNG Images (*.png)")
             if path:
-                self.fig.savefig(path, dpi=300, bbox_inches="tight")
+                save_figure(self.fig, path, dpi=300, bbox_inches="tight")
         elif chosen == act_view:
             self._show_larger_graph()
 
@@ -239,7 +265,7 @@ class FrameworkSDIDialog(QDialog):
             from qgis.PyQt.QtGui import QPixmap
             from qgis.PyQt.QtWidgets import QApplication
             buf = io.BytesIO()
-            self.fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+            save_figure(self.fig, buf, format="png", dpi=300, bbox_inches="tight")
             pixmap = QPixmap()
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
@@ -247,39 +273,28 @@ class FrameworkSDIDialog(QDialog):
             QMessageBox.warning(self, "Copy graph", f"Could not copy graph:\n{exc}")
 
     def _show_larger_graph(self) -> None:
-        try:
-            import io
-            import matplotlib.image as mpimg
-            dlg = QDialog(self)
-            dlg.setWindowTitle("Semivariogram - larger view")
-            layout = QVBoxLayout(dlg)
-            fig = Figure(figsize=(9, 6.5))
-            canvas = FigureCanvas(fig)
-            layout.addWidget(canvas)
-            buf = io.BytesIO()
-            self.fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
-            buf.seek(0)
-            arr = mpimg.imread(buf)
-            ax = fig.add_subplot(111)
-            ax.imshow(arr)
-            ax.axis("off")
-            canvas.draw()
-            dlg.resize(980, 720)
-            dlg.exec_()
-        except Exception as exc:
-            QMessageBox.warning(self, "View larger view", f"Could not open larger view:\n{exc}")
+        from .larger_view import show_larger_view
+        return show_larger_view(self.fig,self,'Semivariogram Larger view')
 
     # ------------------------------------------------------------------
     # Context loading
     # ------------------------------------------------------------------
     def _load_current_context(self) -> None:
+        data = None
+        read_error = None
         try:
-            data = self._read_plugin_dataset()
+            data = self._read_framework_state_dataset()
+            if data is None:
+                data = self._read_plugin_dataset()
+            if data is None:
+                data = self._read_framework_collected_dataset()
         except Exception as exc:
-            QMessageBox.warning(self, "Framework SDI", f"Failed to read current data\n{exc}")
-            return
+            read_error = exc
 
         if data is None:
+            if read_error is not None:
+                QMessageBox.warning(self, "Framework SDI", f"Failed to read current data\n{read_error}")
+                return
             QMessageBox.warning(
                 self,
                 "Framework SDI",
@@ -296,6 +311,78 @@ class FrameworkSDIDialog(QDialog):
 
         self._seed_defaults()
         self._recompute_plot()
+
+    def _framework_controller(self):
+        return getattr(self, "framework_ctrl", None) or (
+            getattr(self.plugin, "framework_ctrl", None) if self.plugin is not None else None
+        )
+
+    def _read_framework_state_dataset(self) -> Optional[SemivariogramInputs]:
+        """Read the data arrays already loaded in the Framework tab."""
+        framework_ctrl = self._framework_controller()
+        state = getattr(framework_ctrl, "state", None) if framework_ctrl is not None else None
+        if state is None:
+            return None
+        d = getattr(state, "__dict__", {})
+        try:
+            x = np.asarray(d.get("x", []), dtype=float)
+            y = np.asarray(d.get("y", []), dtype=float)
+            z = np.asarray(d.get("z", []), dtype=float)
+        except Exception:
+            return None
+        if x.size == 0 or y.size == 0 or z.size == 0:
+            return None
+        if x.size != y.size or x.size != z.size:
+            return None
+        try:
+            mask = np.isfinite(x) & np.isfinite(y) & np.isfinite(z)
+            x, y, z = x[mask], y[mask], z[mask]
+        except Exception:
+            return None
+        if z.size < 5:
+            return None
+        return SemivariogramInputs(
+            x=x,
+            y=y,
+            z=z,
+            variable_name=str(getattr(state, "variable_name", "") or d.get("variable_name", "")),
+        )
+
+    def _read_framework_collected_dataset(self) -> Optional[SemivariogramInputs]:
+        """Ask the Framework controller to collect current Data tab values."""
+        framework_ctrl = self._framework_controller()
+        collector = getattr(framework_ctrl, "_collect_current_plugin_data", None)
+        if not callable(collector):
+            return None
+        data = collector()
+        if not data:
+            return None
+        try:
+            if hasattr(framework_ctrl, "load_from_data_tab"):
+                framework_ctrl.load_from_data_tab(data)
+        except Exception:  # nosec B110
+            pass
+        try:
+            x = np.asarray(data.get("x", []), dtype=float)
+            y = np.asarray(data.get("y", []), dtype=float)
+            z = np.asarray(data.get("z", []), dtype=float)
+        except Exception:
+            return None
+        if x.size != y.size or x.size != z.size:
+            return None
+        try:
+            mask = np.isfinite(x) & np.isfinite(y) & np.isfinite(z)
+            x, y, z = x[mask], y[mask], z[mask]
+        except Exception:
+            return None
+        if z.size < 5:
+            return None
+        return SemivariogramInputs(
+            x=x,
+            y=y,
+            z=z,
+            variable_name=str(data.get("variable_name", "")),
+        )
 
     def _read_plugin_dataset(self) -> Optional[SemivariogramInputs]:
         if self.plugin is None or not hasattr(self.plugin, "dlg"):
@@ -353,7 +440,7 @@ class FrameworkSDIDialog(QDialog):
     # ------------------------------------------------------------------
     def _load_persisted_framework_params(self) -> Optional[Dict[str, Any]]:
         """Read the last semivariogram configuration stored in Framework state."""
-        framework_ctrl = getattr(self.plugin, "framework_ctrl", None) if self.plugin is not None else None
+        framework_ctrl = self._framework_controller()
         if framework_ctrl is None:
             return None
         state = getattr(framework_ctrl, "state", None)
@@ -388,7 +475,7 @@ class FrameworkSDIDialog(QDialog):
         seeded_nugget = None
         seeded_psill = None
         seeded_range = None
-        persisted = None
+        persisted = self._load_persisted_framework_params()
         if persisted is not None:
             try:
                 if persisted.get("model"):
@@ -555,7 +642,7 @@ class FrameworkSDIDialog(QDialog):
         self._sync_framework_preview()
 
     def _on_model_validation_clicked(self) -> None:
-        framework_ctrl = getattr(self.plugin, "framework_ctrl", None)
+        framework_ctrl = self._framework_controller()
         if framework_ctrl is not None and hasattr(framework_ctrl, "_show_ok_model_validation_dialog"):
             framework_ctrl._show_ok_model_validation_dialog()
             return
@@ -672,7 +759,7 @@ class FrameworkSDIDialog(QDialog):
         """Push current SDI values to the Framework preview without closing the dialog."""
         if self._result is None:
             return
-        framework_ctrl = getattr(self.plugin, "framework_ctrl", None) if self.plugin is not None else None
+        framework_ctrl = self._framework_controller()
         if framework_ctrl is None:
             return
         try:
@@ -786,9 +873,10 @@ class FrameworkSDIDialog(QDialog):
             QMessageBox.warning(self, "Framework SDI", "No valid SDI result is available.")
             return
 
-        if self.plugin is not None and getattr(self.plugin, "framework_ctrl", None) is not None:
+        framework_ctrl = self._framework_controller()
+        if framework_ctrl is not None:
             try:
-                self.plugin.framework_ctrl.load_sdi_result(self._result)
+                framework_ctrl.load_sdi_result(self._result)
                 QMessageBox.information(self, "Framework SDI", "SDI values were sent to the Framework overview.")
             except Exception as exc:
                 QMessageBox.warning(self, "Framework SDI", f"Failed to update Framework overview\n{exc}")
@@ -820,7 +908,7 @@ class FrameworkSDIDialog(QDialog):
         xmax = max(float(self.spin_max_distance.value()), float(lags_plot.max()) if lags_plot.size else 1.0)
         h_line = np.linspace(0.0, xmax, 200)
         th = self._model_func(h_line, model, nugget, psill, rng)
-        label = f"Theoretical ({self.cmb_model.currentText()} — {self._fit_method})"
+        label = f"Theoretical ({self.cmb_model.currentText()} {self._fit_method})"
         ax.plot(h_line, th, '-', label=label, color=TH_COLOR, linewidth=2)
 
         title = "Semivariogram (REML model)" if mode == "reml" else "Semivariogram"
@@ -885,61 +973,14 @@ class FrameworkSDIDialog(QDialog):
     # ------------------------------------------------------------------
     @staticmethod
     def _pairwise_distances(x, y):
-        n = x.size
-        d = np.empty(n * (n - 1) // 2, dtype=float)
-        k = 0
-        for i in range(n - 1):
-            dx = x[i + 1:] - x[i]
-            dy = y[i + 1:] - y[i]
-            m = np.hypot(dx, dy)
-            d[k:k + m.size] = m
-            k += m.size
-        return d
+        return np.asarray([max_pairwise_distance(x, y)], dtype=float)
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        n = x.size
-        if n < 2:
-            return np.nan
-        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
-                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
-                    1.0)
-        zero_tol = np.finfo(float).eps * scale * 32.0
-        dmin = np.inf
-        for i in range(n):
-            dx = x - x[i]
-            dy = y - y[i]
-            dist = np.hypot(dx, dy)
-            dist[i] = np.inf
-            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
-            if dist.size == 0:
-                continue
-            mi = float(np.min(dist))
-            if mi < dmin:
-                dmin = mi
-        return dmin if np.isfinite(dmin) else np.nan
+        return nearest_neighbor_distance(x, y)
 
     def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
-        try:
-            cutoff = float(cutoff)
-        except Exception:
-            cutoff = np.nan
-        if not np.isfinite(cutoff) or cutoff <= 0:
-            return np.nan
-        try:
-            lag_width = float(lag_width)
-        except Exception:
-            lag_width = np.nan
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = float(self._nearest_neighbor_dist(x, y))
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = cutoff / 12.0
-        min_width = cutoff / float(max(1, int(max_bins)))
-        if lag_width < min_width:
-            lag_width = min_width
-        return float(lag_width)
+        return safe_lag_width(x, y, cutoff, lag_width, max_bins=max_bins)
 
     @staticmethod
     def _semivariances(z):
@@ -949,123 +990,15 @@ class FrameworkSDIDialog(QDialog):
         return gamma
 
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
-        cutoff = float(cutoff)
-        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
-        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
-            return np.array([], dtype=float), np.array([], dtype=float)
-        nbins = max(1, int(math.floor(cutoff / lag_width)))
-        if nbins > 10000:
-            nbins = 10000
-            lag_width = cutoff / float(nbins)
-        sums = np.zeros(nbins, dtype=float)
-        counts = np.zeros(nbins, dtype=int)
-        dists = np.zeros(nbins, dtype=float)
-        gamma_of = self._semivariances(z)
-        n = x.size
-        for i in range(n - 1):
-            xi, yi, zi = x[i], y[i], z[i]
-            xj = x[i + 1:]
-            yj = y[i + 1:]
-            zj = z[i + 1:]
-            dd = np.hypot(xj - xi, yj - yi)
-            mask = (dd > 0) & (dd <= cutoff)
-            if not np.any(mask):
-                continue
-            dd = dd[mask]
-            gj = gamma_of(zi, zj[mask])
-            bin_idx = np.floor(dd / lag_width).astype(int)
-            bin_idx[bin_idx == nbins] = nbins - 1
-            for b, dval, gval in zip(bin_idx, dd, gj):
-                sums[b] += gval
-                counts[b] += 1
-                dists[b] += dval
-        valid = counts > 0
-        default_centers = np.linspace(lag_width * 0.5, nbins * lag_width - lag_width * 0.5, nbins)
-        lags = np.where(valid, dists / np.maximum(counts, 1), default_centers)
-        gamma = np.where(valid, sums / np.maximum(counts, 1), np.nan)
-        keep = ~np.isnan(gamma)
-        return lags[keep], gamma[keep]
+        lags, gamma, info = bin_experimental_variogram(
+            x, y, z, cutoff, lag_width, return_info=True
+        )
+        self._variogram_pair_info = info
+        return lags, gamma
 
     def _guess_initial_params(self, lags, gamma, cutoff, model="exponential"):
-        lags = np.asarray(lags, dtype=float)
-        gamma = np.asarray(gamma, dtype=float)
-        keep = np.isfinite(lags) & np.isfinite(gamma) & (lags > 0)
-        lags = lags[keep]
-        gamma = gamma[keep]
-
-        if lags.size == 0:
-            return 0.0, 1.0, max(1.0, cutoff * 0.4)
-
-        order = np.argsort(lags)
-        lags = lags[order]
-        gamma = gamma[order]
-
-        first_vals = gamma[:max(1, min(3, gamma.size))]
-        tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
-
-        first_bin = float(first_vals[0]) if first_vals.size else 0.0
-        first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
-
-        nugget_intercept = first_bin
-        if lags.size >= 2:
-            h1, h2 = float(lags[0]), float(lags[1])
-            g1, g2 = float(gamma[0]), float(gamma[1])
-            if abs(h2 - h1) > 1e-12:
-                slope = (g2 - g1) / (h2 - h1)
-                nugget_intercept = float(g1 - slope * h1)
-
-        nugget_floor = 0.75 * first_bin
-        nugget_seed = float(max(0.0, max(max(0.0, nugget_intercept), nugget_floor, first_bin)))
-        plateau_seed = float(np.nanmedian(tail_vals))
-        max_seed = float(np.nanmax(gamma))
-        sill_total_seed = max(plateau_seed, max_seed, first_max, nugget_seed + 1e-6)
-
-        target = 0.90 * sill_total_seed
-        idx = np.where(gamma >= target)[0]
-        if idx.size > 0:
-            range_seed = float(lags[idx[0]])
-        else:
-            range_seed = float(0.60 * cutoff)
-        range_seed = max(range_seed, float(np.nanmin(lags)), 1e-9)
-
-        nugget_cap = max(0.0, min(first_max, 0.90 * sill_total_seed))
-        nugget_seed = float(np.clip(nugget_seed, 0.0, nugget_cap)) if nugget_cap > 0 else 0.0
-        nugget_candidates = np.array([nugget_seed], dtype=float)
-
-        lag_min = max(float(np.nanmin(lags)), 1e-9)
-        lag_max = max(float(np.nanmax(lags)), lag_min)
-        low = max(lag_min, 0.20 * range_seed)
-        high = max(low * 1.05, min(float(cutoff), max(lag_max * 1.15, range_seed * 1.8, low)))
-        range_candidates = np.unique(np.concatenate([
-            np.linspace(low, high, 28),
-            np.array([range_seed, 0.5 * cutoff, 0.75 * cutoff, lag_max], dtype=float),
-        ]))
-        range_candidates = range_candidates[np.isfinite(range_candidates) & (range_candidates > 0)]
-
-        lag_scale = max(float(np.nanmedian(lags)), 1e-9)
-        weights = 1.0 / (1.0 + (lags / lag_scale))
-
-        best = None
-        model_token = self._normalize_model_token(model)
-
-        for nugget in nugget_candidates:
-            y = gamma - float(nugget)
-            for rng in range_candidates:
-                basis = self._model_func(lags, model_token, 0.0, 1.0, float(rng))
-                denom = float(np.sum(weights * basis * basis))
-                if denom <= 0:
-                    continue
-                psill = float(np.sum(weights * basis * y) / denom)
-                psill = max(psill, 1e-9)
-                pred = float(nugget) + psill * basis
-                sse = float(np.sum(weights * (gamma - pred) ** 2))
-                sse += 1e-6 * (float(rng) / max(float(cutoff), 1e-9)) ** 2
-                if (best is None) or (sse < best[0]):
-                    best = (sse, float(nugget), float(psill), float(rng))
-
-        if best is None:
-            return nugget_seed, max(1e-9, sill_total_seed - nugget_seed), range_seed
-        return best[1], best[2], best[3]
+        """Use the shared numerical engine without changing the established policy."""
+        return SemivariogramEngine("framework_sdi")._guess_initial_params(lags,gamma,cutoff,model)
 
     @staticmethod
     def _normalize_model_token(model_text: str) -> str:
@@ -1079,20 +1012,8 @@ class FrameworkSDIDialog(QDialog):
         return 'exponential'
 
     def _model_func(self, h, model, nugget, psill, rng):
-        """Use the same theoretical variogram equations as the geostatistics tab."""
-        h = np.asarray(h, dtype=float)
-        c0 = float(nugget)
-        c = float(psill)
-        a = max(float(rng), 1e-9)
-        model = self._normalize_model_token(model)
-        if model == 'spherical':
-            hr = np.clip(h / a, 0.0, 1.0)
-            sph = c * (1.5 * hr - 0.5 * (hr ** 3))
-            return np.where(h <= a, c0 + sph, c0 + c)
-        elif model == 'gaussian':
-            return c0 + c * (1.0 - np.exp(-(h * h) / (a * a)))
-        else:
-            return c0 + c * (1.0 - np.exp(-h / a))
+        """Use the shared numerical engine without changing the established policy."""
+        return SemivariogramEngine("framework_sdi")._model_func(h,model,nugget,psill,rng)
 
     @staticmethod
     def _classify_sdi(sdi: float) -> str:
@@ -1112,7 +1033,7 @@ class FrameworkSDIDialog(QDialog):
         spin.setRange(minimum, maximum)
         spin.setDecimals(decimals)
         spin.setSingleStep(0.1)
-        spin.setAlignment(Qt.AlignRight)
+        spin.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignRight"))
         return spin
 
     @staticmethod

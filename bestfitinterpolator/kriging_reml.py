@@ -230,12 +230,21 @@ def fit_variogram_reml(
 # Prediction
 # ----------------------------
 
-def ok_predict(coords, values, params, pred_coords, return_var=True, trend_degree=0):
+def ok_predict(
+    coords,
+    values,
+    params,
+    pred_coords,
+    return_var=True,
+    trend_degree=0,
+    chunk_size=10000,
+    progress_fn=None,
+):
     XY = _ensure_2d_coords(coords)
     y = np.asarray(values, float).ravel()
     XP = _ensure_2d_coords(pred_coords)
     model, ps, a, ng = params["model"], params["psill"], params["range"], params["nugget"]
-    X, Xp = _design_matrix(XY, trend_degree), _design_matrix(XP, trend_degree)
+    X = _design_matrix(XY, trend_degree)
     C = _cov_matrix(XY, ps, a, ng, model)
     L = np.linalg.cholesky(C)
     def chol_solve(B): v = np.linalg.solve(L, B); return np.linalg.solve(L.T, v)
@@ -244,20 +253,28 @@ def ok_predict(coords, values, params, pred_coords, return_var=True, trend_degre
     XtCiX = X.T @ Ci_X
     XtCiX_inv = np.linalg.inv(XtCiX)
     beta = XtCiX_inv @ (X.T @ Ci_y)
-    d_cross = np.sqrt(((XY[:, None, :] - XP[None, :, :]) ** 2).sum(axis=2))
-    K = ps * _rho(d_cross, model, a)
     yc = y - X @ beta
     w = Ci(yc)
-    pred = Xp @ beta + K.T @ w
-    if not return_var:
-        return pred, None
-    Ci_K = Ci(K)
-    XTCiK = X.T @ Ci_K
-    middle = Xp.T - XTCiK
-    term_gls = np.einsum("ij,jk,ki->i", middle.T, XtCiX_inv, middle)
-    kCik = np.sum(K * Ci_K, axis=0)
-    var = ps - kCik + term_gls
-    var = np.maximum(var, 0.0)
+    total = XP.shape[0]
+    block = max(1, int(chunk_size))
+    pred = np.empty(total, dtype=float)
+    var = np.empty(total, dtype=float) if return_var else None
+    for start in range(0, total, block):
+        end = min(total, start + block)
+        XP_block = XP[start:end]
+        Xp = _design_matrix(XP_block, trend_degree)
+        d_cross = np.sqrt(((XY[:, None, :] - XP_block[None, :, :]) ** 2).sum(axis=2))
+        K = ps * _rho(d_cross, model, a)
+        pred[start:end] = Xp @ beta + K.T @ w
+        if return_var:
+            Ci_K = Ci(K)
+            XTCiK = X.T @ Ci_K
+            middle = Xp.T - XTCiK
+            term_gls = np.einsum("ij,jk,ki->i", middle.T, XtCiX_inv, middle)
+            kCik = np.sum(K * Ci_K, axis=0)
+            var[start:end] = np.maximum(ps - kCik + term_gls, 0.0)
+        if progress_fn is not None:
+            progress_fn(end, total)
     return pred, var
 
 

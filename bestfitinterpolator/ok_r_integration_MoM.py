@@ -14,23 +14,30 @@ What this file does:
 Note:
 - The "MoM/REML" label in the UI is informational only. No REML fit is executed here.
 """
+from .theme import save_figure
+from .compat import enum_value, qt_exec
+from .theme import COLORS
 
+from .compat import ControllerConnections, is_alive, log_exception
 import math
 import os
 import tempfile
 import uuid
+from .semivariogram_engine import SemivariogramEngine
+from .diagnostics_ui import feature_in_analysis
+from .compat import geometry_type, enum_value
 import numpy as np
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QEvent
 from qgis.PyQt.QtGui import QCursor, QPixmap
 from qgis.PyQt.QtWidgets import (
     QProgressDialog, QFileDialog, QMenu, QToolTip,
     QDialog, QMessageBox, QSizePolicy, QTableWidget, QTableWidgetItem,
-    QHeaderView,
+    QHeaderView, QComboBox, QLabel, QSpinBox,
 )
 
 from qgis.PyQt.QtWidgets import QVBoxLayout
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from .mpl_compat import FigureCanvas
 from matplotlib.ticker import MaxNLocator, ScalarFormatter
 from matplotlib.path import Path as MplPath
 from matplotlib.patches import Polygon as MplPolygon
@@ -47,10 +54,26 @@ except Exception:
 
 # Pure-Python kriging backend (already used by your other path)
 from .kriging_ordinary import ordinary_kriging_interpolation
+from .grid_utils import build_inside_grid_points
+from .performance_policy import (
+    dense_method_notice,
+    is_dense_dataset,
+    is_massive_dataset,
+    representative_sample_indices,
+)
+from .validation_policy import decide_automatic_cv
+from .variogram_utils import (
+    bin_experimental_variogram,
+    max_pairwise_distance,
+    nearest_neighbor_distance,
+    safe_lag_width,
+)
 
 # Centralized colors
-EXP_COLOR = "#2f0dee"   # experimental points
-TH_COLOR  = "#000000"   # theoretical curve
+EXP_COLOR = COLORS["primary"]   # experimental points
+TH_COLOR  = COLORS["primary_dark"]   # theoretical curve
+GEOSTAT_DENSE_HOLDOUT_MAX_TEST = 2000
+GEOSTAT_MASSIVE_HOLDOUT_MAX_TEST = 5000
 
 
 class BestFitTemporaryRasterLayer(QgsRasterLayer):
@@ -59,7 +82,7 @@ class BestFitTemporaryRasterLayer(QgsRasterLayer):
         return True
 
 
-class OKTabController:
+class OKTabController(ControllerConnections):
     """Manages logic for the Ordinary Kriging tab (pure Python):
        - Computes the experimental variogram (Python)
        - Estimates initial parameters (Python, MoM-like heuristics)
@@ -114,6 +137,7 @@ class OKTabController:
         self._user_variogram_overrides = False
 
         self._dispatcher_active = True
+        self._semivariogram_stale = True
         self._wire_signals()
         # Initial SDI update
         try:
@@ -135,18 +159,12 @@ class OKTabController:
 
     # ------------------------- Model auto-selection --------------------------
 
-    @staticmethod
-    def _candidate_model_tokens():
-        return ("spherical", "exponential", "gaussian")
+    def _candidate_model_tokens(self):
+        return getattr(self, "_candidate_overrides", ("spherical", "exponential", "gaussian"))
 
     @staticmethod
     def _model_text_from_token(token: str) -> str:
-        token = str(token or "").strip().lower()
-        if token.startswith("sph"):
-            return "Sph"
-        if token.startswith("gau"):
-            return "Gau"
-        return "Exp"
+        return SemivariogramEngine("ok_mom")._model_text_from_token(token)
 
     def _ensure_model_selector_defaults(self):
         cmb = getattr(self.dlg, "cmbOKModel", None)
@@ -168,38 +186,7 @@ class OKTabController:
 
     @staticmethod
     def _validation_metrics(obs, pred):
-        obs = np.asarray(obs, dtype=float)
-        pred = np.asarray(pred, dtype=float)
-        mask = np.isfinite(obs) & np.isfinite(pred)
-        obs = obs[mask]
-        pred = pred[mask]
-        if obs.size < 2:
-            raise ValueError("not enough finite validation predictions")
-        err = obs - pred
-        rmse = float(np.sqrt(np.mean(err ** 2)))
-        mean_obs = float(np.mean(obs))
-        rmse_pct = float(100.0 * rmse / abs(mean_obs)) if abs(mean_obs) > 1e-12 else float("nan")
-        mae = float(np.mean(np.abs(err)))
-        ss_tot = float(np.sum((obs - np.mean(obs)) ** 2))
-        r2 = float(1.0 - (np.sum(err ** 2) / ss_tot)) if ss_tot > 0 else float("nan")
-        if obs.size >= 2 and float(np.std(obs, ddof=1)) > 0 and float(np.std(pred, ddof=1)) > 0:
-            pearson = float(np.corrcoef(obs, pred)[0, 1])
-        else:
-            pearson = float("nan")
-        mean_pred = float(np.mean(pred))
-        std_obs = float(np.std(obs))
-        std_pred = float(np.std(pred))
-        cov = float(np.mean((obs - mean_obs) * (pred - mean_pred)))
-        denom = std_obs ** 2 + std_pred ** 2 + (mean_obs - mean_pred) ** 2
-        lccc = float((2.0 * cov) / denom) if abs(denom) > 1e-12 else float("nan")
-        return {
-            "rmse": rmse,
-            "rmse_pct": rmse_pct,
-            "mae": mae,
-            "r2": r2,
-            "pearson": pearson,
-            "lccc": lccc,
-        }
+        return SemivariogramEngine("ok_mom")._validation_metrics(obs, pred)
 
     @staticmethod
     def _fmt_metric(value, decimals=3, suffix=""):
@@ -212,25 +199,10 @@ class OKTabController:
         return f"{value:.{decimals}f}{suffix}"
 
     def _evaluate_model_cv(self, model_key: str, x, y, z, cutoff, lagw):
-        lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
-        nugget, psill, rng = self._guess_initial_params(lags, gamma, cutoff, model=model_key)
-        preds = np.full(z.size, np.nan, dtype=float)
-        for i in range(z.size):
-            train = np.ones(z.size, dtype=bool)
-            train[i] = False
-            preds[i] = float(np.asarray(ordinary_kriging_interpolation(
-                x[train], y[train], z[train], [x[i]], [y[i]],
-                nugget=nugget, psill=psill, var_range=rng, model=model_key
-            )).ravel()[0])
-        metrics = self._validation_metrics(z, preds)
-        metrics.update({
-            "model": self._model_text_from_token(model_key),
-            "model_key": model_key,
-            "nugget": float(nugget),
-            "psill": float(psill),
-            "range": float(rng),
-        })
-        return metrics
+        return SemivariogramEngine("ok_mom")._evaluate_model_cv(model_key, x, y, z, cutoff, lagw)
+
+    def _evaluate_model_variogram_fit(self, model_key: str, x, y, z, cutoff, lagw):
+        return SemivariogramEngine("ok_mom")._evaluate_model_variogram_fit(model_key, x, y, z, cutoff, lagw)
 
     def _choose_best_model_by_validation(self, x, y, z, cutoff, lagw):
         rows = []
@@ -252,8 +224,9 @@ class OKTabController:
         ranked = sorted(
             rows,
             key=lambda r: (
-                -(float(r.get("r2")) if np.isfinite(float(r.get("r2", float("nan")))) else -1e300),
+                -(float(r.get("lccc")) if np.isfinite(float(r.get("lccc", float("nan")))) else -1e300),
                 float(r.get("rmse")) if np.isfinite(float(r.get("rmse", float("nan")))) else 1e300,
+                -(float(r.get("r2")) if np.isfinite(float(r.get("r2", float("nan")))) else -1e300),
             ),
         )
         best = ranked[0] if ranked else {"model_key": "exponential"}
@@ -278,78 +251,45 @@ class OKTabController:
             self._programmatic_variogram_update = False
         btn = getattr(self.dlg, "btnOKModelValidation", None)
         if btn is not None and hasattr(btn, "setToolTip"):
+            metric_text = (
+                f"LCCC={self._fmt_metric(best.get('lccc'))}; "
+                f"RMSE={self._fmt_metric(best.get('rmse'))}"
+            )
             btn.setToolTip(
                 f"Best automatic model: {self._model_text_from_token(self._auto_selected_model)} "
-                f"(R\u00b2={self._fmt_metric(best.get('r2'))}). Click to view all model validation results."
+                f"({metric_text}). Click to view all model validation results."
             )
         return self._auto_selected_model
 
     def _show_model_validation_dialog(self):
-        try:
-            if not self._model_validation_results:
-                x, y, z = self._read_xy_z()
-                if x is None:
-                    QMessageBox.information(self.dlg, "Kriging model validation", "Select a valid point layer and variable first.")
-                    return
-                cutoff = self._cutoff
-                lagw = self._lag_width
-                if cutoff is None or lagw is None:
-                    all_d = self._pairwise_distances(x, y)
-                    cutoff = 0.5 * float(np.nanmax(all_d))
-                    lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
-                self._choose_best_model_by_validation(x, y, z, cutoff, lagw)
-            dlg = QDialog(self.dlg)
-            dlg.setWindowTitle("Kriging model validation")
-            layout = QVBoxLayout(dlg)
-            table = QTableWidget(dlg)
-            headers = ["Model", "RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
-            rows = list(self._model_validation_results or [])
-            table.setColumnCount(len(headers))
-            table.setHorizontalHeaderLabels(headers)
-            table.setRowCount(len(rows))
-            for r, row in enumerate(rows):
-                values = [
-                    row.get("model", ""),
-                    self._fmt_metric(row.get("rmse")),
-                    self._fmt_metric(row.get("rmse_pct"), 2, "%"),
-                    self._fmt_metric(row.get("mae")),
-                    self._fmt_metric(row.get("r2")),
-                    self._fmt_metric(row.get("pearson")),
-                    self._fmt_metric(row.get("lccc")),
-                ]
-                for c, value in enumerate(values):
-                    table.setItem(r, c, QTableWidgetItem(str(value)))
-            try:
-                table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-            except Exception:
-                table.resizeColumnsToContents()
-            layout.addWidget(table)
-            dlg.resize(720, 260)
-            dlg.exec_()
-        except Exception as exc:
-            QMessageBox.warning(self.dlg, "Kriging model validation", f"Could not show validation:\n{exc}")
+        """Review current candidates in the shared asynchronous validation window."""
+        from .semivariogram_dialog import show_advanced_settings
+        self._ensure_inputs_from_ui()
+        self._model_validation_results=[]
+        show_advanced_settings(self,validate=True)
 
     # ------------------------------ Wiring ----------------------------------
 
     def _wire_signals(self):
         """Connect UI signals for Kriging tab."""
         self._ensure_model_selector_defaults()
+        self._ensure_lag_mode_controls()
         try:
-            self.dlg.mainTabs.currentChanged.connect(self._on_tab_changed)
+            self._connect(self.dlg.mainTabs.currentChanged, self._on_tab_changed)
         except Exception:  # nosec B110
             pass
 
         # Calculate (recompute experimental + overlay)
         if hasattr(self.dlg, "btnOKCalculate") and self.dlg.btnOKCalculate is not None:
             try:
-                self.dlg.btnOKCalculate.clicked.connect(self._on_recalculate_clicked)
+                self._connect(self.dlg.btnOKCalculate.clicked, self._on_recalculate_clicked)
             except Exception:  # nosec B110
                 pass
 
         # CV button (in validation tab)
         btn_cv = getattr(self.dlg, "btnOKRunCV", None)
         if btn_cv is not None:
-            btn_cv.clicked.connect(self._on_run_cv_clicked)
+            self._connect(btn_cv.clicked, self._on_run_cv_clicked)
 
         # Interpolate (map)
         self._hook_interpolate_button()
@@ -365,8 +305,8 @@ class OKTabController:
                 continue
             if hasattr(w, "valueChanged"):
                 try:
-                    w.valueChanged.connect(self._plot_with_model_if_possible)
-                    w.valueChanged.connect(self._update_sdi_label)
+                    self._connect(w.valueChanged, self._plot_with_model_if_possible)
+                    self._connect(w.valueChanged, self._update_sdi_label)
                 except Exception:  # nosec B110
                     pass
 
@@ -376,30 +316,166 @@ class OKTabController:
                 continue
             if hasattr(w, "valueChanged"):
                 try:
-                    w.valueChanged.connect(self._on_variogram_ui_changed)
+                    self._connect(w.valueChanged, self._on_variogram_ui_changed)
                 except Exception:  # nosec B110
                     pass
             if hasattr(w, "currentIndexChanged"):
                 try:
-                    w.currentIndexChanged.connect(self._on_variogram_ui_changed)
+                    self._connect(w.currentIndexChanged, self._on_variogram_ui_changed)
                 except Exception:  # nosec B110
                     pass
             if hasattr(w, "currentIndexChanged"):
                 try:
-                    w.currentIndexChanged.connect(self._plot_with_model_if_possible)
-                    w.currentIndexChanged.connect(self._update_sdi_label)
+                    self._connect(w.currentIndexChanged, self._plot_with_model_if_possible)
+                    self._connect(w.currentIndexChanged, self._update_sdi_label)
                 except Exception:  # nosec B110
                     pass
 
         btn_model_validation = getattr(self.dlg, "btnOKModelValidation", None)
         if btn_model_validation is not None and hasattr(btn_model_validation, "clicked"):
             try:
-                btn_model_validation.clicked.connect(self._show_model_validation_dialog)
+                self._connect(btn_model_validation.clicked, self._show_model_validation_dialog)
             except Exception:  # nosec B110
                 pass
 
+        for name in ("spinOKCutoff", "spinOKLag"):
+            widget = getattr(self.dlg, name, None)
+            if widget is not None:
+                self._connect(widget.valueChanged, self._schedule_rebin)
+
         # Data-layer and variable changes are coordinated by BestFitInterpolator._update_ok_context.
         # Do not connect them here; duplicate controller slots can fire while QGIS is rebuilding layers.
+
+    def _ensure_lag_mode_controls(self):
+        """Add optional lag-count controls next to the existing lag-width workflow."""
+        if getattr(self.dlg, "cmbOKLagMode", None) is not None:
+            self._connect(self.dlg.cmbOKLagMode.currentIndexChanged, self._on_lag_mode_changed)
+            self._connect(self.dlg.spinOKLagCount.valueChanged, self._on_lag_count_changed)
+            return
+        spin_lag = getattr(self.dlg, "spinOKLag", None)
+        if spin_lag is None:
+            return
+        parent = None
+        layout = None
+        try:
+            parent = spin_lag.parentWidget()
+            layout = parent.layout() if parent is not None else None
+        except Exception:
+            layout = None
+        if layout is None or not hasattr(layout, "addWidget"):
+            return
+        try:
+            mode_label = QLabel("Lag input:", parent)
+            mode_label.setObjectName("lblOKLagMode")
+            mode_combo = QComboBox(parent)
+            mode_combo.setObjectName("cmbOKLagMode")
+            mode_combo.addItems(["Lag distance", "Number of lags"])
+            count_label = QLabel("Number of lags:", parent)
+            count_label.setObjectName("lblOKLagCount")
+            count_spin = QSpinBox(parent)
+            count_spin.setObjectName("spinOKLagCount")
+            count_spin.setRange(1, 10000)
+            count_spin.setValue(24 if is_massive_dataset(getattr(self, "_n", 0)) else 36)
+            row = layout.rowCount() if hasattr(layout, "rowCount") else 7
+            layout.addWidget(mode_label, row, 0)
+            layout.addWidget(mode_combo, row, 1)
+            layout.addWidget(count_label, row + 1, 0)
+            layout.addWidget(count_spin, row + 1, 1)
+            self.dlg.cmbOKLagMode = mode_combo
+            self.dlg.spinOKLagCount = count_spin
+            self.dlg.lblOKLagMode = mode_label
+            self.dlg.lblOKLagCount = count_label
+            self._connect(mode_combo.currentIndexChanged, self._on_lag_mode_changed)
+            self._connect(count_spin.valueChanged, self._on_lag_count_changed)
+            self._programmatic_variogram_update = True
+            try:
+                self._on_lag_mode_changed()
+            finally:
+                self._programmatic_variogram_update = False
+        except Exception:  # nosec B110
+            pass
+
+    def _lag_mode_is_count(self) -> bool:
+        cmb = getattr(self.dlg, "cmbOKLagMode", None)
+        try:
+            return cmb is not None and "number" in str(cmb.currentText() or "").strip().lower()
+        except Exception:
+            return False
+
+    def _lag_count_value(self) -> int:
+        spin = getattr(self.dlg, "spinOKLagCount", None)
+        try:
+            return max(1, int(spin.value()))
+        except Exception:
+            return 24 if is_massive_dataset(getattr(self, "_n", 0)) else 36
+
+    def _apply_lag_count_to_width(self, cutoff=None):
+        if not self._lag_mode_is_count():
+            return None
+        try:
+            cutoff_val = float(self._cutoff if cutoff is None else cutoff)
+        except Exception:
+            return None
+        if not np.isfinite(cutoff_val) or cutoff_val <= 0:
+            return None
+        lagw = cutoff_val / float(max(1, self._lag_count_value()))
+        spin = getattr(self.dlg, "spinOKLag", None)
+        if spin is not None and hasattr(spin, "setValue"):
+            try:
+                self._programmatic_variogram_update = True
+                spin.setValue(float(lagw))
+            except Exception:  # nosec B110
+                pass
+            finally:
+                self._programmatic_variogram_update = False
+        return float(lagw)
+
+    def _lag_width_from_controls(self, x, y, cutoff, default_lag_width):
+        """Resolve lag width either directly or from a requested number of lags."""
+        if self._lag_mode_is_count():
+            lagw = self._apply_lag_count_to_width(cutoff)
+            if lagw is None:
+                lagw = float(default_lag_width)
+        else:
+            lagw = float(default_lag_width)
+            try:
+                spin = getattr(self.dlg, "spinOKLag", None)
+                if spin is not None and hasattr(spin, "value") and float(spin.value()) > 0:
+                    lagw = float(spin.value())
+            except Exception:  # nosec B110
+                pass
+        lagw = self._safe_lag_width(x, y, cutoff, lagw)
+        if self._lag_mode_is_count():
+            spin = getattr(self.dlg, "spinOKLag", None)
+            if spin is not None and hasattr(spin, "setValue"):
+                try:
+                    self._programmatic_variogram_update = True
+                    spin.setValue(float(lagw))
+                except Exception:  # nosec B110
+                    pass
+                finally:
+                    self._programmatic_variogram_update = False
+        return lagw
+
+    def _on_lag_mode_changed(self, *args) -> None:
+        spin = getattr(self.dlg, "spinOKLagCount", None)
+        label = getattr(self.dlg, "lblOKLagCount", None)
+        enabled = self._lag_mode_is_count()
+        for widget in (spin, label):
+            try:
+                if widget is not None and hasattr(widget, "setEnabled"):
+                    widget.setEnabled(enabled)
+            except Exception:  # nosec B110
+                pass
+        if enabled:
+            self._apply_lag_count_to_width()
+        self._on_variogram_ui_changed()
+        self._schedule_rebin()
+
+    def _on_lag_count_changed(self, *args) -> None:
+        self._apply_lag_count_to_width()
+        self._on_variogram_ui_changed()
+        self._schedule_rebin()
 
     def _hook_interpolate_button(self):
         """Wire the kriging interpolate button to run map generation."""
@@ -412,7 +488,7 @@ class OKTabController:
         if btn is not None:
             self._interpolate_btn = btn
             try:
-                btn.clicked.connect(self._on_interpolate_clicked)
+                self._connect(btn.clicked, self._on_interpolate_clicked)
             except Exception:  # nosec B110
                 pass
 
@@ -422,7 +498,7 @@ class OKTabController:
             btn = getattr(self.dlg, bname, None)
             if btn is not None and hasattr(btn, "clicked"):
                 try:
-                    btn.clicked.connect(self._on_reset_clicked)
+                    self._connect(btn.clicked, self._on_reset_clicked)
                     return True
                 except Exception:  # nosec B110
                     pass
@@ -454,7 +530,7 @@ class OKTabController:
                           any(k in text for k in ("reset", "default", "reiniciar", "restablecer"))
                     if hay:
                         try:
-                            obj.clicked.connect(self._on_reset_clicked)
+                            self._connect(obj.clicked, self._on_reset_clicked)
                             return
                         except Exception:  # nosec B112
                             continue
@@ -486,6 +562,9 @@ class OKTabController:
         # Invalidate initial baseline for new context
         self._baseline_initial = None
         self._user_variogram_overrides = False
+        self._model_validation_results = []
+        self._exp_lags = self._exp_gamma = None
+        self._semivariogram_stale = True
         # Reset REML state on context change
         self._use_reml = False
         self._reml_fitted = False
@@ -511,6 +590,8 @@ class OKTabController:
                 return False
             had_params = self._init_params is not None
             self._sync_variogram_state_from_ui()
+            if self._semivariogram_stale:
+                self.calculate_and_plot_experimental(initial_load=False, reseed_params=False)
             if self._variogram_has_drawn_content() and (self._exp_lags is not None or self._reml_fitted):
                 self._plot_with_model_if_possible()
                 return True
@@ -524,6 +605,7 @@ class OKTabController:
                 self._plot_with_model_if_possible()
             return self._variogram_has_drawn_content()
         except Exception:
+            log_exception("Geostatistics readiness failed")
             return False
 
     def _on_variogram_ui_changed(self, *args) -> None:
@@ -542,7 +624,8 @@ class OKTabController:
             pass
         try:
             if hasattr(self.dlg, "spinOKLag"):
-                self._lag_width = float(self.dlg.spinOKLag.value())
+                lagw = self._apply_lag_count_to_width(self._cutoff) if self._lag_mode_is_count() else None
+                self._lag_width = float(lagw if lagw is not None else self.dlg.spinOKLag.value())
         except Exception:  # nosec B110
             pass
         try:
@@ -552,25 +635,24 @@ class OKTabController:
 
     def _on_tab_changed(self, index):
         """Triggered when the user switches tabs."""
-        # This is now handled by the main plugin class, which calls set_points_layer_and_field
-        # which in turn calls calculate_and_plot_experimental.
-        pass
+        if not self.is_dispatcher_active():
+            return
+        try:
+            tab_text = ""
+            tabs = getattr(self.dlg, "mainTabs", None)
+            if tabs is not None and hasattr(tabs, "tabText"):
+                tab_text = str(tabs.tabText(index) or "").strip().lower()
+            if "regression" in tab_text or (tab_text and not any(token in tab_text for token in ("geo", "krig", "geostat"))):
+                return
+            self._ensure_inputs_from_ui()
+            self._ensure_variogram_ready()
+        except Exception:
+            log_exception("Geostatistics tab refresh failed")
 
     # ----------------------- Model & variable helpers ------------------------
 
     def _normalize_model_token(self, txt: str) -> str:
-        t = (txt or "").strip().lower()
-        if t.startswith(("sph", "esf")):   # Spherical/Esférico
-            return "spherical"
-        if t.startswith(("gau", "gaus")):  # Gaussian
-            return "gaussian"
-        if t.startswith(("exp", "expon")): # Exponential
-            return "exponential"
-        if "spher" in t:
-            return "spherical"
-        if "gaus" in t:
-            return "gaussian"
-        return "exponential"
+        return SemivariogramEngine("ok_mom")._normalize_model_token(txt)
 
     def _get_selected_model(self) -> str:
         cmb = getattr(self.dlg, "cmbOKModel", None)
@@ -731,6 +813,8 @@ class OKTabController:
                 self.points_layer = None
                 return None, None, None
         for feat in features:
+            if not feature_in_analysis(getattr(self, "parent_plugin", None), self.points_layer, feat):
+                continue
             g = feat.geometry()
             if g is None or g.isEmpty():
                 continue
@@ -760,63 +844,16 @@ class OKTabController:
     @staticmethod
     def _pairwise_distances(x, y):
         """Return condensed array of pairwise Euclidean distances."""
-        n = x.size
-        d = np.empty(n * (n - 1) // 2, dtype=float)
-        k = 0
-        for i in range(n - 1):
-            dx = x[i + 1:] - x[i]
-            dy = y[i + 1:] - y[i]
-            m = np.hypot(dx, dy)
-            d[k:k + m.size] = m
-            k += m.size
-        return d
+        return np.asarray([max_pairwise_distance(x, y)], dtype=float)
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
         """Return the minimum positive nearest-neighbor distance."""
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        n = x.size
-        if n < 2:
-            return np.nan
-        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
-                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
-                    1.0)
-        zero_tol = np.finfo(float).eps * scale * 32.0
-        dmin = np.inf
-        for i in range(n):
-            dx = x - x[i]
-            dy = y - y[i]
-            dist = np.hypot(dx, dy)
-            dist[i] = np.inf
-            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
-            if dist.size == 0:
-                continue
-            mi = float(np.min(dist))
-            if mi < dmin:
-                dmin = mi
-        return dmin if np.isfinite(dmin) else np.nan
+        return nearest_neighbor_distance(x, y)
 
     def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
         """Keep lag width positive while preventing pathological bin counts."""
-        try:
-            cutoff = float(cutoff)
-        except Exception:
-            cutoff = np.nan
-        if not np.isfinite(cutoff) or cutoff <= 0:
-            return np.nan
-        try:
-            lag_width = float(lag_width)
-        except Exception:
-            lag_width = np.nan
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = float(self._nearest_neighbor_dist(x, y))
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = cutoff / 12.0
-        min_width = cutoff / float(max(1, int(max_bins)))
-        if lag_width < min_width:
-            lag_width = min_width
-        return float(lag_width)
+        return safe_lag_width(x, y, cutoff, lag_width, max_bins=max_bins)
 
     @staticmethod
     def _semivariances(z):
@@ -828,40 +865,11 @@ class OKTabController:
 
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
         """Compute binned experimental semivariogram up to 'cutoff' with bin size 'lag_width'."""
-        cutoff = float(cutoff)
-        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
-        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
-            return np.array([], dtype=float), np.array([], dtype=float)
-        nbins = max(1, int(math.floor(cutoff / lag_width)))
-        if nbins > 10000:
-            nbins = 10000
-            lag_width = cutoff / float(nbins)
-        sums = np.zeros(nbins, dtype=float)
-        counts = np.zeros(nbins, dtype=int)
-        dists = np.zeros(nbins, dtype=float)
-        gamma_of = self._semivariances(z)
-        n = x.size
-        for i in range(n - 1):
-            xi, yi, zi = x[i], y[i], z[i]
-            xj = x[i + 1:]; yj = y[i + 1:]; zj = z[i + 1:]
-            dd = np.hypot(xj - xi, yj - yi)
-            mask = (dd > 0) & (dd <= cutoff)
-            if not np.any(mask):
-                continue
-            dd = dd[mask]
-            gj = gamma_of(zi, zj[mask])
-            bin_idx = np.floor(dd / lag_width).astype(int)
-            bin_idx[bin_idx == nbins] = nbins - 1  # clamp edge case
-            for b, dval, gval in zip(bin_idx, dd, gj):
-                sums[b] += gval
-                counts[b] += 1
-                dists[b] += dval
-        valid = counts > 0
-        default_centers = np.linspace(lag_width * 0.5, nbins * lag_width - lag_width * 0.5, nbins)
-        lags = np.where(valid, dists / np.maximum(counts, 1), default_centers)
-        gamma = np.where(valid, sums / np.maximum(counts, 1), np.nan)
-        keep = ~np.isnan(gamma)
-        return lags[keep], gamma[keep]
+        lags, gamma, info = bin_experimental_variogram(
+            x, y, z, cutoff, lag_width, return_info=True
+        )
+        self._variogram_pair_info = info
+        return lags, gamma
 
     # --------------------- Initial parameter estimation -----------------------
 
@@ -875,113 +883,7 @@ class OKTabController:
         return float((1.4826 * mad) ** 2)
 
     def _guess_initial_params(self, lags, gamma, cutoff, model="exponential"):
-        """Estimate a closer automatic MoM fit for (nugget, psill, range).
-
-        The previous version used only very simple heuristics (tail max/median and
-        first crossing of 95% of the sill). That could leave the initial theoretical
-        curve visibly far from the experimental semivariogram, especially for the
-        spherical model. Here we keep the MoM spirit, but refine the automatic
-        starting values with a lightweight coarse search over the range and nugget,
-        solving the partial sill analytically for each candidate.
-        """
-        lags = np.asarray(lags, dtype=float)
-        gamma = np.asarray(gamma, dtype=float)
-        keep = np.isfinite(lags) & np.isfinite(gamma) & (lags > 0)
-        lags = lags[keep]
-        gamma = gamma[keep]
-
-        if lags.size == 0:
-            return 0.0, 1.0, max(1.0, cutoff * 0.4)
-
-        # Sort to ensure monotone support for the fitting search
-        order = np.argsort(lags)
-        lags = lags[order]
-        gamma = gamma[order]
-
-        # --- Base robust heuristics ---
-        first_vals = gamma[:max(1, min(3, gamma.size))]
-        tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
-
-        first_bin = float(first_vals[0]) if first_vals.size else 0.0
-        first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
-
-        # Linear back-extrapolation using the first two bins when possible.
-        # This gives a more permissive estimate for cases with a relevant nugget effect
-        # and avoids biasing the search toward unrealistically low nuggets.
-        nugget_intercept = first_bin
-        if lags.size >= 2:
-            h1, h2 = float(lags[0]), float(lags[1])
-            g1, g2 = float(gamma[0]), float(gamma[1])
-            if abs(h2 - h1) > 1e-12:
-                slope = (g2 - g1) / (h2 - h1)
-                nugget_intercept = float(g1 - slope * h1)
-
-        nugget_floor = 0.75 * first_bin
-        nugget_seed = float(max(0.0, max(max(0.0, nugget_intercept), nugget_floor, first_bin)))
-        plateau_seed = float(np.nanmedian(tail_vals))
-        max_seed = float(np.nanmax(gamma))
-        sill_total_seed = max(plateau_seed, max_seed, first_max, nugget_seed + 1e-6)
-
-        # Initial range seed from the first empirical crossing near the plateau
-        target = 0.90 * sill_total_seed
-        idx = np.where(gamma >= target)[0]
-        if idx.size > 0:
-            range_seed = float(lags[idx[0]])
-        else:
-            range_seed = float(0.60 * cutoff)
-        range_seed = max(range_seed, float(np.nanmin(lags)), 1e-9)
-
-        # Candidate nugget values: include low and high possibilities from the first bins.
-        # This preserves flexibility for real nugget effects instead of favoring small nuggets.
-        nugget_cap = max(0.0, min(first_max, 0.90 * sill_total_seed))
-        nugget_seed = float(np.clip(nugget_seed, 0.0, nugget_cap)) if nugget_cap > 0 else 0.0
-        nugget_candidates = np.array([nugget_seed], dtype=float)
-
-        # Candidate ranges spanning from early structure to almost the cutoff.
-        lag_min = max(float(np.nanmin(lags)), 1e-9)
-        lag_max = max(float(np.nanmax(lags)), lag_min)
-        low = max(lag_min, 0.20 * range_seed)
-        high = max(low * 1.05, min(float(cutoff), max(lag_max * 1.15, range_seed * 1.8, low)))
-        range_candidates = np.unique(np.concatenate([
-            np.linspace(low, high, 28),
-            np.array([range_seed, 0.5 * cutoff, 0.75 * cutoff, lag_max], dtype=float),
-        ]))
-        range_candidates = range_candidates[np.isfinite(range_candidates) & (range_candidates > 0)]
-
-        # Give slightly more weight to the first half of the variogram so the
-        # automatic fit follows the experimental points more closely near the origin.
-        lag_scale = max(float(np.nanmedian(lags)), 1e-9)
-        weights = 1.0 / (1.0 + (lags / lag_scale))
-
-        best = None
-        model_token = self._normalize_model_token(model)
-
-        for nugget in nugget_candidates:
-            y = gamma - float(nugget)
-            for rng in range_candidates:
-                basis = self._model_func(lags, model_token, 0.0, 1.0, float(rng))
-                denom = float(np.sum(weights * basis * basis))
-                if denom <= 0:
-                    continue
-                psill = float(np.sum(weights * basis * y) / denom)
-                psill = max(psill, 1e-9)
-
-                pred = float(nugget) + psill * basis
-                sse = float(np.sum(weights * (gamma - pred) ** 2))
-
-                # Very small regularization only on the range. We intentionally avoid
-                # penalizing larger nuggets here because some datasets may genuinely
-                # present a relevant nugget effect right from the initial fit.
-                sse += 1e-6 * (rng / max(cutoff, 1e-9)) ** 2
-
-                if (best is None) or (sse < best[0]):
-                    best = (sse, float(nugget), float(psill), float(rng))
-
-        if best is None:
-            return nugget_seed, max(sill_total_seed - nugget_seed, 1e-6), range_seed
-
-        _, nugget, psill, rng = best
-        return nugget, psill, rng
+        return SemivariogramEngine("ok_mom")._guess_initial_params(lags, gamma, cutoff, model)
 
     # ----------------------------- UI helpers ---------------------------------
 
@@ -989,7 +891,7 @@ class OKTabController:
         """Ensure variogram and map canvases exist and are attached."""
         # Variogram
         container_v = getattr(self.dlg, "CanvasOKVariogram", None) or getattr(self.dlg, "canvasOKVariogram", None)
-        if container_v is not None and self._krig_vario_canvas is None:
+        if container_v is not None and not is_alive(self._krig_vario_canvas):
             self._krig_vario_fig = Figure(figsize=(5, 4), tight_layout=True)
             self._krig_vario_canvas = FigureCanvas(self._krig_vario_fig)
             self._stabilize_canvas_widget(self._krig_vario_canvas)
@@ -998,21 +900,24 @@ class OKTabController:
                 w = layout.itemAt(i).widget()
                 if w is not None:
                     w.setParent(None)
+                    w.deleteLater()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.addWidget(self._krig_vario_canvas)
             self._install_save_png_handler(self._krig_vario_canvas, self._krig_vario_fig, default_prefix="kriging_variogram")
 
         # Map
         container_m = getattr(self.dlg, "canvasOKInterpolation", None) or getattr(self.dlg, "CanvasOKInterpolation", None)
-        if container_m is not None and self._krig_map_canvas is None:
+        if container_m is not None and not is_alive(self._krig_map_canvas):
             self._krig_map_fig = Figure(figsize=(5, 4), tight_layout=True)
             self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
+            self._krig_map_canvas._bfi_is_map = True
             self._stabilize_canvas_widget(self._krig_map_canvas)
             layout = container_m.layout() or QVBoxLayout(container_m)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:
                     w.setParent(None)
+                    w.deleteLater()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.addWidget(self._krig_map_canvas)
             self._install_save_png_handler(self._krig_map_canvas, self._krig_map_fig, default_prefix="kriging_map")
@@ -1022,7 +927,7 @@ class OKTabController:
     def _stabilize_canvas_widget(self, canvas):
         """Keep Matplotlib canvases from resizing their parent after redraws."""
         try:
-            canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            canvas.setSizePolicy(enum_value(QSizePolicy, "Policy", "Expanding"), enum_value(QSizePolicy, "Policy", "Expanding"))
             canvas.setMinimumSize(1, 1)
             canvas.updateGeometry()
         except Exception:  # nosec B110
@@ -1031,7 +936,7 @@ class OKTabController:
     # ----------------------------- Save PNG hooks -----------------------------
 
     def _install_save_png_handler(self, canvas, fig, default_prefix: str):
-        """Install right-click context menu 'Save graph…' on a Matplotlib canvas."""
+        """Install right-click context menu 'Save graph' on a Matplotlib canvas."""
         try:
             if canvas is None or fig is None:
                 return
@@ -1044,7 +949,7 @@ class OKTabController:
 
             # Prefer Qt custom context menu
             try:
-                canvas.setContextMenuPolicy(Qt.CustomContextMenu)
+                canvas.setContextMenuPolicy(enum_value(Qt, "ContextMenuPolicy", "CustomContextMenu"))
             except Exception:  # nosec B110
                 pass
 
@@ -1053,8 +958,8 @@ class OKTabController:
                     menu = QMenu(self.dlg)
                     act_view = menu.addAction("View larger view")
                     act_copy = menu.addAction("Copy graph")
-                    act_save = menu.addAction("Save graph…")
-                    chosen = menu.exec_(canvas.mapToGlobal(pos))
+                    act_save = menu.addAction("Save graph")
+                    chosen = qt_exec(menu, canvas.mapToGlobal(pos))
                     if chosen == act_view:
                         self._show_larger_graph(fig, default_prefix)
                     elif chosen == act_copy:
@@ -1064,7 +969,7 @@ class OKTabController:
                         suggested = os.path.join(suggested_dir, f"{default_prefix}.png")
                         path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
                         if path:
-                            fig.savefig(path, dpi=300, bbox_inches='tight')
+                            save_figure(fig, path, dpi=300, bbox_inches='tight')
                             try:
                                 self.iface.messageBar().pushMessage("Saved", f"PNG saved to: {path}", level=0)
                             except Exception:  # nosec B110
@@ -1073,7 +978,7 @@ class OKTabController:
                     pass
 
             try:
-                canvas.customContextMenuRequested.connect(_show_menu)
+                self._connect(canvas.customContextMenuRequested, _show_menu)
             except Exception:
                 # Fallback to raw mpl right-click
                 def _on_click(event):
@@ -1095,7 +1000,7 @@ class OKTabController:
             from qgis.PyQt.QtGui import QPixmap
             from qgis.PyQt.QtWidgets import QApplication
             buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+            save_figure(fig, buf, format="png", dpi=300, bbox_inches="tight")
             pixmap = QPixmap()
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
@@ -1107,27 +1012,8 @@ class OKTabController:
             QMessageBox.warning(self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
 
     def _show_larger_graph(self, source_fig, title_prefix: str):
-        try:
-            import io
-            import matplotlib.image as mpimg
-            dlg = QDialog(self.dlg)
-            dlg.setWindowTitle(f"{title_prefix} - larger view")
-            layout = QVBoxLayout(dlg)
-            fig = Figure(figsize=(9, 6.5))
-            canvas = FigureCanvas(fig)
-            layout.addWidget(canvas)
-            buf = io.BytesIO()
-            source_fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
-            buf.seek(0)
-            arr = mpimg.imread(buf)
-            ax = fig.add_subplot(111)
-            ax.imshow(arr)
-            ax.axis("off")
-            canvas.draw()
-            dlg.resize(980, 720)
-            dlg.exec_()
-        except Exception as exc:
-            QMessageBox.warning(self.dlg, "View larger view", f"Could not open larger view:\n{exc}")
+        from .larger_view import show_larger_view
+        return show_larger_view(source_fig,self.dlg,title_prefix + ' Larger view')
 
     def _update_headers(self, var_name, n, cutoff, lagw):
         """Update small UI labels/fields regarding the current context."""
@@ -1184,12 +1070,18 @@ class OKTabController:
         if not self._ensure_canvas():
             return
 
-        # Resolver valor por defecto de reseed_params
+        # Resolve the default reseeding policy.
         if reseed_params is None:
             reseed_params = bool(initial_load)
 
         x, y, z = self._read_xy_z()
         if x is None:
+            self._exp_lags = self._exp_gamma = None
+            self._model_validation_results = []
+            self._krig_vario_fig.clear()
+            ax = self._krig_vario_fig.add_subplot(111)
+            ax.text(.5, .5, "At least five valid observations are required", ha="center")
+            self._krig_vario_canvas.draw_idle()
             self.iface.messageBar().pushMessage(
                 "Kriging",
                 "Select point layer and variable in the Data tab",
@@ -1205,19 +1097,15 @@ class OKTabController:
         nn_min = float(self._nearest_neighbor_dist(x, y))
 
         cutoff = 0.5 * d_max
-        lagw = self._safe_lag_width(x, y, cutoff, nn_min)
+        lagw = self._lag_width_from_controls(x, y, cutoff, nn_min)
 
-        # Si NO es initial_load, respetamos cutoff/lag que ya están en la UI
+        # Keep current cutoff and lag controls after initial loading.
         if not initial_load:
             try:
                 cutoff = float(self.dlg.spinOKCutoff.value())
             except Exception:  # nosec B110
                 pass
-            try:
-                lagw = float(self.dlg.spinOKLag.value())
-            except Exception:  # nosec B110
-                pass
-            lagw = self._safe_lag_width(x, y, cutoff, lagw)
+            lagw = self._lag_width_from_controls(x, y, cutoff, lagw)
 
         self._cutoff = cutoff
         self._lag_width = lagw
@@ -1232,6 +1120,7 @@ class OKTabController:
             gamma = np.insert(gamma, 0, 0.0)
 
         self._exp_lags, self._exp_gamma = lags, gamma
+        self._semivariogram_stale = False
 
         if self._is_auto_model_selection():
             try:
@@ -1240,17 +1129,17 @@ class OKTabController:
                 self._auto_selected_model = "exponential"
 
         # ------------------------------------------------------------------
-        # 1) ¿Recalculamos semillas o respetamos lo que hay en la UI?
+        # Recompute seeds only when requested; otherwise keep UI parameters.
         # ------------------------------------------------------------------
         if reseed_params:
-            # Usar heurística MoM como baseline
+            # Use the existing MoM heuristic as the baseline.
             nugget, psill, rng = self._guess_initial_params(
                 lags[1:], gamma[1:], cutoff, model=self._get_selected_model()
             )
             self._init_params = (nugget, psill, rng)
             self._ok_fit_method = "MoM"
 
-            # Escribimos las semillas en los spin boxes
+            # Reflect seed parameters in the spin boxes.
             try:
                 self._programmatic_variogram_update = True
                 if hasattr(self.dlg, "spinOKNugget"):
@@ -1265,20 +1154,20 @@ class OKTabController:
                 self._programmatic_variogram_update = False
 
         else:
-            # NO tocamos los parámetros: usamos lo que el usuario dejó en la UI
+            # Preserve the parameters chosen by the user.
             nugget, psill, rng = self._read_params_from_ui()
-            # Si nunca habíamos inicializado _init_params, los guardamos
+            # Store the initial parameters if they have not been initialized.
             if self._init_params is None:
                 self._init_params = (nugget, psill, rng)
 
-        # Actualizar cabeceras y SDI
+        # Update headers and SDI.
         self._update_headers(self.z_field, self._n, cutoff, lagw)
         try:
             self._update_sdi_label()
         except Exception:  # nosec B110
             pass
 
-        # Baselines (Reset usa baseline_initial; no queremos que cambie)
+        # Keep the initial baseline unchanged for Reset.
         current_baseline = {
             "cutoff": cutoff, "lagw": lagw,
             "nugget": nugget, "psill": psill, "range": rng,
@@ -1288,8 +1177,8 @@ class OKTabController:
             self._baseline_initial = dict(current_baseline)
         self._baseline_last = dict(current_baseline)
 
-        # Dibujar experimental con solo lags reales; el 0.0 artificial se conserva
-        # internamente para el ajuste, pero no debe mostrarse en el gráfico.
+        # Draw real lags only; retain the artificial origin internally
+        # for fitting without displaying it as an observation.
         ax = (self._krig_vario_fig.axes[0]
               if self._krig_vario_fig.axes
               else self._krig_vario_fig.add_subplot(111))
@@ -1313,7 +1202,7 @@ class OKTabController:
         ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.6)
         self._krig_vario_canvas.draw()
 
-        # Sobreponer modelo teórico respetando lo que hay en UI
+        # Overlay the theoretical model using current UI parameters.
         self._plot_with_model_if_possible()
         try:
             QCoreApplication.processEvents()
@@ -1323,20 +1212,7 @@ class OKTabController:
     # -------------------------- Theoretical model -----------------------------
 
     def _model_func(self, h, model, nugget, psill, rng):
-        """Theoretical semivariogram models: Spherical / Exponential / Gaussian."""
-        h = np.asarray(h, dtype=float)
-        c0 = float(nugget)
-        c = float(psill)
-        a = max(float(rng), 1e-9)
-        if model == "spherical":
-            hr = np.clip(h / a, 0.0, 1.0)
-            sph = c * (1.5 * hr - 0.5 * (hr ** 3))
-            return np.where(h <= a, c0 + sph, c0 + c)
-        elif model == "gaussian":
-            return c0 + c * (1.0 - np.exp(-(h * h) / (a * a)))
-        else:
-            # exponential
-            return c0 + c * (1.0 - np.exp(-h / a))
+        return SemivariogramEngine("ok_mom")._model_func(h, model, nugget, psill, rng)
 
     # ------------------------------- SDI helpers ------------------------------
 
@@ -1376,7 +1252,7 @@ class OKTabController:
         try:
             lbl = getattr(self.dlg, "lbl_SDI", None)
             if obj is lbl and event is not None:
-                if event.type() in (QEvent.MouseButtonPress, QEvent.MouseButtonDblClick, QEvent.Enter):
+                if event.type() in (enum_value(QEvent, "Type", "MouseButtonPress"), enum_value(QEvent, "Type", "MouseButtonDblClick"), enum_value(QEvent, "Type", "Enter")):
                     try:
                         QToolTip.showText(QCursor.pos(), lbl.toolTip() or "", lbl)
                         return True
@@ -1412,11 +1288,11 @@ class OKTabController:
                 lbl.setToolTip(tooltip_html)
                 # Ensure rich text rendering and clickable cursor
                 try:
-                    lbl.setTextFormat(Qt.RichText)
+                    lbl.setTextFormat(enum_value(Qt, "TextFormat", "RichText"))
                 except Exception:  # nosec B110
                     pass
                 try:
-                    lbl.setCursor(Qt.PointingHandCursor)
+                    lbl.setCursor(enum_value(Qt, "CursorShape", "PointingHandCursor"))
                 except Exception:  # nosec B110
                     pass
                 # Ensure white tooltip background (scoped to this dialog)
@@ -1429,25 +1305,24 @@ class OKTabController:
             base = getattr(self, "_sdi_label_base_text", None)
             if base is None:
                 try:
-                    base = str(lbl.text())
+                    base = str(lbl.text()).split("<img",1)[0].replace("[i]","").rstrip()
                 except Exception:
                     base = "SDI"
                 self._sdi_label_base_text = base
-            # Try to embed an icon named 'info.png' (resource or file fallback)
-            icon_src = self._resolve_info_icon_src()
-            if icon_src:
-                img_tag = f"<img src='{icon_src}' width='12' height='12'/>"
-                new_text = f"{base}  {img_tag}"
-                try:
-                    lbl.setText(new_text)
-                except Exception:  # nosec B110
-                    pass
-            else:
-                # Fallback to a plain [i]
-                try:
-                    lbl.setText(f"{base}  [i]")
-                except Exception:  # nosec B110
-                    pass
+            lbl.setText(base)
+            if not is_alive(getattr(self.dlg,'btnInfoSDI',None)):
+                from .theme import InfoButton
+                from qgis.PyQt.QtWidgets import QWidget,QHBoxLayout
+                parent=lbl.parentWidget(); layout=parent.layout()
+                if layout is not None:
+                    holder=QWidget(parent)
+                    row=QHBoxLayout(holder); row.setContentsMargins(0,0,0,0); row.setSpacing(4)
+                    layout.replaceWidget(lbl,holder)
+                    row.addWidget(lbl)
+                    button=InfoButton(tooltip_html,holder); button.setObjectName('btnInfoSDI')
+                    row.addWidget(button); row.addStretch()
+                    button.clicked.connect(lambda checked=False:QToolTip.showText(QCursor.pos(),tooltip_html,button))
+                    self.dlg.btnInfoSDI=button
             if not hasattr(self, "_sdi_filter_installed") or not self._sdi_filter_installed:
                 try:
                     lbl.installEventFilter(self)
@@ -1458,19 +1333,9 @@ class OKTabController:
             pass
 
     def _ensure_tooltip_style(self):
-        """Apply a white background style to QToolTip withsin this dialog only."""
-        try:
-            if getattr(self, "_tooltip_css_applied", False):
-                return
-            css = "QToolTip { background-color: #ffffff; color: #222222; border: 1px solid #888888; padding: 4px; }"
-            prev = self.dlg.styleSheet() or ""
-            if css not in prev:
-                # Append to avoid clobbering existing styles
-                combined = (prev + "\n" + css).strip()
-                self.dlg.setStyleSheet(combined)
-            self._tooltip_css_applied = True
-        except Exception:  # nosec B110
-            pass
+        """Use the central information-control style for this dialog."""
+        from .theme import apply_theme
+        apply_theme(self.dlg)
 
     def _resolve_info_icon_src(self) -> str:
         """Return a src string for an 'info.png' icon if available.
@@ -1648,7 +1513,7 @@ class OKTabController:
         self._ensure_variogram_ready()
         self._sync_variogram_state_from_ui()
 
-        # BLOQUEAMOS cualquier actualización del variograma durante la interpolación
+        # Block variogram updates during interpolation.
         self._block_variogram_updates = True
 
         try:
@@ -1660,6 +1525,9 @@ class OKTabController:
             if x is None:
                 self.iface.messageBar().pushMessage("Kriging", "There are no valid points/variables.", level=2)
                 return
+            self._active_dense_notice = ""
+            if is_dense_dataset(len(z)):
+                self._active_dense_notice = dense_method_notice(len(z), "Ordinary Kriging")
 
             poly_layer = self._resolve_polygon_layer()
             if poly_layer is None:
@@ -1687,16 +1555,14 @@ class OKTabController:
 
             x_coords = xmin + pixel * (np.arange(n_cols) + 0.5)
             y_coords = ymax - pixel * (np.arange(n_rows) + 0.5)
-            grid_points = np.array([(xc, yc) for yc in y_coords for xc in x_coords], dtype=float)
-
-            # Clip to polygon(s)
-            inside_mask = self._points_inside_polygon_mask(grid_points, poly_layer)
-            if not np.any(inside_mask):
+            inside_pts, inside_idx = build_inside_grid_points(
+                x_coords,
+                y_coords,
+                lambda points: self._points_inside_polygon_mask(points, poly_layer),
+            )
+            if inside_idx.size == 0:
                 self.iface.messageBar().pushMessage("Kriging", "The grid does not fall within the polygon.", level=1)
                 return
-
-            inside_idx = np.where(inside_mask)[0]
-            inside_pts = grid_points[inside_idx]
             n_pred = inside_pts.shape[0]
 
             if n_pred > 800_000:
@@ -1705,17 +1571,18 @@ class OKTabController:
                     f"Many cells to predict ({n_pred:,}). Consider increasing the pixel size."
                 )
 
-            prog = QProgressDialog("Running kriging...", "Cancel", 0, n_pred, self.dlg)
-            prog.setWindowModality(Qt.ApplicationModal)
+            prog = QProgressDialog("Running kriging", "Cancel", 0, n_pred, self.dlg)
+            prog.setWindowModality(enum_value(Qt, "WindowModality", "ApplicationModal"))
             prog.setMinimumDuration(0)
             prog.setValue(0)
 
             def _progress(done, total):
                 prog.setValue(done)
+                QCoreApplication.processEvents()
                 if prog.wasCanceled():
                     raise KeyboardInterrupt
 
-            # --- AQUÍ usamos SIEMPRE lo que está en los spin boxes ---
+            # Always use the current spin-box parameters.
             model = self._get_selected_model()
             nugget, psill, rng = self._read_params_from_ui()
 
@@ -1739,10 +1606,7 @@ class OKTabController:
 
             # Rellenar grid
             result = np.full((n_rows, n_cols), np.nan, dtype=float)
-            for j, flat_i in enumerate(inside_idx):
-                col = flat_i % n_cols
-                row = flat_i // n_cols
-                result[row, col] = preds[j]
+            result[inside_idx // n_cols, inside_idx % n_cols] = preds
 
             var_label = self.z_field or "Z"
             self._maybe_export_ok_raster(result, xmin, xmax, ymin, ymax, pixel, poly_layer, var_label, model)
@@ -1752,15 +1616,15 @@ class OKTabController:
             )
             self.iface.messageBar().pushMessage("Kriging", "Interpolation complete.", level=0)
 
-            # MUY IMPORTANTE: solo redibujamos el modelo con LOS VALORES ACTUALES,
-            # sin recalcular semillas ni tocar el experimental.
+            # Redraw the model using current parameter values
+            # without reseeding or changing the experimental variogram.
             try:
                 self._plot_with_model_if_possible()
             except Exception:  # nosec B110
                 pass
 
         finally:
-            # Siempre liberamos el bloqueo y reactivamos el botón
+            # Always release the update guard and enable the button.
             self._block_variogram_updates = False
             self._finish_interpolate_ui()
 
@@ -1801,6 +1665,10 @@ class OKTabController:
         except Exception:  # nosec B110
             pass
 
+        from .interpolation_result import publish_result
+        config=dict(backend=backend,variable=var_label,model=model,nugget=nugget,psill=psill,var_range=rng,pixel_size=pixel)
+        publish_result(self,'OK',config,self._krig_map_fig,raster_path=getattr(self,'_last_output_path',None))
+
     def _resolve_polygon_layer(self):
         """Try common widget names to get selected polygon layer by name."""
         cand_names = ("poly", "cmbPolygonLayer", "cmbPoly", "cmbMask")
@@ -1820,7 +1688,7 @@ class OKTabController:
         lyr = layers[0]
         try:
             gt = lyr.geometryType()
-            if gt == QgsWkbTypes.PolygonGeometry or (QgsWkbTypes.isMultiType(lyr.wkbType()) and gt == QgsWkbTypes.PolygonGeometry):
+            if gt == geometry_type("Polygon") or (QgsWkbTypes.isMultiType(lyr.wkbType()) and gt == geometry_type("Polygon")):
                 return lyr
         except Exception:  # nosec B110
             pass
@@ -1925,6 +1793,9 @@ class OKTabController:
                 dataset.SetProjection(srs.ExportToWkt())
         except Exception:  # nosec B110
             pass
+        dense_notice = str(getattr(self, "_active_dense_notice", "") or "")
+        if dense_notice:
+            dataset.SetMetadataItem("BESTFIT_DENSE_PROFILE", dense_notice)
         band = dataset.GetRasterBand(1)
         band.WriteArray(array)
         band.SetNoDataValue(np.nan)
@@ -1935,6 +1806,7 @@ class OKTabController:
 
     def _maybe_export_ok_raster(self, array, xmin, xmax, ymin, ymax, pixel, polygon_layer, variable_label, model_token):
         """Export and add the raster when the export checkbox is enabled."""
+        self._last_output_path=None
         try:
             out_path = self._write_ok_raster(
                 array, xmin, xmax, ymin, ymax, pixel,
@@ -1950,6 +1822,7 @@ class OKTabController:
             return
         self._mark_temporary_layer(layer, out_path)
         QgsProject.instance().addMapLayer(layer)
+        self._last_output_path=out_path
         self.iface.messageBar().pushMessage("Kriging", f"Raster added to QGIS: {out_path}", level=0)
 
     def _points_inside_polygon_mask(self, grid_points, polygon_layer):
@@ -2022,12 +1895,14 @@ class OKTabController:
                 return
             self._krig_map_fig = Figure(figsize=(5, 4), tight_layout=True)
             self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
+            self._krig_map_canvas._bfi_is_map = True
             self._stabilize_canvas_widget(self._krig_map_canvas)
             layout = container_m.layout() or QVBoxLayout(container_m)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:
                     w.setParent(None)
+                    w.deleteLater()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.addWidget(self._krig_map_canvas)
 
@@ -2117,6 +1992,16 @@ class OKTabController:
         for name in ("cmbPointsLayer", "cmbLayerPoints", "Points", "cmbPoints"):
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "currentText"):
+                try:
+                    if hasattr(w, "currentData"):
+                        layer_id = w.currentData()
+                        if layer_id:
+                            layer = QgsProject.instance().mapLayer(layer_id)
+                            if layer is not None:
+                                self.points_layer = layer
+                                return
+                except Exception:  # nosec B110
+                    pass
                 lname = w.currentText()
                 if lname:
                     layers = QgsProject.instance().mapLayersByName(lname)
@@ -2125,9 +2010,35 @@ class OKTabController:
                         return
         self.points_layer = None
 
+    def _field_exists_in_layer(self, field_name) -> bool:
+        if not field_name or not self._layer_is_alive(self.points_layer):
+            return False
+        try:
+            return self.points_layer.fields().indexOf(str(field_name)) >= 0
+        except Exception:
+            return False
+
     def _ensure_inputs_from_ui(self):
         if not self._layer_is_alive(self.points_layer):
             self.points_layer = None
         self._maybe_pull_points_layer_from_ui()
-        if not self.z_field:
+        current_field = None
+        try:
+            for name in ("cmbZField", "cmbField", "cmbVariable", "cmbOKField", "Points_2"):
+                w = getattr(self.dlg, name, None)
+                if w is not None and hasattr(w, "currentText"):
+                    text = str(w.currentText() or "").strip()
+                    if text:
+                        current_field = text
+                        break
+        except Exception:  # nosec B110
+            current_field = None
+        if current_field and current_field != self.z_field:
+            self.z_field = current_field
+            self._exp_lags, self._exp_gamma = None, None
+            self._model_validation_results = []
+        if not self._field_exists_in_layer(self.z_field):
+            self.z_field = None
             self._maybe_pull_field_from_ui()
+        if not self._field_exists_in_layer(self.z_field):
+            self.z_field = None

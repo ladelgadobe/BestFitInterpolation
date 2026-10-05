@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 framework_tab.py
 
@@ -10,16 +10,39 @@ All code comments are in English.
 """
 
 from __future__ import annotations
+from .theme import save_figure
+from .compat import enum_value, qt_exec
+from .semivariogram_engine import SemivariogramEngine
+from .theme import COLORS
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from pathlib import Path
 import glob
 import html
 import math
 import os
 import tempfile
+from .diagnostics_ui import feature_in_analysis
 import numpy as np
+
+from .variogram_utils import (
+    bin_experimental_variogram,
+    max_pairwise_distance,
+    nearest_neighbor_distance,
+    safe_lag_width,
+)
+from .performance_policy import (
+    FRAMEWORK_VALIDATION_MAX_SAMPLES,
+    FRAMEWORK_VALIDATION_SUBSET_THRESHOLD,
+    PLOT_HEXBIN_GRIDSIZE,
+    dense_method_notice,
+    is_dense_dataset,
+    representative_sample_indices,
+    should_hexbin_plot,
+    should_rasterize_scatter,
+)
+from .validation_policy import decide_automatic_cv
 
 try:
     from qgis.PyQt.QtCore import QObject, Qt, QCoreApplication
@@ -49,8 +72,11 @@ try:
         QVBoxLayout,
         QWidget,
     )
-    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
+    try:
+        from .mpl_compat import FigureCanvas
+    except Exception:  # pragma: no cover
+        from mpl_compat import FigureCanvas  # type: ignore
     from qgis.core import QgsProject, QgsRasterLayer
 except Exception:  # pragma: no cover
     from qgis.PyQt.QtCore import QObject, Qt, QCoreApplication
@@ -80,8 +106,11 @@ except Exception:  # pragma: no cover
         QVBoxLayout,
         QWidget,
     )
-    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.figure import Figure
+    try:
+        from .mpl_compat import FigureCanvas
+    except Exception:  # pragma: no cover
+        from mpl_compat import FigureCanvas  # type: ignore
     from qgis.core import QgsProject, QgsRasterLayer
 
 try:
@@ -208,10 +237,16 @@ class FrameworkTabController(QObject):
         super().__init__(dialog)
         self.dlg = dialog
         self.plugin = plugin
+        self.iface = getattr(plugin, "iface", None)
         self.state = FrameworkDataState()
+        if self.plugin is not None:
+            self.plugin._last_interpolation_result=None
+            self.plugin._last_interpolation_figure=None
+        self.report_state = None
         self._bind_widgets()
         self._connect_signals()
         self._initialize_ui()
+        self._install_extensions()
 
     # ------------------------------------------------------------------
     # Setup
@@ -546,6 +581,7 @@ class FrameworkTabController(QObject):
     def _attach_preview_canvases(self) -> None:
         self.point_map_fig = Figure(figsize=(4.6, 3.4))
         self.point_map_canvas = FigureCanvas(self.point_map_fig)
+        self.point_map_canvas._bfi_is_map = True
         self.variogram_fig = Figure(figsize=(4.6, 3.4))
         self.variogram_canvas = FigureCanvas(self.variogram_fig)
         self._stabilize_canvas_widget(self.point_map_canvas)
@@ -559,8 +595,11 @@ class FrameworkTabController(QObject):
     def _attach_framework_result_canvases(self) -> None:
         self.validation_fig = Figure(figsize=(5.2, 3.6))
         self.validation_canvas = FigureCanvas(self.validation_fig)
+        from .map_controls import disable_display_settings
+        disable_display_settings(self.validation_canvas)
         self.interpolation_fig = Figure(figsize=(5.2, 3.8))
         self.interpolation_canvas = FigureCanvas(self.interpolation_fig)
+        self.interpolation_canvas._bfi_is_map = True
         self._stabilize_canvas_widget(self.validation_canvas)
         self._stabilize_canvas_widget(self.interpolation_canvas)
         self._embed_canvas(self.frame_validation_plot, self.validation_canvas, self.lbl_validation_plot_placeholder)
@@ -659,7 +698,7 @@ class FrameworkTabController(QObject):
         if key in self._canvas_menu_bound:
             return
         try:
-            canvas.setContextMenuPolicy(Qt.CustomContextMenu)
+            canvas.setContextMenuPolicy(enum_value(Qt, "ContextMenuPolicy", "CustomContextMenu"))
             canvas.customContextMenuRequested.connect(
                 lambda pos, c=canvas, gf=get_figure_fn, sp=save_prefix, zt=zoom_title: self._show_canvas_context_menu(c, gf, sp, zt, pos)
             )
@@ -672,7 +711,7 @@ class FrameworkTabController(QObject):
         if canvas is None:
             return
         try:
-            canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            canvas.setSizePolicy(enum_value(QSizePolicy, "Policy", "Expanding"), enum_value(QSizePolicy, "Policy", "Expanding"))
             canvas.setMinimumSize(1, 1)
             canvas.updateGeometry()
         except Exception:  # nosec B110
@@ -686,13 +725,8 @@ class FrameworkTabController(QObject):
             width = max(int(canvas.width()), 80)
             height = max(int(canvas.height()), 80)
             dpi = float(fig.get_dpi() or 100.0)
-            try:
-                canvas.resize(int(width), int(height))
-                canvas.setMinimumSize(int(width), int(height))
-                canvas.updateGeometry()
-            except Exception:  # nosec B110
-                pass
-            fig.set_size_inches(width / dpi, height / dpi, forward=True)
+            ratio=getattr(canvas,'device_pixel_ratio',1.)
+            fig.set_size_inches(width*ratio / dpi, height*ratio / dpi, forward=False)
         except Exception:
             try:
                 fig.set_size_inches(float(fallback[0]), float(fallback[1]), forward=True)
@@ -709,7 +743,7 @@ class FrameworkTabController(QObject):
             act_view.setEnabled(False)
             act_copy.setEnabled(False)
             act_save.setEnabled(False)
-        chosen = menu.exec_(canvas.mapToGlobal(pos))
+        chosen = qt_exec(menu, canvas.mapToGlobal(pos))
         if chosen == act_copy and fig is not None:
             self._copy_figure_to_clipboard(fig)
         elif chosen == act_save and fig is not None:
@@ -717,7 +751,7 @@ class FrameworkTabController(QObject):
             path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
             if path:
                 try:
-                    fig.savefig(path, dpi=300, bbox_inches="tight")
+                    save_figure(fig, path, dpi=300, bbox_inches="tight")
                 except Exception as exc:
                     QMessageBox.warning(self.dlg, "Save graph", f"Could not save graph:\n{exc}")
         elif chosen == act_view and fig is not None:
@@ -730,7 +764,7 @@ class FrameworkTabController(QObject):
             from qgis.PyQt.QtGui import QPixmap
             from qgis.PyQt.QtWidgets import QApplication
             buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+            save_figure(fig, buf, format="png", dpi=300, bbox_inches="tight")
             pixmap = QPixmap()
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
@@ -738,28 +772,8 @@ class FrameworkTabController(QObject):
             QMessageBox.warning(self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
 
     def _open_larger_figure(self, source_fig: Figure, title: str) -> None:
-        dlg = QDialog(self.dlg)
-        dlg.setWindowTitle(title)
-        layout = QVBoxLayout(dlg)
-        fig = Figure(figsize=(9, 6.5))
-        canvas = FigureCanvas(fig)
-        layout.addWidget(canvas)
-        try:
-            import io
-            import matplotlib.image as mpimg
-            buf = io.BytesIO()
-            source_fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
-            buf.seek(0)
-            arr = mpimg.imread(buf)
-            fig.clear()
-            ax = fig.add_subplot(111)
-            ax.imshow(arr)
-            ax.axis("off")
-            canvas.draw()
-        except Exception:  # nosec B110
-            pass
-        dlg.resize(980, 720)
-        dlg.exec_()
+        from .larger_view import show_larger_view
+        return show_larger_view(source_fig,self.dlg,title + ' Larger view')
 
     def _embed_canvas(self, frame: Optional[QWidget], canvas: Optional[FigureCanvas], placeholder: Optional[QWidget] = None) -> None:
         if frame is None or canvas is None:
@@ -801,9 +815,26 @@ class FrameworkTabController(QObject):
         except Exception:  # nosec B110
             pass
 
+    def _is_framework_active(self) -> bool:
+        """Return whether the main Framework tab is currently visible/active."""
+        try:
+            dlg = self.plugin.dlg if self.plugin is not None else None
+            tabs = getattr(dlg, "mainTabs", None)
+            if tabs is None:
+                return False
+            label = tabs.tabText(tabs.currentIndex())
+            checker = getattr(self.plugin, "_is_framework_tab", None)
+            if callable(checker):
+                return bool(checker(label))
+            return "framework" in str(label or "").lower()
+        except Exception:
+            return False
+
     def refresh_from_plugin_context(self, *args) -> None:
         """Read the current Data tab context automatically and update Framework."""
         if self.plugin is None or getattr(self.plugin, "dlg", None) is None:
+            return
+        if not self._is_framework_active():
             return
         try:
             data = self._collect_current_plugin_data()
@@ -817,6 +848,8 @@ class FrameworkTabController(QObject):
 
     def refresh_variogram_preview_from_state(self) -> None:
         """Redraw the Framework variogram preview using the current saved SDI state."""
+        if not self._is_framework_active():
+            return
         try:
             data = self._collect_current_plugin_data()
             if data:
@@ -826,9 +859,23 @@ class FrameworkTabController(QObject):
 
     def reset_for_data_change(self, keep_data_context: bool = True) -> None:
         """Clear Framework outputs that belong to the previous dataset."""
+        self.report_state = None
+        from .compat import is_alive
+        previous=getattr(self,"report_dialog",None)
+        if is_alive(previous): previous.close()
+        if hasattr(self,"comparison_widget"):
+            from .map_comparison import MapComparisonState
+            for task in tuple(getattr(self.comparison_widget,"_bfi_jobs",())): task.cancel()
+            self.comparison_widget.state=MapComparisonState()
+            self.comparison_widget.fig.clear()
+            self.comparison_widget.canvas.draw_idle()
         current_mode = self.state.framework_mode
         covariates = list(self.state.covariates)
         self.state = FrameworkDataState()
+        if self.plugin is not None:
+            self.plugin._last_interpolation_result=None
+            self.plugin._last_interpolation_figure=None
+        if hasattr(self,"comparison_widget"): self.comparison_widget.refresh()
         self.state.framework_mode = current_mode
         self.state.covariates = covariates
         self.state.decision_summary = "Dataset changed. Run diagnostics and evaluate methods again."
@@ -914,6 +961,8 @@ class FrameworkTabController(QObject):
 
         xs, ys, zs = [], [], []
         for feat in point_layer.getFeatures():
+            if not feature_in_analysis(self.plugin, point_layer, feat):
+                continue
             geom = feat.geometry()
             if geom is None or geom.isEmpty():
                 continue
@@ -929,6 +978,20 @@ class FrameworkTabController(QObject):
 
         if len(zs) == 0:
             return None
+
+        polygon_layer = None
+        if polygon_name:
+            polys = QgsProject.instance().mapLayersByName(polygon_name)
+            polygon_layer = polys[0] if polys else None
+        if polygon_layer is not None:
+            validator = getattr(self.plugin, "_validate_point_polygon_crs", None)
+            if callable(validator) and not validator(
+                point_layer,
+                polygon_layer,
+                context="Framework data",
+                critical=False,
+            ):
+                return None
 
         moran_i = None
         moran_p = None
@@ -949,11 +1012,6 @@ class FrameworkTabController(QObject):
                     pattern = mor.get("pattern", pattern)
         except Exception:  # nosec B110
             pass
-
-        polygon_layer = None
-        if polygon_name:
-            polys = QgsProject.instance().mapLayersByName(polygon_name)
-            polygon_layer = polys[0] if polys else None
 
         return {
             "variable_name": variable_name,
@@ -1000,14 +1058,50 @@ class FrameworkTabController(QObject):
                 except Exception:  # nosec B110
                     pass
 
-        sc = ax.scatter(x, y, c=z, cmap="viridis", s=16, edgecolors="k", linewidths=0.25)
+        if should_hexbin_plot(x.size):
+            sc = ax.hexbin(
+                x,
+                y,
+                C=z,
+                reduce_C_function=np.nanmean,
+                gridsize=PLOT_HEXBIN_GRIDSIZE,
+                cmap="viridis",
+                mincnt=1,
+            )
+            title = f"Point map hexbin view of {x.size:,} points"
+            cbar_label = f"Mean {data.get('variable_name', '')}"
+        else:
+            if should_rasterize_scatter(x.size):
+                scatter_size = 4
+                scatter_edges = "none"
+                scatter_linewidth = 0.0
+                scatter_alpha = 0.68
+                title = f"Point map rasterized view of {x.size:,} points"
+            else:
+                scatter_size = 16
+                scatter_edges = "k"
+                scatter_linewidth = 0.25
+                scatter_alpha = 1.0
+                title = "Point map"
+            sc = ax.scatter(
+                x,
+                y,
+                c=z,
+                cmap="viridis",
+                s=scatter_size,
+                edgecolors=scatter_edges,
+                linewidths=scatter_linewidth,
+                alpha=scatter_alpha,
+                rasterized=should_rasterize_scatter(x.size),
+            )
+            cbar_label = data.get("variable_name", "")
         try:
             cbar = self.point_map_fig.colorbar(sc, ax=ax, orientation="vertical", fraction=0.045, pad=0.02)
             cbar.ax.tick_params(labelsize=6)
-            cbar.set_label(data.get("variable_name", ""), fontsize=7)
+            cbar.set_label(cbar_label, fontsize=7)
         except Exception:  # nosec B110
             pass
-        ax.set_title("Point map", fontsize=8)
+        ax.set_title(title, fontsize=8)
         ax.set_aspect("equal", adjustable="box")
         ax.margins(0.05)
         ax.tick_params(axis='both', labelsize=6)
@@ -1161,6 +1255,14 @@ class FrameworkTabController(QObject):
             lagw = self._safe_lag_width(x, y, cutoff, lagw)
             lags_plot = persisted.get("lags")
             gamma_plot = persisted.get("gamma")
+            if (
+                lags_plot is None
+                or gamma_plot is None
+                or getattr(lags_plot, "size", 0) == 0
+                or getattr(gamma_plot, "size", 0) == 0
+            ):
+                lags_plot = lags
+                gamma_plot = gamma
         else:
             if z.size < self.REML_SAMPLE_LIMIT and self._has_reml():
                 fit_method = "REML"
@@ -1180,14 +1282,14 @@ class FrameworkTabController(QObject):
                 nugget, psill, rng = 0.0, max(float(np.var(z, ddof=1)), 1e-9), max(cutoff * 0.5, 1e-9)
 
         if fit_method != "REML" and lags_plot is not None and getattr(lags_plot, "size", 0) > 0:
-            ax.plot(lags_plot, gamma_plot, 'o', color="#2f0dee", markersize=4, label="Experimental")
+            ax.plot(lags_plot, gamma_plot, 'o', color=COLORS["primary"], markersize=4, label="Experimental")
 
         xmax = max(float(cutoff) if cutoff is not None else 1.0, 1.0)
         h_line = np.linspace(0.0, xmax, 200)
         model_token = self._normalize_model_token(model_name)
         model_label = self._ok_model_text_from_key(model_token)
         th = self._model_func(h_line, model_token, float(nugget), float(psill), float(rng))
-        ax.plot(h_line, th, '-', color='black', linewidth=1.8, label=f"Theoretical ({model_label})")
+        ax.plot(h_line, th, '-', color=COLORS["primary_dark"], linewidth=1.8, label=f"Theoretical ({model_label})")
 
         ax.set_title("Semivariogram preview", fontsize=9)
         ax.set_xlabel("Lag distance (h)", fontsize=8)
@@ -1283,61 +1385,14 @@ class FrameworkTabController(QObject):
 
     @staticmethod
     def _pairwise_distances(x, y):
-        n = x.size
-        d = np.empty(n * (n - 1) // 2, dtype=float)
-        k = 0
-        for i in range(n - 1):
-            dx = x[i + 1:] - x[i]
-            dy = y[i + 1:] - y[i]
-            m = np.hypot(dx, dy)
-            d[k:k + m.size] = m
-            k += m.size
-        return d
+        return np.asarray([max_pairwise_distance(x, y)], dtype=float)
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        n = x.size
-        if n < 2:
-            return np.nan
-        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
-                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
-                    1.0)
-        zero_tol = np.finfo(float).eps * scale * 32.0
-        dmin = np.inf
-        for i in range(n):
-            dx = x - x[i]
-            dy = y - y[i]
-            dist = np.hypot(dx, dy)
-            dist[i] = np.inf
-            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
-            if dist.size == 0:
-                continue
-            mi = float(np.min(dist))
-            if mi < dmin:
-                dmin = mi
-        return dmin if np.isfinite(dmin) else np.nan
+        return nearest_neighbor_distance(x, y)
 
     def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
-        try:
-            cutoff = float(cutoff)
-        except Exception:
-            cutoff = np.nan
-        if not np.isfinite(cutoff) or cutoff <= 0:
-            return np.nan
-        try:
-            lag_width = float(lag_width)
-        except Exception:
-            lag_width = np.nan
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = float(self._nearest_neighbor_dist(x, y))
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = cutoff / 12.0
-        min_width = cutoff / float(max(1, int(max_bins)))
-        if lag_width < min_width:
-            lag_width = min_width
-        return float(lag_width)
+        return safe_lag_width(x, y, cutoff, lag_width, max_bins=max_bins)
 
     @staticmethod
     def _semivariances(z):
@@ -1347,124 +1402,15 @@ class FrameworkTabController(QObject):
         return gamma
 
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
-        cutoff = float(cutoff)
-        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
-        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
-            return np.array([], dtype=float), np.array([], dtype=float)
-        nbins = max(1, int(math.floor(cutoff / lag_width)))
-        if nbins > 10000:
-            nbins = 10000
-            lag_width = cutoff / float(nbins)
-        sums = np.zeros(nbins, dtype=float)
-        counts = np.zeros(nbins, dtype=int)
-        dists = np.zeros(nbins, dtype=float)
-        gamma_of = self._semivariances(z)
-        n = x.size
-        for i in range(n - 1):
-            xi, yi, zi = x[i], y[i], z[i]
-            xj = x[i + 1:]
-            yj = y[i + 1:]
-            zj = z[i + 1:]
-            dd = np.hypot(xj - xi, yj - yi)
-            mask = (dd > 0) & (dd <= cutoff)
-            if not np.any(mask):
-                continue
-            dd = dd[mask]
-            gj = gamma_of(zi, zj[mask])
-            bin_idx = np.floor(dd / lag_width).astype(int)
-            bin_idx[bin_idx == nbins] = nbins - 1
-            for b, dval, gval in zip(bin_idx, dd, gj):
-                sums[b] += gval
-                counts[b] += 1
-                dists[b] += dval
-        valid = counts > 0
-        default_centers = np.linspace(lag_width * 0.5, nbins * lag_width - lag_width * 0.5, nbins)
-        lags = np.where(valid, dists / np.maximum(counts, 1), default_centers)
-        gamma = np.where(valid, sums / np.maximum(counts, 1), np.nan)
-        keep = ~np.isnan(gamma)
-        return lags[keep], gamma[keep]
+        lags, gamma, info = bin_experimental_variogram(
+            x, y, z, cutoff, lag_width, return_info=True
+        )
+        self._variogram_pair_info = info
+        return lags, gamma
 
     def _guess_initial_params(self, lags, gamma, cutoff, model="exponential"):
-        """Estimate transparent MoM initial parameters for the Framework fit."""
-        lags = np.asarray(lags, dtype=float)
-        gamma = np.asarray(gamma, dtype=float)
-        keep = np.isfinite(lags) & np.isfinite(gamma) & (lags > 0)
-        lags = lags[keep]
-        gamma = gamma[keep]
-
-        if lags.size == 0:
-            return 0.0, 1.0, max(1.0, cutoff * 0.4)
-
-        order = np.argsort(lags)
-        lags = lags[order]
-        gamma = gamma[order]
-
-        first_vals = gamma[:max(1, min(3, gamma.size))]
-        tail_vals = gamma[-max(3, max(1, gamma.size // 3)):]
-
-        first_bin = float(first_vals[0]) if first_vals.size else 0.0
-        first_max = float(np.nanmax(first_vals)) if first_vals.size else first_bin
-        nugget_intercept = first_bin
-        if lags.size >= 2:
-            h1, h2 = float(lags[0]), float(lags[1])
-            g1, g2 = float(gamma[0]), float(gamma[1])
-            if abs(h2 - h1) > 1e-12:
-                slope = (g2 - g1) / (h2 - h1)
-                nugget_intercept = float(g1 - slope * h1)
-
-        nugget_floor = 0.75 * first_bin
-        nugget_seed = float(max(0.0, max(max(0.0, nugget_intercept), nugget_floor, first_bin)))
-        plateau_seed = float(np.nanmedian(tail_vals))
-        max_seed = float(np.nanmax(gamma))
-        sill_total_seed = max(plateau_seed, max_seed, first_max, nugget_seed + 1e-6)
-
-        target = 0.90 * sill_total_seed
-        idx = np.where(gamma >= target)[0]
-        range_seed = float(lags[idx[0]]) if idx.size > 0 else float(0.60 * cutoff)
-        range_seed = max(range_seed, float(np.nanmin(lags)), 1e-9)
-
-        nugget_cap = max(0.0, min(first_max, 0.90 * sill_total_seed))
-        nugget_seed = float(np.clip(nugget_seed, 0.0, nugget_cap)) if nugget_cap > 0 else 0.0
-        # Keep the MoM nugget tied to the first empirical structure. Let the
-        # search refine range/partial sill only; otherwise the least-squares
-        # search can force an unrealistically low nugget for flat variograms.
-        nugget_candidates = np.array([nugget_seed], dtype=float)
-
-        lag_min = max(float(np.nanmin(lags)), 1e-9)
-        lag_max = max(float(np.nanmax(lags)), lag_min)
-        low = max(lag_min, 0.20 * range_seed)
-        high = max(low * 1.05, min(float(cutoff), max(lag_max * 1.15, range_seed * 1.8, low)))
-        range_candidates = np.unique(np.concatenate([
-            np.linspace(low, high, 28),
-            np.array([range_seed, 0.5 * cutoff, 0.75 * cutoff, lag_max], dtype=float),
-        ]))
-        range_candidates = range_candidates[np.isfinite(range_candidates) & (range_candidates > 0)]
-
-        lag_scale = max(float(np.nanmedian(lags)), 1e-9)
-        weights = 1.0 / (1.0 + (lags / lag_scale))
-        best = None
-        model_token = self._normalize_model_token(model)
-
-        for nugget in nugget_candidates:
-            y = gamma - float(nugget)
-            for rng in range_candidates:
-                basis = self._model_func(lags, model_token, 0.0, 1.0, float(rng))
-                denom = float(np.sum(weights * basis * basis))
-                if denom <= 0:
-                    continue
-                psill = float(np.sum(weights * basis * y) / denom)
-                psill = max(psill, 1e-9)
-                pred = float(nugget) + psill * basis
-                sse = float(np.sum(weights * (gamma - pred) ** 2))
-                sse += 1e-6 * (float(rng) / max(float(cutoff), 1e-9)) ** 2
-                if best is None or sse < best[0]:
-                    best = (sse, float(nugget), float(psill), float(rng))
-
-        if best is None:
-            return nugget_seed, max(sill_total_seed - nugget_seed, 1e-6), range_seed
-
-        _, nugget, psill, rng = best
-        return nugget, psill, rng
+        """Use the shared numerical engine without changing the established policy."""
+        return SemivariogramEngine("framework")._guess_initial_params(lags,gamma,cutoff,model)
 
     @staticmethod
     def _normalize_model_token(model_text: str) -> str:
@@ -1478,20 +1424,8 @@ class FrameworkTabController(QObject):
         return 'exponential'
 
     def _model_func(self, h, model, nugget, psill, rng):
-        """Use the same theoretical variogram equations as the geostatistics tab."""
-        h = np.asarray(h, dtype=float)
-        c0 = float(nugget)
-        c = float(psill)
-        a = max(float(rng), 1e-9)
-        model = self._normalize_model_token(model)
-        if model == 'spherical':
-            hr = np.clip(h / a, 0.0, 1.0)
-            sph = c * (1.5 * hr - 0.5 * (hr ** 3))
-            return np.where(h <= a, c0 + sph, c0 + c)
-        elif model == 'gaussian':
-            return c0 + c * (1.0 - np.exp(-(h * h) / (a * a)))
-        else:
-            return c0 + c * (1.0 - np.exp(-h / a))
+        """Use the shared numerical engine without changing the established policy."""
+        return SemivariogramEngine("framework")._model_func(h,model,nugget,psill,rng)
 
     # ------------------------------------------------------------------
     # Public integration methods
@@ -1509,6 +1443,13 @@ class FrameworkTabController(QObject):
         self.state.moran_i = self._safe_float(data.get("moran_i", self.state.moran_i))
         self.state.moran_p_value = self._safe_float(data.get("moran_p_value", self.state.moran_p_value))
         self.state.spatial_pattern = str(data.get("spatial_pattern", self.state.spatial_pattern) or self.state.spatial_pattern)
+        for key in ("x", "y", "z"):
+            try:
+                arr = np.asarray(data.get(key, []), dtype=float)
+                if arr.size:
+                    self.state.__dict__[key] = arr
+            except Exception:  # nosec B110
+                pass
         self.refresh_from_state()
 
     def load_sdi_result(self, sdi_data: Dict[str, Any]) -> None:
@@ -1557,8 +1498,9 @@ class FrameworkTabController(QObject):
         self._set_text(self.txt_sdi_status, self.state.sdi_status)
 
         self._set_text(self.txt_summary_mode, self.state.framework_mode)
-        selected_method = self.state.__dict__.get("selected_method") or self.state.selected_winner
-        self._set_text(self.txt_summary_winner, selected_method or "Pending")
+        from .interpolation_result import executed_method
+        self._set_text(self.txt_summary_winner, executed_method(self))
+        if self.lbl_summary_winner_title: self.lbl_summary_winner_title.setText('Interpolated')
         self._set_plain_text(
             self.txt_summary_diagnostics,
             self._build_diagnostics_summary(),
@@ -1577,6 +1519,7 @@ class FrameworkTabController(QObject):
         self._refresh_covariate_list()
         self._refresh_validation_method_combo()
         self._refresh_final_method_combo()
+        if hasattr(self,'comparison_widget'): self.comparison_widget.refresh()
         self._refresh_method_checkboxes()
         self._sync_validation_method_controls_visibility()
 
@@ -1592,9 +1535,16 @@ class FrameworkTabController(QObject):
             )
             return
 
-        dlg = FrameworkSDIDialog(parent=self.dlg, plugin=self.plugin)
         try:
-            dlg.exec_()
+            data = self._collect_current_plugin_data()
+            if data:
+                self.load_from_data_tab(data)
+        except Exception:  # nosec B110
+            pass
+
+        dlg = FrameworkSDIDialog(parent=self.dlg, plugin=self.plugin, framework_ctrl=self)
+        try:
+            qt_exec(dlg)
         except AttributeError:
             dlg.exec()
 
@@ -1797,7 +1747,8 @@ class FrameworkTabController(QObject):
             self._show_warning("Validation", "Select at least one method before running validation.")
             return
 
-        data = self._collect_current_plugin_data() or {}
+        raw_data = self._collect_current_plugin_data() or {}
+        data, full_validation_count, validation_subset_used = self._framework_validation_runtime_data(raw_data)
         obs = np.asarray(data.get("z", []), dtype=float)
         if obs.size == 0:
             obs = np.linspace(1.0, 10.0, 10)
@@ -1849,17 +1800,32 @@ class FrameworkTabController(QObject):
         self.state.validation_results = results
         self.state.validated_methods = [r["method"] for r in results]
         self.state.selected_winner = results[0]["method"] if results else ""
+        self.state.__dict__["validation_sample_count"] = int(n_effective)
+        self.state.__dict__["validation_full_sample_count"] = int(full_validation_count)
+        self.state.__dict__["validation_subset_used"] = bool(validation_subset_used)
+        self.state.__dict__["validation_strategy"] = str(data.get("validation_strategy") or "")
+        self.state.__dict__["validation_holdout_max_samples"] = int(
+            data.get("validation_holdout_max_samples") or FRAMEWORK_VALIDATION_MAX_SAMPLES
+        )
         self.state.__dict__["validation_plot_method"] = self.state.validated_methods[0] if self.state.validated_methods else ""
         self._populate_validation_table(results)
         self._refresh_observed_plot_controls_from_results()
         self._refresh_validation_method_combo()
         if self.chk_use_best and self.chk_use_best.isChecked():
             self.state.__dict__["selected_method"] = self.state.selected_winner
+            self._refresh_final_method_combo()
+            self.on_use_best_method_toggled(True)
         self._draw_validation_plot()
 
         if self.lbl_validation_summary:
+            validation_suffix = ""
+            if data.get("validation_strategy") == "massive_spatial_holdout":
+                max_test = int(data.get("validation_holdout_max_samples") or FRAMEWORK_VALIDATION_MAX_SAMPLES)
+                validation_suffix = f" | Validation: spatial hold-out (test ≤ {max_test:,}; n={full_validation_count:,})"
+            elif validation_subset_used:
+                validation_suffix = f" | Validation subset: {n_effective}/{full_validation_count}"
             self.lbl_validation_summary.setText(
-                f"Winner: {self.state.selected_winner} | Methods validated: {len(results)}"
+                f"Winner: {self.state.selected_winner} | Methods validated: {len(results)}{validation_suffix}"
             )
         if failures:
             self._show_warning("Validation", "Some selected methods could not be validated:\n" + "\n".join(failures[:6]))
@@ -1882,6 +1848,24 @@ class FrameworkTabController(QObject):
             return int(np.count_nonzero(mask))
         except Exception:
             return 0
+
+    def _framework_validation_runtime_data(self, data: Dict[str, Any]) -> Tuple[Dict[str, Any], int, bool]:
+        """Attach massive-validation metadata without replacing the full dataset."""
+        full_count = self._effective_valid_sample_count(data)
+        if full_count <= FRAMEWORK_VALIDATION_SUBSET_THRESHOLD:
+            return data, full_count, False
+
+        try:
+            runtime_data = dict(data)
+            runtime_data["sample_count"] = int(full_count)
+            runtime_data["validation_sample_count"] = int(full_count)
+            runtime_data["validation_full_sample_count"] = int(full_count)
+            runtime_data["validation_subset_used"] = False
+            runtime_data["validation_strategy"] = "massive_spatial_holdout"
+            runtime_data["validation_holdout_max_samples"] = int(FRAMEWORK_VALIDATION_MAX_SAMPLES)
+            return runtime_data, full_count, False
+        except Exception:
+            return data, full_count, False
 
     def _dedupe_training_by_xy_keep_first(self, x, y, z):
         """Return one TPS training sample per exact XY coordinate, keeping the first row."""
@@ -1912,10 +1896,10 @@ class FrameworkTabController(QObject):
                 "Continue using only the first sample at each repeated coordinate?\n\n"
                 "The original layer will not be modified."
             ),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.Yes,
+            enum_value(QMessageBox, "StandardButton", "Yes") | enum_value(QMessageBox, "StandardButton", "No"),
+            enum_value(QMessageBox, "StandardButton", "Yes"),
         )
-        return reply == QMessageBox.Yes
+        return reply == enum_value(QMessageBox, "StandardButton", "Yes")
 
     def _minimum_samples_for_method(self, method: str) -> int:
         """Return absolute sample minimums by method without blocking article-supported paths."""
@@ -1967,6 +1951,10 @@ class FrameworkTabController(QObject):
         """Dispatch final Framework interpolation to the real plugin workflows."""
         use_best = bool(self.chk_use_best and self.chk_use_best.isChecked())
         method = self.state.selected_winner if use_best else ""
+        if use_best and method and self.cmb_final_method:
+            idx = self.cmb_final_method.findText(method)
+            if idx >= 0:
+                self.cmb_final_method.setCurrentIndex(idx)
         if not method and self.cmb_final_method:
             method = self.cmb_final_method.currentText().strip()
         if not method:
@@ -1981,35 +1969,77 @@ class FrameworkTabController(QObject):
         ):
             return
         self.state.__dict__["selected_method"] = method
-        if not self._dispatch_interpolation_method(method):
-            self._show_warning("Interpolation", f"Could not dispatch interpolation for method: {method}.")
+        if not self._dispatch_and_register_map(method):
+            detail = str(self.state.__dict__.pop("last_dispatch_error", "") or "").strip()
+            message = f"Could not dispatch interpolation for method: {method}."
+            if detail:
+                message += f"\n\nDetails: {detail}"
+            self._show_warning("Interpolation", message)
 
-    def on_preview_report_clicked(self) -> None:
-        """Preview a lightweight HTML summary of the PDF report."""
-        self._show_rich_info("Report preview", self._build_report_preview_html())
-
-    def on_export_pdf_clicked(self) -> None:
-        """Export the Framework validation report template to PDF."""
-        path, _ = QFileDialog.getSaveFileName(
-            self.dlg,
-            "Export Framework report",
-            "framework_validation_report.pdf",
-            "PDF files (*.pdf);;All files (*)",
-        )
-        if not path:
+    def _install_extensions(self):
+        from .map_comparison_ui import MapComparisonWidget
+        from qgis.PyQt.QtWidgets import QPushButton, QVBoxLayout, QWidget
+        tabs=self.framework_subtabs
+        if tabs is None:
             return
-        if not str(path).lower().endswith(".pdf"):
-            path = f"{path}.pdf"
-        try:
-            doc = QTextDocument()
-            doc.setHtml(self._build_report_html())
-            printer = QPrinter(QPrinter.HighResolution)
-            printer.setOutputFormat(QPrinter.PdfFormat)
-            printer.setOutputFileName(path)
-            doc.print_(printer)
-            self._show_info("Export PDF", f"Framework report template exported:\n{path}")
-        except Exception as exc:
-            self._show_warning("Export PDF", f"Could not export PDF:\n{exc}")
+        self.comparison_widget=MapComparisonWidget(self)
+        tabs.addTab(self.comparison_widget,"Comparison")
+        output_page=self._get('tabFrameworkInterpolation')
+        if output_page is not None: tabs.setTabText(tabs.indexOf(output_page),'Interpolation')
+        old_report=self._get('groupFrameworkReport')
+        if old_report is not None: old_report.hide()
+        from .report_builder import ReportOverviewWidget
+        self.report_overview=ReportOverviewWidget(self,tabs)
+        tabs.addTab(self.report_overview,"Report")
+        tabs.currentChanged.connect(lambda index:self.report_overview.refresh() if tabs.currentWidget() is self.report_overview else None)
+
+    def _dispatch_and_register_map(self,method,purpose='final'):
+        previous=getattr(self.plugin,'_bfi_interpolation_purpose','standalone')
+        self.plugin._bfi_interpolation_purpose=purpose
+        self.plugin._latest_produced_result=None
+        try: succeeded=self._dispatch_interpolation_method(method)
+        finally: self.plugin._bfi_interpolation_purpose=previous
+        result=getattr(self.plugin,'_latest_produced_result',None)
+        if succeeded and result is not None and result.method==('RF' if method=='RFE' else method):
+            layer=QgsProject.instance().mapLayer(result.layer_id)
+            if isinstance(layer,QgsRasterLayer) and layer.isValid() and method in self.state.validated_methods:
+                self.state.__dict__.setdefault("interpolation_outputs",{})[method]=layer.id()
+                self.comparison_widget.refresh()
+            return True
+        return False
+
+    def _build_report_html(self):
+        from .report_model import report_html,snapshot_framework_report
+        state=getattr(self,"report_state",None) or snapshot_framework_report(self)
+        return report_html(state)
+
+    def _fresh_report_state(self):
+        from .report_model import snapshot_framework_report
+        from .compat import is_alive
+        previous=getattr(self,"report_dialog",None)
+        previous_state=previous.state if is_alive(previous) else getattr(self,'report_state',None)
+        self.report_state=snapshot_framework_report(self)
+        if previous_state is not None:
+            for name in ('study_name','author','notes'): setattr(self.report_state,name,getattr(previous_state,name))
+            enabled={section.key:section.enabled for section in previous_state.sections}
+            for section in self.report_state.sections:
+                if not section.mandatory and section.key in enabled: section.enabled=enabled[section.key]
+        self.state.__dict__["report_state"]=self.report_state
+        return self.report_state
+
+    def on_preview_report_clicked(self):
+        from .report_builder import ReportBuilderDialog
+        from .compat import is_alive
+        self._fresh_report_state()
+        previous=getattr(self,'report_dialog',None)
+        if is_alive(previous): previous.close()
+        self.report_dialog=ReportBuilderDialog(self.report_state,self.dlg)
+        from qgis.PyQt.QtCore import Qt
+        self.report_dialog.setAttribute(enum_value(Qt,"WidgetAttribute","WA_DeleteOnClose"),True)
+        self.report_dialog.show()
+
+    def on_export_pdf_clicked(self):
+        self.on_preview_report_clicked()
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -2037,8 +2067,9 @@ class FrameworkTabController(QObject):
         self._covariates_dialog_open = True
         try:
             dlg = QDialog(self.dlg)
-            dlg.setWindowTitle("Framework full - Covariates")
-            dlg.resize(1050, 720)
+            dlg.setWindowTitle("Framework full Covariates")
+            dlg.setMinimumSize(600, 420)
+            dlg.setSizeGripEnabled(True)
             root = QVBoxLayout(dlg)
 
             top_group = QGroupBox("Covariate rasters")
@@ -2053,7 +2084,7 @@ class FrameworkTabController(QObject):
             top.addWidget(QLabel(self._fmt(self.state.pixel_size)))
             root.addWidget(top_group)
 
-            splitter = QSplitter(Qt.Horizontal)
+            splitter = QSplitter(enum_value(Qt, "Orientation", "Horizontal"))
             left = QWidget()
             left_layout = QVBoxLayout(left)
             group_pre = QGroupBox("Covariates  preprocessing")
@@ -2069,7 +2100,9 @@ class FrameworkTabController(QObject):
 
             group_res = QGroupBox("Resampling")
             res_layout = QVBoxLayout(group_res)
-            res_layout.addWidget(QLabel("Resample all covariate rasters to a common pixel size."))
+            resampling_hint = QLabel("Resample all covariate rasters to a common pixel size.")
+            resampling_hint.setWordWrap(True)
+            res_layout.addWidget(resampling_hint)
             row_res = QHBoxLayout()
             row_res.addWidget(QLabel("Target pixel size:"))
             spin_pixel = QDoubleSpinBox()
@@ -2078,16 +2111,16 @@ class FrameworkTabController(QObject):
             spin_pixel.setValue(float(self.state.pixel_size or 0.01))
             row_res.addWidget(spin_pixel)
             btn_resample = QPushButton("Resample covariates")
-            row_res.addWidget(btn_resample)
             res_layout.addLayout(row_res)
+            res_layout.addWidget(btn_resample)
             row_std = QHBoxLayout()
             row_std.addWidget(QLabel("Standardization:"))
             cmb_std = QComboBox()
-            cmb_std.addItems(["Z-score", "Range [-1,1]"])
+            cmb_std.addItems(["Z score", "Range [-1,1]"])
             row_std.addWidget(cmb_std)
             btn_std = QPushButton("Standardize covariates")
-            row_std.addWidget(btn_std)
             res_layout.addLayout(row_std)
+            res_layout.addWidget(btn_std)
             btn_extract = QPushButton("Extract covariates to sample points")
             btn_view = QPushButton("View data with extractions ")
             btn_export = QPushButton("Export extractions CSV")
@@ -2099,10 +2132,10 @@ class FrameworkTabController(QObject):
             right = QWidget()
             right_layout = QVBoxLayout(right)
             title = QLabel("Correlation Matrix")
-            title.setAlignment(Qt.AlignCenter)
+            title.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignCenter"))
             right_layout.addWidget(title)
             frame_corr = QWidget()
-            frame_corr.setMinimumSize(420, 360)
+            frame_corr.setMinimumSize(180, 180)
             right_layout.addWidget(frame_corr, 1)
             corr_fig = Figure(figsize=(5, 4))
             self.framework_corr_fig = corr_fig
@@ -2110,15 +2143,16 @@ class FrameworkTabController(QObject):
             corr_layout = QVBoxLayout(frame_corr)
             corr_layout.setContentsMargins(0, 0, 0, 0)
             corr_layout.addWidget(corr_canvas)
-            self._install_canvas_menu(corr_canvas, lambda f=corr_fig: f, "framework_covariates_correlation", "Covariates correlation")
-            corr_row = QHBoxLayout()
+            self._install_canvas_menu(corr_canvas, lambda: corr_canvas.figure, "framework_covariates_correlation", "Covariates correlation")
+            corr_row = QVBoxLayout()
             btn_corr = QPushButton("Compute correlations")
             btn_export_corr = QPushButton("Export correlations CSV")
-            corr_row.addStretch(1)
             corr_row.addWidget(btn_corr)
             corr_row.addWidget(btn_export_corr)
-            corr_row.addStretch(1)
             right_layout.addLayout(corr_row)
+            from .ui_refinement import scroll_content
+            scroll_content(left)
+            scroll_content(right)
             splitter.addWidget(left)
             splitter.addWidget(right)
             splitter.setStretchFactor(0, 1)
@@ -2204,7 +2238,13 @@ class FrameworkTabController(QObject):
             btn_apply_to_framework.clicked.connect(_apply_to_framework)
             _sync_dialog_list()
             self._copy_source_figure_to_target(getattr(getattr(self.plugin, "ml_ctrl", None), "_corr_fig", None), corr_fig, corr_canvas)
-            dlg.exec_()
+            from .theme import apply_theme
+            from qgis.PyQt.QtWidgets import QApplication
+            apply_theme(dlg)
+            screen = dlg.screen() if hasattr(dlg, "screen") else QApplication.primaryScreen()
+            available = screen.availableGeometry() if screen is not None else self.dlg.geometry()
+            dlg.resize(min(1000, available.width()-40), min(700, available.height()-60))
+            qt_exec(dlg)
             self._sync_covariates_from_ml()
             self.refresh_from_state()
         finally:
@@ -2262,7 +2302,7 @@ class FrameworkTabController(QObject):
             f"Available methods: {available}.\n"
             f"OK fit: {ok_fit or 'Not selected'}.\n"
             f"Covariates: {covariates}.\n"
-            f"Next step: run LOOCV/LCCC validation for the selected methods."
+            f"Next step: run automatic CV/LCCC validation for the selected methods."
         )
 
     def _build_diagnostics_summary(self) -> str:
@@ -2272,27 +2312,35 @@ class FrameworkTabController(QObject):
             f"Pixel size: {self._fmt(self.state.pixel_size)}",
             f"Samples: {self._fmt(self.state.sample_count)}",
             f"Moran's I: {self._fmt(self.state.moran_i)}",
-            f"p-value: {self._fmt(self.state.moran_p_value)}",
+            f"p value: {self._fmt(self.state.moran_p_value)}",
             f"Spatial pattern: {self.state.spatial_pattern}",
             f"SDI: {self._fmt(self.state.sdi_value)}",
             f"SDI status: {self.state.sdi_status}",
             f"Covariates: {', '.join(self.state.covariates) if self.state.covariates else 'None'}",
+            f"Performance profile: {self._dense_profile_summary()}",
         ]
         return "\n".join(lines)
+
+    def _dense_profile_summary(self) -> str:
+        """Return the methodology disclosure reused by previews and PDF reports."""
+        count = int(self.state.sample_count or 0)
+        if not is_dense_dataset(count):
+            return dense_method_notice(count, "Framework interpolation and validation")
+        return dense_method_notice(count, "Framework interpolation and validation")
 
     def _build_methods_summary(self) -> str:
         """Build the final methods summary block."""
         available = ", ".join(self.state.eligible_methods) if self.state.eligible_methods else "Pending"
         recommended = ", ".join(self.state.suggested_methods) if self.state.suggested_methods else "Pending"
         selected = self.state.__dict__.get("selected_method") or self.state.selected_winner or "Pending"
+        from .interpolation_result import executed_method
         ok_fit = self.state.__dict__.get("ok_fit_method", "")
-        if self.state.sample_count:
-            ok_fit = "MoM" if int(self.state.sample_count) >= 100 else "REML"
         return (
             f"Recommended: {recommended}\n"
             f"Available: {available}\n"
             f"Winner: {self.state.selected_winner or 'Pending'}\n"
-            f"Selected: {selected}\n"
+            f"Selected for next run: {selected}\n"
+            f"Interpolated: {executed_method(self)}\n"
             f"OK fit: {ok_fit or 'Pending'}"
         )
 
@@ -2307,7 +2355,8 @@ class FrameworkTabController(QObject):
             f"Moran's I: {self._fmt(self.state.moran_i)}\n"
             f"SDI: {self._fmt(self.state.sdi_value)}\n"
             f"Winner: {self.state.selected_winner or 'Pending'}\n"
-            f"Covariates: {covariates}"
+            f"Covariates: {covariates}\n"
+            f"Performance profile: {self._dense_profile_summary()}"
         )
 
     def _build_report_preview_html(self) -> str:
@@ -2325,6 +2374,7 @@ class FrameworkTabController(QObject):
             f"<p><b>Variable:</b> {esc(self.state.variable_name)}</p>"
             f"<p><b>Framework:</b> {esc(self.state.framework_mode)}</p>"
             f"<p><b>Samples:</b> {esc(self._fmt(self.state.sample_count))}</p>"
+            f"<p><b>Performance profile:</b> {esc(self._dense_profile_summary())}</p>"
             f"<p><b>SDI:</b> {esc(self._fmt(self.state.sdi_value))} ({esc(self.state.sdi_status)})</p>"
             f"<p><b>Recommended methods:</b> {esc(', '.join(self.state.suggested_methods) or 'Pending')}</p>"
             f"<p><b>Methods evaluated:</b> {esc(methods)}</p>"
@@ -2361,12 +2411,13 @@ class FrameworkTabController(QObject):
             "</table>"
         )
 
-    def _build_report_html(self) -> str:
+    def _collect_legacy_report_html(self) -> str:
         """Build the English Framework validation report template."""
         esc = lambda v: html.escape(str(v if v not in (None, "") else "Pending"))
         recommended = ", ".join(self.state.suggested_methods) if self.state.suggested_methods else "Pending"
         selected = ", ".join(self.state.validated_methods) if self.state.validated_methods else "Pending"
-        final_selected = self.state.__dict__.get("selected_method") or self.state.selected_winner or "Pending"
+        from .interpolation_result import executed_method
+        final_selected = executed_method(self)
         covariates = self.state.covariates or []
         covariate_items = "".join(f"<li>{esc(c)}</li>" for c in covariates) or "<li>None</li>"
         point_map_img = self._report_figure_block("Point map", getattr(self, "point_map_fig", None))
@@ -2378,7 +2429,8 @@ class FrameworkTabController(QObject):
             self._report_figure_block(f"Observed vs Predicted - {row.get('method', '')}", self._make_observed_predicted_figure(row))
             for row in (self.state.validation_results or [])
         )
-        interpolation_img = self._report_figure_block("Interpolation map", getattr(self, "interpolation_fig", None))
+        actual_figure=self.interpolation_fig if self.state.__dict__.get('executed_result') else None
+        interpolation_img = self._report_figure_block("Interpolation map", actual_figure)
         correlation_img = self._report_figure_block("Covariate correlation plot", self._get_correlation_report_figure())
         covariate_map_imgs = ""
         validation_table = self._validation_metrics_table_html()
@@ -2387,8 +2439,7 @@ class FrameworkTabController(QObject):
             if str(row.get("method", "")).upper() == "IDW" and row.get("parameters"):
                 idw_details.append(str(row.get("parameters")))
         fit_method = self.state.__dict__.get("ok_fit_method") or self.state.__dict__.get("fit_method", "Pending")
-        if self.state.sample_count:
-            fit_method = "MoM" if int(self.state.sample_count) >= 100 else "REML"
+        # Report the persisted fit, rather than inferring it from sample count.
         idw_block = ""
         if idw_details:
             idw_block = "<p><b>IDW optimization parameters:</b> " + esc("; ".join(idw_details)) + "</p>"
@@ -2402,6 +2453,7 @@ class FrameworkTabController(QObject):
             "</table>"
         )
         citation_html = esc(ARTICLE_CITATION)
+        dense_profile_html = esc(self._dense_profile_summary())
         return f"""
         <html>
         <head>
@@ -2430,9 +2482,10 @@ class FrameworkTabController(QObject):
                 <tr><th>Item</th><th>Value</th></tr>
                 <tr><td>Pixel size</td><td>{esc(self._fmt(self.state.pixel_size))}</td></tr>
                 <tr><td>Number of samples</td><td>{esc(self._fmt(self.state.sample_count))}</td></tr>
+                <tr><td>Performance profile</td><td>{dense_profile_html}</td></tr>
                 <tr><td>Semivariogram calculation method</td><td>{esc(fit_method)}</td></tr>
                 <tr><td>Moran's I</td><td>{esc(self._fmt(self.state.moran_i))}</td></tr>
-                <tr><td>p-value</td><td>{esc(self._fmt(self.state.moran_p_value))}</td></tr>
+                <tr><td>p value</td><td>{esc(self._fmt(self.state.moran_p_value))}</td></tr>
                 <tr><td>Spatial pattern</td><td>{esc(self.state.spatial_pattern)}</td></tr>
                 <tr><td>SDI</td><td>{esc(self._fmt(self.state.sdi_value))}</td></tr>
                 <tr><td>SDI class</td><td>{esc(self.state.sdi_status)}</td></tr>
@@ -2446,7 +2499,7 @@ class FrameworkTabController(QObject):
             <p><b>Recommended methods:</b> {esc(recommended)}</p>
             <p><b>Methods evaluated:</b> {esc(selected)}</p>
             <p><b>Validation winner:</b> {esc(self.state.selected_winner)}</p>
-            <p><b>Selected final method:</b> {esc(final_selected)}</p>
+            <p><b>Executed interpolation method:</b> {esc(final_selected)}</p>
             {decision_tree_img}
 
             <h2>3. Multivariate Framework</h2>
@@ -2464,7 +2517,7 @@ class FrameworkTabController(QObject):
 
             <h2>5. Interpolation Output</h2>
             <p><b>Validation winner:</b> {esc(self.state.selected_winner)}</p>
-            <p><b>Selected final method:</b> {esc(final_selected)}</p>
+            <p><b>Executed interpolation method:</b> {esc(final_selected)}</p>
             {interpolation_img}
 
             <h2>Reference</h2>
@@ -2508,25 +2561,42 @@ class FrameworkTabController(QObject):
                 return True
             if m in {"RFE", "RF"}:
                 ml_ctrl = getattr(self.plugin, "ml_ctrl", None)
-                if ml_ctrl is not None and hasattr(ml_ctrl, "_on_run_rf_interpolation"):
-                    ml_ctrl._on_run_rf_interpolation()
+                if ml_ctrl is not None and hasattr(ml_ctrl, "run_framework_interpolation"):
+                    completed = ml_ctrl.run_framework_interpolation(
+                        "RF",
+                        self._framework_ml_feature_names(),
+                    )
+                    if not completed:
+                        detail = str(getattr(ml_ctrl, "_last_framework_dispatch_error", "") or "").strip()
+                        if detail:
+                            self.state.__dict__["last_dispatch_error"] = detail
+                        return False
                     self._copy_source_figure_to_framework_map(getattr(ml_ctrl, "_rf_map_fig", None))
                     return True
             if m == "SVM":
                 ml_ctrl = getattr(self.plugin, "ml_ctrl", None)
-                if ml_ctrl is not None and hasattr(ml_ctrl, "_on_run_svm_interpolation"):
-                    ml_ctrl._on_run_svm_interpolation()
+                if ml_ctrl is not None and hasattr(ml_ctrl, "run_framework_interpolation"):
+                    completed = ml_ctrl.run_framework_interpolation(
+                        "SVM",
+                        self._framework_ml_feature_names(),
+                    )
+                    if not completed:
+                        detail = str(getattr(ml_ctrl, "_last_framework_dispatch_error", "") or "").strip()
+                        if detail:
+                            self.state.__dict__["last_dispatch_error"] = detail
+                        return False
                     self._copy_source_figure_to_framework_map(getattr(ml_ctrl, "_svm_map_fig", None))
                     return True
             if m == "RK":
                 rk_ctrl = getattr(self.plugin, "rk_ctrl", None)
                 if rk_ctrl is not None and hasattr(rk_ctrl, "_run_rk_prediction"):
-                    self._run_rk_interpolation_from_framework(rk_ctrl)
+                    if not self._run_rk_interpolation_from_framework(rk_ctrl):
+                        return False
                     self._copy_source_figure_to_framework_map(getattr(rk_ctrl, "_map_fig", None))
                     return True
         except Exception as exc:
             self._show_warning("Interpolation", f"Interpolation failed:\n{self._friendly_interpolation_error(exc)}")
-            return True
+            return False
         return False
 
     def _framework_variogram_params_for_ok(self) -> Dict[str, Any]:
@@ -2665,11 +2735,11 @@ class FrameworkTabController(QObject):
                 pass
         return ok_ctrl, active_ok, params
 
-    def _run_rk_interpolation_from_framework(self, rk_ctrl: Any) -> None:
+    def _run_rk_interpolation_from_framework(self, rk_ctrl: Any) -> bool:
         """Run Regression Kriging end-to-end from Framework, including RF and variogram stages."""
-        progress = QProgressDialog("Running Regression Kriging from Framework...", "Cancel", 0, 100, self.dlg)
+        progress = QProgressDialog("Running Regression Kriging from Framework", "Cancel", 0, 100, self.dlg)
         progress.setWindowTitle("Regression Kriging")
-        progress.setWindowModality(Qt.WindowModal)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.show()
         QCoreApplication.processEvents()
@@ -2685,47 +2755,82 @@ class FrameworkTabController(QObject):
                 raise KeyboardInterrupt("Canceled by user")
 
         try:
-            if getattr(rk_ctrl, "_rf_model", None) is None:
-                progress.setLabelText("Fitting RF stage for Regression Kriging...")
-                progress.setRange(0, 0)
-                QCoreApplication.processEvents()
-                rk_ctrl._fit_rf_stage(progress_fn=_progress)
-            if getattr(rk_ctrl, "_variogram_lags", None) is None or getattr(rk_ctrl, "_variogram_gamma", None) is None:
-                progress.setLabelText("Fitting residual semivariogram...")
-                progress.setRange(0, 0)
-                QCoreApplication.processEvents()
-                rk_ctrl._fit_variogram_stage()
+            rk_ctrl._last_interpolation_config = None
+            feature_names = self._framework_ml_feature_names()
+            progress.setLabelText("Fitting RF stage for Regression Kriging")
+            progress.setRange(0, 0)
+            QCoreApplication.processEvents()
+            rk_ctrl._fit_rf_stage(
+                progress_fn=_progress,
+                feature_names=feature_names,
+                prompt_for_predictors=False,
+                framework_mode=True,
+            )
+            progress.setLabelText("Fitting residual semivariogram")
+            progress.setRange(0, 0)
+            QCoreApplication.processEvents()
+            rk_ctrl._fit_variogram_stage()
             rk_ctrl._run_rk_prediction(progress_fn=_progress)
+            return bool(getattr(rk_ctrl, "_last_interpolation_config", None))
         except KeyboardInterrupt:
             self._show_warning("Regression Kriging", "Operation canceled by the user.")
+            return False
         except Exception as exc:
             self._show_warning("Regression Kriging", f"Interpolation failed:\n{exc}")
+            return False
         finally:
             progress.close()
 
     def _copy_source_figure_to_framework_map(self, source_fig: Optional[Figure]) -> None:
-        if source_fig is None or getattr(self, "interpolation_fig", None) is None:
-            return
-        self._copy_source_figure_to_target(source_fig, self.interpolation_fig, self.interpolation_canvas)
+        if source_fig is None or getattr(self.plugin,'_bfi_interpolation_purpose','final')=='comparison': return
+        result=self.state.__dict__.get('executed_result')
+        if result is None or getattr(source_fig,'_bfi_execution_id',None)!=result.execution_id: return
+        import copy
+        from .map_controls import attach_map_controls
+        old=getattr(self,'_interpolation_source_connection',None)
+        if old is not None: old[0].mpl_disconnect(old[1])
+        self.interpolation_fig=copy.deepcopy(source_fig)
+        self.interpolation_canvas.figure=self.interpolation_fig
+        self.interpolation_fig.set_canvas(self.interpolation_canvas)
+        self.plugin._last_interpolation_figure=self.interpolation_fig
+        self.interpolation_canvas._bfi_display_source=True
+        self.interpolation_canvas._bfi_is_map=True
+        attach_map_controls(self.interpolation_canvas)
+        source_display=getattr(source_fig.canvas,'_bfi_map_display',None)
+        automatic=source_display.controls.state.automatic if source_display is not None else None
+        self.interpolation_canvas._bfi_map_display.adopt_current(automatic)
+        source_canvas=source_fig.canvas
+        def refresh_display(event):
+            # Export draws use a temporary canvas, DPI and bounding box.
+            if event.canvas is source_canvas and not source_canvas.is_saving():
+                self._copy_source_figure_to_framework_map(source_fig)
+        connection=source_canvas.mpl_connect('draw_event',refresh_display)
+        self._interpolation_source_connection=(source_canvas,connection)
+        self.interpolation_canvas.draw_idle()
 
     def _copy_source_figure_to_target(self, source_fig: Optional[Figure], target_fig: Optional[Figure], target_canvas: Optional[FigureCanvas]) -> None:
         if source_fig is None or target_fig is None or target_canvas is None:
             return
         try:
-            import io
-            import matplotlib.image as mpimg
-            buf = io.BytesIO()
-            source_fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
-            buf.seek(0)
-            arr = mpimg.imread(buf)
-            target_fig.clear()
-            ax = target_fig.add_subplot(111)
-            ax.imshow(arr)
-            ax.axis("off")
-            target_fig.tight_layout(pad=0.2)
+            import copy
+            from .map_controls import attach_map_controls
+            # Preserve scalar artists so palette/range controls remain editable.
+            previous = target_canvas.figure
+            mirrored = copy.deepcopy(source_fig)
+            target_canvas.figure = mirrored
+            mirrored.set_canvas(target_canvas)
+            if getattr(self, "framework_corr_fig", None) in (target_fig, previous):
+                self.framework_corr_fig = mirrored
+            target_canvas._bfi_display_source = True
+            target_canvas._bfi_is_map = False
+            attach_map_controls(target_canvas)
+            source_display = getattr(source_fig.canvas, "_bfi_map_display", None)
+            automatic = source_display.controls.state.automatic if source_display is not None else None
+            target_canvas._bfi_map_display.adopt_current(automatic)
             target_canvas.draw_idle()
-        except Exception:  # nosec B110
-            pass
+        except Exception:
+            from .compat import log_exception
+            log_exception("Mirroring the Framework covariates correlation figure")
 
     def _report_figure_block(self, title: str, fig: Optional[Figure]) -> str:
         """Convert a matplotlib figure to an HTML image block for the report."""
@@ -2737,15 +2842,25 @@ class FrameworkTabController(QObject):
             safe = "".join(ch if ch.isalnum() else "_" for ch in str(title).lower()).strip("_") or "figure"
             fd, path = tempfile.mkstemp(prefix=f"framework_{safe}_", suffix=".png")
             os.close(fd)
-            fig.savefig(path, dpi=420, bbox_inches="tight", pad_inches=0.08)
+            from .theme import style_figure
+            style_figure(fig)
+            original_size=fig.get_size_inches().copy()
+            # Hidden Qt tabs can temporarily resize their canvas to zero height.
+            needs_size=bool(np.any(original_size<=.1))
+            if needs_size: fig.set_size_inches(*getattr(fig,"_bfi_export_size",(6.4,4.2)),forward=False)
+            try: save_figure(fig, path, dpi=220, bbox_inches="tight", pad_inches=0.08)
+            finally:
+                if needs_size: fig.set_size_inches(original_size,forward=False)
             self._report_image_paths.append(path)
             src = Path(path).as_posix()
             return (
                 f"<div class='figure-block' align='center'>"
-                f"<img class='report-figure' width='430' src='file:///{html.escape(src)}'>"
+                f"<img class='report-figure' width='620' src='file:///{html.escape(src)}'>"
                 f"<p class='figure-caption'>{html.escape(title)}</p></div>"
             )
         except Exception:
+            from .compat import log_exception
+            log_exception("Rendering a Framework report figure: "+title)
             return f"<p><b>{html.escape(title)}:</b> could not be rendered.</p>"
 
     def _report_decision_tree_block(self) -> str:
@@ -2765,7 +2880,7 @@ class FrameworkTabController(QObject):
             src = Path(path).as_posix()
             return (
                 "<div class='figure-block' align='center'>"
-                f"<img class='decision-tree-figure' width='680' src='file:///{html.escape(src)}'>"
+                f"<img class='decision-tree-figure' width='620' src='file:///{html.escape(src)}'>"
                 "<p class='figure-caption'>Framework Decision Tree</p></div>"
             )
         except Exception:
@@ -2800,12 +2915,7 @@ class FrameworkTabController(QObject):
             return None
         fig = Figure(figsize=(4.8, 3.6))
         ax = fig.add_subplot(111)
-        mn = float(min(np.nanmin(obs), np.nanmin(pred)))
-        mx = float(max(np.nanmax(obs), np.nanmax(pred)))
-        if not np.isfinite(mn) or not np.isfinite(mx) or mn == mx:
-            mn, mx = 0.0, 1.0
-        pad = 0.02 * (mx - mn if mx > mn else 1.0)
-        vmin, vmax = mn - pad, mx + pad
+        vmin, vmax = self._common_observed_predicted_limits(fallback_rows=[row])
         ax.scatter(obs, pred, s=24, alpha=0.9, facecolors="none", edgecolors="black", label="Data")
         ax.plot([vmin, vmax], [vmin, vmax], "-", color="black", linewidth=1.0, label="1:1")
         if obs.size >= 2:
@@ -2822,6 +2932,35 @@ class FrameworkTabController(QObject):
         ax.legend(loc="best", frameon=False, fontsize=8)
         fig.tight_layout()
         return fig
+
+    def _common_observed_predicted_limits(self, rows: Optional[List[Dict[str, Any]]] = None, fallback_rows: Optional[List[Dict[str, Any]]] = None) -> Tuple[float, float]:
+        """Return shared validation plot limits so all methods use one scale."""
+        source_rows = rows
+        if source_rows is None:
+            source_rows = list(self.state.validation_results or [])
+        if not source_rows and fallback_rows:
+            source_rows = list(fallback_rows)
+
+        values = []
+        for row in source_rows or []:
+            for key in ("observed", "predicted"):
+                arr = np.asarray(row.get(key, []), dtype=float)
+                arr = arr[np.isfinite(arr)]
+                if arr.size:
+                    values.append(arr)
+
+        if not values:
+            return 0.0, 1.0
+        merged = np.concatenate(values)
+        mn = float(np.nanmin(merged))
+        mx = float(np.nanmax(merged))
+        if not np.isfinite(mn) or not np.isfinite(mx):
+            return 0.0, 1.0
+        if mn == mx:
+            pad = max(abs(mn) * 0.02, 0.5)
+            return mn - pad, mx + pad
+        pad = 0.02 * (mx - mn)
+        return mn - pad, mx + pad
 
     def _get_correlation_report_figure(self) -> Optional[Figure]:
         ml_ctrl = getattr(self.plugin, "ml_ctrl", None) if self.plugin is not None else None
@@ -3027,10 +3166,6 @@ class FrameworkTabController(QObject):
             button = QPushButton(str(method), panel)
             button.setCheckable(True)
             button.setMinimumWidth(54)
-            button.setStyleSheet(
-                "QPushButton { padding: 3px 8px; } "
-                "QPushButton:checked { background-color: #2f0dee; color: white; font-weight: bold; }"
-            )
             button.clicked.connect(lambda checked=False, m=method: self._select_validation_plot_method(m))
             layout.addWidget(button)
             self._observed_method_buttons[str(method)] = button
@@ -3183,12 +3318,7 @@ class FrameworkTabController(QObject):
             ax.axis("off")
             self.validation_canvas.draw_idle()
             return
-        mn = float(min(np.nanmin(obs), np.nanmin(pred)))
-        mx = float(max(np.nanmax(obs), np.nanmax(pred)))
-        if not np.isfinite(mn) or not np.isfinite(mx) or mn == mx:
-            mn, mx = 0.0, 1.0
-        pad = 0.02 * (mx - mn if mx > mn else 1.0)
-        vmin, vmax = mn - pad, mx + pad
+        vmin, vmax = self._common_observed_predicted_limits(rows=rows, fallback_rows=[row])
         ax.scatter(obs, pred, s=24, alpha=0.9, facecolors="none", edgecolors="black", label="Data")
         ax.plot([vmin, vmax], [vmin, vmax], "-", color="black", linewidth=1.0, label="1:1")
         if obs.size >= 2:
@@ -3249,12 +3379,64 @@ class FrameworkTabController(QObject):
             return float("nan")
         return float((2.0 * cov_op) / denom)
 
+    @staticmethod
+    def _clip_to_training_range(values, training_values):
+        """Clip fold predictions to the finite training-value range."""
+        arr = np.asarray(values, dtype=float)
+        train = np.asarray(training_values, dtype=float)
+        train = train[np.isfinite(train)]
+        if train.size == 0:
+            return arr
+        low = float(np.nanmin(train))
+        high = float(np.nanmax(train))
+        if not np.isfinite(low) or not np.isfinite(high) or low > high:
+            return arr
+        return np.clip(arr, low, high)
+
     def _run_framework_validation_method(self, method: str, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Run real validation for a Framework method and return a metrics row."""
         method = str(method or "").strip().upper()
         if method in {"TPS", "IDW", "OK"}:
             return self._run_deterministic_or_ok_loocv(method, data)
-        return self._run_existing_controller_cv(method)
+        return self._run_existing_controller_cv(method, data)
+
+    @staticmethod
+    def _automatic_fold_indices(n: int, x=None, y=None):
+        """Return responsive validation folds without physically subsetting data."""
+        n = int(n)
+        if n <= 0:
+            return []
+        if n > FRAMEWORK_VALIDATION_SUBSET_THRESHOLD:
+            test_size = min(
+                int(FRAMEWORK_VALIDATION_MAX_SAMPLES),
+                max(1000, int(round(0.2 * n))),
+                max(1, n - 2),
+            )
+            if x is not None and y is not None:
+                try:
+                    test_idx, _ = representative_sample_indices(
+                        x,
+                        y,
+                        max_samples=test_size,
+                        random_state=20,
+                    )
+                    test_idx = np.asarray(test_idx, dtype=int)
+                    test_idx = test_idx[(test_idx >= 0) & (test_idx < n)]
+                    if 0 < test_idx.size < n:
+                        return [test_idx]
+                except Exception:  # nosec B110
+                    pass
+            rng = np.random.default_rng(20)
+            test_idx = np.sort(rng.choice(n, size=int(test_size), replace=False)).astype(int)
+            return [test_idx]
+
+        mode, folds = decide_automatic_cv(n)
+        if mode == "loocv":
+            return [np.asarray([i], dtype=int) for i in range(n)]
+        rng = np.random.default_rng(20)
+        shuffled = np.arange(n, dtype=int)
+        rng.shuffle(shuffled)
+        return [part for part in np.array_split(shuffled, int(folds)) if part.size]
 
     def _run_deterministic_or_ok_loocv(self, method: str, data: Dict[str, Any]) -> Dict[str, Any]:
         if finite_training_arrays is not None:
@@ -3276,21 +3458,25 @@ class FrameworkTabController(QObject):
             raise ValueError(f"at least {min_required} valid points are required.")
 
         preds = np.full(z.size, np.nan, dtype=float)
+        validation_folds = self._automatic_fold_indices(z.size, x, y)
         params_text = ""
         if method == "TPS":
+            params_text = 'Thin plate spline; epsilon=0.0001'
             if tps_interpolation is None:
                 raise ValueError("TPS interpolation backend is not available.")
-            for i in range(z.size):
+            for test_idx in validation_folds:
                 train = np.ones(z.size, dtype=bool)
-                train[i] = False
+                train[test_idx] = False
                 train_xy = ensure_xy_2d(np.column_stack([x[train], y[train]]), "training coordinates") if ensure_xy_2d else np.column_stack([x[train], y[train]])
-                test_xy = ensure_xy_2d([[x[i], y[i]]], "prediction coordinates") if ensure_xy_2d else np.asarray([[x[i], y[i]]], dtype=float)
+                test_xy = ensure_xy_2d(np.column_stack([x[test_idx], y[test_idx]]), "prediction coordinates") if ensure_xy_2d else np.column_stack([x[test_idx], y[test_idx]])
                 train_values = ensure_values_1d(z[train], "training values") if ensure_values_1d else np.asarray(z[train], dtype=float).ravel()
                 pred = tps_interpolation(
                     train_xy[:, 0], train_xy[:, 1], train_values,
                     test_xy[:, 0], test_xy[:, 1],
                 )
-                preds[i] = float(np.asarray(pred, dtype=float).ravel()[0])
+                pred = self._clip_to_training_range(pred, train_values)
+                preds[test_idx] = np.asarray(pred, dtype=float).ravel()
+                QCoreApplication.processEvents()
         elif method == "IDW":
             if idw_interpolation is None:
                 raise ValueError("IDW interpolation backend is not available.")
@@ -3299,24 +3485,29 @@ class FrameworkTabController(QObject):
             except Exception:
                 best_p, best_n = 2.0, min(12, z.size - 1)
             params_text = f"Optimized power p={float(best_p):.3f}; neighbors n={int(best_n)}"
-            for i in range(z.size):
+            for test_idx in validation_folds:
                 train = np.ones(z.size, dtype=bool)
-                train[i] = False
+                train[test_idx] = False
                 n_eff = max(1, min(int(best_n), int(train.sum())))
                 train_xy = ensure_xy_2d(np.column_stack([x[train], y[train]]), "training coordinates") if ensure_xy_2d else np.column_stack([x[train], y[train]])
-                test_xy = ensure_xy_2d([[x[i], y[i]]], "prediction coordinates") if ensure_xy_2d else np.asarray([[x[i], y[i]]], dtype=float)
+                test_xy = ensure_xy_2d(np.column_stack([x[test_idx], y[test_idx]]), "prediction coordinates") if ensure_xy_2d else np.column_stack([x[test_idx], y[test_idx]])
                 train_values = ensure_values_1d(z[train], "training values") if ensure_values_1d else np.asarray(z[train], dtype=float).ravel()
                 pred = idw_interpolation(
                     train_xy[:, 0], train_xy[:, 1], train_values,
                     test_xy[:, 0], test_xy[:, 1],
                     best_p, n_eff,
                 )
-                preds[i] = float(np.asarray(pred, dtype=float).ravel()[0])
+                preds[test_idx] = np.asarray(pred, dtype=float).ravel()
+                QCoreApplication.processEvents()
         elif method == "OK":
             preds = self._run_ok_framework_cv(x, y, z)
+            row_config=getattr(self,'_last_ok_validation_configuration',{})
+            params_text='; '.join('{}={:.5g}'.format(k,v) if isinstance(v,float) else '{}={}'.format(k,v) for k,v in row_config.items())
         else:
             raise ValueError(f"unsupported method {method}.")
         row = self._validation_row_from_predictions(method, z, preds)
+        row["validation_strategy"] = "spatial_holdout" if z.size > FRAMEWORK_VALIDATION_SUBSET_THRESHOLD else "auto_cv"
+        row["validation_n"] = int(np.count_nonzero(np.isfinite(preds)))
         if params_text:
             row["parameters"] = params_text
         return row
@@ -3377,16 +3568,16 @@ class FrameworkTabController(QObject):
             self._show_info("Kriging model validation", "Run Framework diagnostics or validation first.")
             return
         dlg = QDialog(self.dlg)
-        dlg.setWindowTitle("Framework kriging model validation")
+        dlg.setWindowTitle("Framework kriging model metrics")
         layout = QVBoxLayout(dlg)
         table = QTableWidget(dlg)
-        headers = ["Model", "RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
+        headers = ["RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
         table.setColumnCount(len(headers))
         table.setHorizontalHeaderLabels(headers)
         table.setRowCount(len(rows))
+        table.setVerticalHeaderLabels([str(row.get("method", "") or "--") for row in rows])
         for r, row in enumerate(rows):
             values = [
-                row.get("method", ""),
                 row.get("rmse", ""),
                 row.get("rmse_pct", ""),
                 row.get("mae", ""),
@@ -3397,12 +3588,12 @@ class FrameworkTabController(QObject):
             for c, value in enumerate(values):
                 table.setItem(r, c, QTableWidgetItem(str(value if value != "" else "--")))
         try:
-            table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+            table.horizontalHeader().setSectionResizeMode(enum_value(QHeaderView, "ResizeMode", "Stretch"))
         except Exception:
             table.resizeColumnsToContents()
         layout.addWidget(table)
         dlg.resize(760, 260)
-        dlg.exec_()
+        qt_exec(dlg)
 
     def _run_ok_framework_cv(self, x: np.ndarray, y: np.ndarray, z: np.ndarray, model_name: Optional[str] = None) -> np.ndarray:
         model_name = str(model_name or self.state.__dict__.get("variogram_model") or "Spherical")
@@ -3415,6 +3606,7 @@ class FrameworkTabController(QObject):
         nugget, psill, rng = self._guess_initial_params(lags, gamma, cutoff, model=self._normalize_model_token(model_name))
 
         selected_fit = self._resolve_ok_fit_method(z.size)
+        self._last_ok_validation_configuration=dict(model=model_name,fit=selected_fit,maximum_distance=float(cutoff),lag=float(lagw))
         if selected_fit == "REML" and cv_ok_reml_interface is not None:
             sample_xyz = np.column_stack([x, y, z])
             fit = fit_ok_reml_interface(
@@ -3428,21 +3620,23 @@ class FrameworkTabController(QObject):
             if pred is not None:
                 return np.asarray(pred, dtype=float)
         elif selected_fit == "REML":
-            self._show_warning("Framework OK validation", "REML cross-validation is not available. MoM will be used instead.")
+            self._show_warning("Framework OK validation", "REML cross validation is not available. MoM will be used instead.")
 
         if ordinary_kriging_interpolation is None:
             raise ValueError("Ordinary Kriging backend is not available.")
         preds = np.full(z.size, np.nan, dtype=float)
-        for i in range(z.size):
+        for test_idx in self._automatic_fold_indices(z.size, x, y):
             train = np.ones(z.size, dtype=bool)
-            train[i] = False
-            preds[i] = float(np.asarray(ordinary_kriging_interpolation(
-                x[train], y[train], z[train], [x[i]], [y[i]],
+            train[test_idx] = False
+            fold_pred = ordinary_kriging_interpolation(
+                x[train], y[train], z[train], x[test_idx], y[test_idx],
                 nugget=nugget, psill=psill, var_range=rng, model=model_name
-            )).ravel()[0])
+            )
+            preds[test_idx] = np.asarray(fold_pred, dtype=float).ravel()
+            QCoreApplication.processEvents()
         return preds
 
-    def _run_existing_controller_cv(self, method: str) -> Optional[Dict[str, Any]]:
+    def _run_existing_controller_cv(self, method: str, data: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         mapping = {
             "RFE": ("ml_ctrl", "_on_run_rf_cross_validation", "_last_rf_cv_result"),
             "RF": ("ml_ctrl", "_on_run_rf_cross_validation", "_last_rf_cv_result"),
@@ -3456,6 +3650,25 @@ class FrameworkTabController(QObject):
         ctrl = getattr(self.plugin, ctrl_name, None)
         if ctrl is None or not hasattr(ctrl, runner_name):
             return None
+        feature_names = self._framework_ml_feature_names()
+        max_validation_samples = None
+        if isinstance(data, dict) and data.get("validation_subset_used"):
+            max_validation_samples = int(data.get("validation_max_samples") or FRAMEWORK_VALIDATION_MAX_SAMPLES)
+        if method in {"RFE", "RF", "SVM"}:
+            prepare = getattr(ctrl, "prepare_framework_validation", None)
+            if not callable(prepare) or not prepare(
+                method,
+                feature_names=feature_names,
+                max_validation_samples=max_validation_samples,
+            ):
+                return None
+        elif method == "RK":
+            prepare = getattr(ctrl, "prepare_framework_validation", None)
+            if not callable(prepare) or not prepare(
+                feature_names=feature_names,
+                max_validation_samples=max_validation_samples,
+            ):
+                return None
         try:
             setattr(ctrl, result_name, None)
         except Exception:  # nosec B110
@@ -3466,7 +3679,40 @@ class FrameworkTabController(QObject):
             return None
         observed = result.get("observed")
         predicted = result.get("predicted")
-        return self._validation_row_from_predictions(method, observed, predicted)
+        row = self._validation_row_from_predictions(method, observed, predicted)
+        from .interpolation_result import parameter_snapshot
+        config=getattr(ctrl,'_last_interpolation_config',None) if method=='RK' else getattr(ctrl,'_last_{}_interpolation_config'.format('rf' if method in ('RF','RFE') else 'svm'),None)
+        row['configuration']=parameter_snapshot(config or {})
+        row["validation_strategy"] = str(
+            result.get("validation_strategy")
+            or result.get("cv_desc")
+            or ("spatial_holdout" if len(row.get("observed", [])) >= FRAMEWORK_VALIDATION_MAX_SAMPLES else "auto_cv")
+        )
+        row["validation_n"] = int(result.get("validation_n") or len(row.get("observed", []) or []))
+        return row
+
+    def _framework_ml_feature_names(self) -> List[str]:
+        """Return predictors selected in Framework without opening an ML dialog."""
+        ml_ctrl = getattr(self.plugin, "ml_ctrl", None) if self.plugin is not None else None
+        if ml_ctrl is None:
+            return ["x", "y"]
+        list_widget = getattr(getattr(self.plugin, "dlg", None), "listCovariates", None)
+        available = []
+        if list_widget is not None:
+            available = [
+                list_widget.item(index).text()
+                for index in range(list_widget.count())
+            ]
+        selected = set(str(name) for name in (self.state.covariates or []))
+        missing = sorted(selected.difference(available))
+        if self.state.framework_mode == "Full" and missing:
+            raise ValueError(
+                "Some Framework covariates are not active in the shared Machine "
+                "Learning data state. Reopen View covariates and apply them before "
+                "running validation: " + ", ".join(missing)
+            )
+        covariates = [name for name in available if name in selected]
+        return ["x", "y"] + covariates
 
     def _validation_row_from_predictions(self, method: str, observed, predicted) -> Dict[str, Any]:
         obs = np.asarray(observed, dtype=float)
@@ -3665,7 +3911,7 @@ class FrameworkTabController(QObject):
             "sdi_class": self.state.sdi_status or self.state.__dict__.get("sdi_class", ""),
             "framework_type": self.state.framework_mode,
             "recommended_methods": list(self.state.suggested_methods),
-            "validation_metric": "LOOCV / LCCC",
+            "validation_metric": "Automatic CV / LCCC",
             "variogram_fitting_method": ok_fit,
             "ok_fit_method": ok_fit,
             "covariates_available": bool(self.state.covariates),
@@ -3779,18 +4025,18 @@ class FrameworkTabController(QObject):
         """Show rich text information with clickable links."""
         box = QMessageBox(self.dlg)
         box.setWindowTitle(title)
-        box.setIcon(QMessageBox.Information)
-        box.setTextFormat(Qt.RichText)
-        box.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        box.setIcon(enum_value(QMessageBox, "Icon", "Information"))
+        box.setTextFormat(enum_value(Qt, "TextFormat", "RichText"))
+        box.setTextInteractionFlags(enum_value(Qt, "TextInteractionFlag", "TextBrowserInteraction"))
         box.setText(html)
-        box.setStandardButtons(QMessageBox.Ok)
+        box.setStandardButtons(enum_value(QMessageBox, "StandardButton", "Ok"))
         for label in box.findChildren(QLabel):
             try:
                 label.setOpenExternalLinks(True)
-                label.setTextInteractionFlags(Qt.TextBrowserInteraction)
+                label.setTextInteractionFlags(enum_value(Qt, "TextInteractionFlag", "TextBrowserInteraction"))
             except Exception:  # nosec B110
                 pass
-        box.exec_()
+        qt_exec(box)
 
     def _show_warning(self, title: str, message: str) -> None:
         """Show a warning message safely."""

@@ -4,6 +4,8 @@ Bridge to integrate REML OK into the existing QGIS plugin without breaking MoM O
 Now allows using the MoM fit as initial guess (init_from_mom) to keep consistency.
 """
 
+from __future__ import annotations
+
 import numpy as _np
 from typing import Dict, Any
 from .kriging_reml import fit_variogram_reml, ok_predict, kfold_cv_ok_reml

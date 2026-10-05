@@ -13,6 +13,9 @@ All comments are in English. User-facing strings can be handled by the caller/UI
 """
 
 from __future__ import annotations
+from .theme import save_figure
+from .compat import enum_value, qt_exec
+from .theme import COLORS,clean_display_name
 
 import inspect
 import math
@@ -21,32 +24,48 @@ import random
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Tuple
 
+from .semivariogram_engine import SemivariogramEngine
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from .mpl_compat import FigureCanvas
 from matplotlib.patches import Polygon as MplPolygon
 
 from qgis.PyQt.QtCore import Qt, QCoreApplication
-from qgis.PyQt.QtWidgets import QProgressDialog, QVBoxLayout, QFileDialog, QMenu, QDialog
+from qgis.PyQt.QtWidgets import (
+    QProgressDialog,
+    QVBoxLayout,
+    QFileDialog,
+    QMenu,
+    QDialog,
+    QLabel,
+    QDoubleSpinBox,
+    QPushButton,
+)
 from qgis.core import QgsProject
 import matplotlib
 
 from .RF_Interpolation import _tune_random_forest
 from .kriging_ordinary import ordinary_kriging_interpolation
 from .ml_bootstrap import ensure_ml_ready
+from .performance_policy import (
+    dense_method_notice,
+    dense_search_limits,
+    is_dense_dataset,
+    ml_holdout_validation_indices,
+    predict_in_chunks,
+    representative_sample_indices,
+)
+from .variogram_utils import (
+    bin_experimental_variogram,
+    max_pairwise_distance,
+    nearest_neighbor_distance,
+    safe_lag_width,
+)
 from .validation_policy import decide_automatic_cv
 
 
-@dataclass
-class VariogramFit:
-    """Container for one residual variogram fit."""
-    model: str
-    nugget: float
-    psill: float
-    range_: float
-    sse: float
-    weak_structure: bool = False
+from .semivariogram_engine import VariogramFit
 
 
 class RegressionKrigingRFController:
@@ -94,6 +113,9 @@ class RegressionKrigingRFController:
         self._variogram_lags: Optional[np.ndarray] = None
         self._variogram_gamma: Optional[np.ndarray] = None
         self._variogram_fit: Optional[VariogramFit] = None
+        self._rk_cutoff: Optional[float] = None
+        self._rk_lag_width: Optional[float] = None
+        self._rk_model_validation_results: List[dict] = []
         self._grid_meta: Optional[dict] = None
         self._grid_df: Optional[pd.DataFrame] = None
         self._grid_with_pred: Optional[pd.DataFrame] = None
@@ -119,6 +141,7 @@ class RegressionKrigingRFController:
         self._init_canvases()
         self._init_mode_controls()
         self._set_rk_info_icon()
+        self._ensure_variogram_controls()
         self._wire_validation_controls()
         self._wire_signals()
         self._refresh_status()
@@ -151,63 +174,12 @@ class RegressionKrigingRFController:
         return layout
 
     def _shorten_label(self, value: str, max_len: int = 28) -> str:
-        txt = str(value)
-        return txt if len(txt) <= max_len else txt[: max_len - 3] + "..."
+        import textwrap
+        return textwrap.fill(str(value),width=max_len,break_on_hyphens=False)
 
     def _open_large_view_for_canvas(self, source_canvas, default_prefix: str):
-        try:
-            dlg = QDialog(self.dlg)
-            dlg.setWindowTitle(default_prefix.replace("_", " ").title())
-            layout = QVBoxLayout(dlg)
-            fig2 = Figure()
-            canvas2 = FigureCanvas(fig2)
-            layout.addWidget(canvas2)
-
-            if source_canvas is self._vario_canvas and self._variogram_lags is not None and self._variogram_gamma is not None:
-                old_fig, old_canvas = self._vario_fig, self._vario_canvas
-                self._vario_fig, self._vario_canvas = fig2, canvas2
-                try:
-                    self._draw_variogram_plot()
-                finally:
-                    self._vario_fig, self._vario_canvas = old_fig, old_canvas
-            elif source_canvas is self._imp_canvas and self._importance_df is not None and not self._importance_df.empty:
-                old_fig, old_canvas = self._imp_fig, self._imp_canvas
-                self._imp_fig, self._imp_canvas = fig2, canvas2
-                try:
-                    self._draw_importance_plot()
-                finally:
-                    self._imp_fig, self._imp_canvas = old_fig, old_canvas
-            elif source_canvas is self._map_canvas and self._grid_with_pred is not None and self._grid_meta is not None:
-                old_fig, old_canvas = self._map_fig, self._map_canvas
-                self._map_fig, self._map_canvas = fig2, canvas2
-                try:
-                    pred_col = None
-                    for c in self._grid_with_pred.columns:
-                        if str(c).endswith('_rk_pred'):
-                            pred_col = c
-                            break
-                    if pred_col is not None:
-                        self._draw_map_plot(pred_col)
-                finally:
-                    self._map_fig, self._map_canvas = old_fig, old_canvas
-            elif source_canvas is self._val_canvas and self._val_fig is not None:
-                self._val_fig.savefig('/mnt/data/_rk_val_preview_tmp.png', dpi=200, bbox_inches='tight')
-                import matplotlib.image as mpimg
-                img = mpimg.imread('/mnt/data/_rk_val_preview_tmp.png')
-                ax2 = fig2.add_subplot(111)
-                ax2.imshow(img)
-                ax2.axis('off')
-                canvas2.draw_idle()
-            else:
-                ax2 = fig2.add_subplot(111)
-                ax2.text(0.5, 0.5, 'Preview unavailable', ha='center', va='center')
-                ax2.axis('off')
-                canvas2.draw_idle()
-
-            dlg.resize(1000, 800)
-            dlg.exec_()
-        except Exception:  # nosec B110
-            pass
+        from .larger_view import show_larger_view
+        return show_larger_view(source_canvas.figure,self.dlg,default_prefix.replace('_',' ').title() + ' Larger view')
 
     def _install_canvas_menu(self, canvas, fig, default_prefix: str):
         try:
@@ -216,19 +188,19 @@ class RegressionKrigingRFController:
             key = id(canvas)
             if key in self._save_handlers:
                 return
-            canvas.setContextMenuPolicy(Qt.CustomContextMenu)
+            canvas.setContextMenuPolicy(enum_value(Qt, "ContextMenuPolicy", "CustomContextMenu"))
 
             def _show_menu(pos):
                 menu = QMenu(self.dlg)
-                act_save = menu.addAction("Save graph as PNG…")
-                act_zoom = menu.addAction("Open larger view…")
+                act_save = menu.addAction("Save graph as PNG")
+                act_zoom = menu.addAction("Open larger view")
                 act_copy = menu.addAction("Copy graph")
-                chosen = menu.exec_(canvas.mapToGlobal(pos))
+                chosen = qt_exec(menu, canvas.mapToGlobal(pos))
                 if chosen == act_save:
                     suggested = f"{default_prefix}.png"
                     path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
                     if path:
-                        fig.savefig(path, dpi=300, bbox_inches='tight')
+                        save_figure(fig, path, dpi=300, bbox_inches='tight')
                 elif chosen == act_copy:
                     self._copy_figure_to_clipboard(fig)
                 elif chosen == act_zoom:
@@ -246,7 +218,7 @@ class RegressionKrigingRFController:
             from qgis.PyQt.QtGui import QPixmap
             from qgis.PyQt.QtWidgets import QApplication
             buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+            save_figure(fig, buf, format="png", dpi=300, bbox_inches="tight")
             pixmap = QPixmap()
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
@@ -277,6 +249,7 @@ class RegressionKrigingRFController:
             layout = self._clear_layout(map_container)
             self._map_fig = Figure()
             self._map_canvas = FigureCanvas(self._map_fig)
+            self._map_canvas._bfi_is_map = True
             layout.addWidget(self._map_canvas)
             self._install_canvas_menu(self._map_canvas, self._map_fig, "rk_map")
 
@@ -284,6 +257,8 @@ class RegressionKrigingRFController:
             layout = self._clear_layout(val_container)
             self._val_fig = Figure()
             self._val_canvas = FigureCanvas(self._val_fig)
+            from .map_controls import disable_display_settings
+            disable_display_settings(self._val_canvas)
             layout.addWidget(self._val_canvas)
             self._install_canvas_menu(self._val_canvas, self._val_fig, "rk_validation")
 
@@ -332,6 +307,72 @@ class RegressionKrigingRFController:
                     pass
         _refresh()
 
+    def _ensure_variogram_controls(self):
+        """Add residual-variogram controls equivalent to the Ordinary Kriging page."""
+        if getattr(self, "_rk_variogram_controls_added", False):
+            return
+        layout = getattr(self.dlg, "gridLayoutRKKriging", None)
+        parent = getattr(self.dlg, "grpRKKriging", None) or self.dlg
+        if layout is None or not hasattr(layout, "addWidget"):
+            return
+        try:
+            group = getattr(self.dlg, "groupRKParams", None)
+            if group is not None and hasattr(group, "setMaximumHeight"):
+                group.setMaximumHeight(360)
+        except Exception:  # nosec B110
+            pass
+
+        def _spin(name, value=0.0):
+            spin = QDoubleSpinBox(parent)
+            spin.setObjectName(name)
+            spin.setDecimals(6)
+            spin.setMinimum(0.0)
+            spin.setMaximum(1000000000000.0)
+            spin.setValue(float(value))
+            return spin
+
+        try:
+            label_cutoff = QLabel("Max distance / cutoff", parent)
+            label_cutoff.setObjectName("labelRKCutoff")
+            spin_cutoff = _spin("spinRKCutoff", 0.0)
+            spin_cutoff.setToolTip("Maximum lag distance used to build the residual semivariogram. Use 0 for automatic.")
+            label_lag = QLabel("Lag width", parent)
+            label_lag.setObjectName("labelRKLagWidth")
+            spin_lag = _spin("spinRKLag", 0.0)
+            spin_lag.setToolTip("Lag-bin width used to build the residual semivariogram. Use 0 for automatic nearest-neighbor width.")
+
+            btn_fit = QPushButton("Fit residual semivariogram", parent)
+            btn_fit.setObjectName("btnRKFitVariogram")
+            btn_validate = QPushButton("Validate 3 models", parent)
+            btn_validate.setObjectName("btnRKValidateVariogramModels")
+            summary = QLabel("Residual variogram model validation will appear here.", parent)
+            summary.setObjectName("valRKVariogramValidationSummary")
+            summary.setWordWrap(True)
+            summary.setMinimumHeight(64)
+            summary.setProperty("bfiCard",True)
+
+            layout.addWidget(label_cutoff, 4, 0)
+            layout.addWidget(spin_cutoff, 4, 1)
+            layout.addWidget(label_lag, 5, 0)
+            layout.addWidget(spin_lag, 5, 1)
+            layout.addWidget(btn_fit, 7, 0, 1, 2)
+            layout.addWidget(btn_validate, 8, 0, 1, 2)
+            layout.addWidget(summary, 9, 0, 1, 2)
+
+            self.dlg.spinRKCutoff = spin_cutoff
+            self.dlg.spinRKLag = spin_lag
+            self.dlg.btnRKFitVariogram = btn_fit
+            self.dlg.btnRKValidateVariogramModels = btn_validate
+            self.dlg.valRKVariogramValidationSummary = summary
+            self._rk_variogram_controls_added = True
+        except Exception:  # nosec B110
+            pass
+
+    def _set_variogram_validation_summary(self, text=None):
+        label = getattr(self.dlg, "valRKVariogramValidationSummary", None)
+        if label is not None and hasattr(label, "setText"):
+            label.setText(text or "Residual variogram model validation will appear here.")
+
     def _reset_validation_metric_labels(self):
         for name in ("valRKRMSE", "valRKRMSEpct", "valRKMAE", "valRKR2", "valRKPearsonR", "valRKLCCC"):
             widget = getattr(self.dlg, name, None)
@@ -342,6 +383,13 @@ class RegressionKrigingRFController:
                     pass
 
     def clear_plots(self):
+        self._train_df = None
+        self._residuals = None
+        self._rf_model = None
+        self._variogram_fit = None
+        self._variogram_lags = self._variogram_gamma = None
+        self._rk_model_validation_results = []
+        self._last_interpolation_config = None
         for fig_name, canvas_name in (
             ("_vario_fig", "_vario_canvas"),
             ("_imp_fig", "_imp_canvas"),
@@ -363,6 +411,7 @@ class RegressionKrigingRFController:
         for name, handler in [
             ("btnRKFitRF", self._on_fit_rf_clicked),
             ("btnRKFitVariogram", self._on_fit_variogram_clicked),
+            ("btnRKValidateVariogramModels", self._on_validate_variogram_models_clicked),
             ("btnRKApplyVariogram", self._on_run_rk_clicked),
             ("btnRKRun", self._on_run_rk_clicked),
             ("btnRKRunCV", self._on_run_rk_cv_clicked),
@@ -382,6 +431,11 @@ class RegressionKrigingRFController:
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "valueChanged"):
                 w.valueChanged.connect(self._redraw_variogram_only)
+
+        for name in ("spinRKCutoff", "spinRKLag"):
+            w = getattr(self.dlg, name, None)
+            if w is not None and hasattr(w, "valueChanged"):
+                w.valueChanged.connect(self._on_variogram_binning_changed)
 
     def _on_mode_changed(self, source: str, checked: bool):
         try:
@@ -456,19 +510,14 @@ class RegressionKrigingRFController:
             return None
 
         try:
-            plugin_dir = os.path.dirname(os.path.abspath(__file__))
-            icon_path = os.path.join(plugin_dir, "info.png")
-            if not os.path.exists(icon_path):
-                return None
             label = QLabel(self.dlg)
             label.setObjectName(object_name)
-            pixmap = QPixmap(icon_path)
-            if not pixmap.isNull():
-                label.setPixmap(pixmap.scaled(16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            from .theme import action_icon
+            label.setPixmap(action_icon().pixmap(18,18))
             label.setToolTip(tooltip_text)
             label.setWhatsThis(tooltip_text)
             label.setFixedSize(QSize(18, 18))
-            label.setCursor(Qt.ArrowCursor)
+            label.setCursor(enum_value(Qt, "CursorShape", "ArrowCursor"))
             setattr(self, object_name, label)
             return label
         except Exception:
@@ -510,7 +559,7 @@ class RegressionKrigingRFController:
             "but increase processing time.\n\n"
             "nodesize: minimum number of samples allowed in a terminal node. Smaller values can capture local detail; "
             "larger values produce smoother trees.\n\n"
-            "Search folds: number of cross-validation folds used to compare candidate RF parameter sets when "
+            "Search folds: number of cross validation folds used to compare candidate RF parameter sets when "
             "Grid Search is enabled.\n\n"
             "Max iterations: maximum number of candidate parameter combinations tested during the RF search. More "
             "iterations explore the search space better, but are slower.\n\n"
@@ -685,18 +734,56 @@ class RegressionKrigingRFController:
                 unique.append(col)
         return unique
 
-    def _prepare_training_data(self):
-        points_df, target_name, covariate_names = self.points_builder()
+    def _prepare_training_data(
+        self,
+        feature_names=None,
+        prompt_for_predictors=True,
+    ):
+        try:
+            builder_params = inspect.signature(self.points_builder).parameters
+        except Exception:
+            builder_params = {}
+        accepts_kwargs = any(
+            param.kind == inspect.Parameter.VAR_KEYWORD
+            for param in builder_params.values()
+        )
+        if accepts_kwargs or "feature_names" in builder_params:
+            points_df, target_name, covariate_names = self.points_builder(
+                feature_names=feature_names,
+                prompt_for_predictors=prompt_for_predictors,
+            )
+        else:
+            points_df, target_name, covariate_names = self.points_builder()
         if points_df is None or target_name is None or covariate_names is None:
             raise ValueError("Training data could not be prepared.")
         self._train_df = points_df.copy()
         self._target_name = target_name
         self._covariate_names = list(covariate_names)
 
-    def _fit_rf_stage(self, progress_fn=None):
-        self._prepare_training_data()
+    def _fit_rf_stage(
+        self,
+        progress_fn=None,
+        feature_names=None,
+        prompt_for_predictors=True,
+        framework_mode=False,
+        max_validation_samples=None,
+    ):
+        self._prepare_training_data(
+            feature_names=feature_names,
+            prompt_for_predictors=prompt_for_predictors,
+        )
         cols = self._unique_columns(["x", "y"] + list(self._covariate_names) + [self._target_name])
         train_df = self._train_df[cols].dropna().copy()
+        full_train_count = int(len(train_df))
+        validation_subset_used = False
+        if max_validation_samples is not None and full_train_count > int(max_validation_samples):
+            subset_idx, validation_subset_used = representative_sample_indices(
+                train_df["x"].to_numpy(dtype=float),
+                train_df["y"].to_numpy(dtype=float),
+                max_samples=max(5, int(max_validation_samples)),
+                random_state=20,
+            )
+            train_df = train_df.iloc[subset_idx].copy().reset_index(drop=True)
 
         X = train_df[list(self._covariate_names)].to_numpy(dtype=float)
         y = train_df[self._target_name].to_numpy(dtype=float)
@@ -706,6 +793,11 @@ class RegressionKrigingRFController:
         grid_params = self._get_grid_params()
         search_folds = self._get_search_folds()
         search_iterations = self._get_search_iterations()
+        search_folds, search_iterations, search_adjusted = dense_search_limits(
+            len(train_df),
+            search_folds,
+            search_iterations,
+        )
 
         sig = inspect.signature(_tune_random_forest)
         kwargs = dict(
@@ -736,6 +828,9 @@ class RegressionKrigingRFController:
             },
             "search_folds": int(search_folds),
             "search_iterations": int(search_iterations),
+            "validation_sample_count": int(len(train_df)),
+            "validation_full_sample_count": int(full_train_count),
+            "validation_subset_used": bool(validation_subset_used),
         }
         self._last_interpolation_config = None
         self._train_df = train_df
@@ -753,20 +848,96 @@ class RegressionKrigingRFController:
         self._draw_importance_plot()
         self._refresh_status()
 
-    def _on_fit_rf_clicked(self):
+    def prepare_framework_validation(self, feature_names=None, max_validation_samples=None):
+        """Prepare RK validation directly from Framework without a prior raster run."""
         if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
-            return
+            return False
 
-        progress = QProgressDialog("Fitting RF parameters…", "Cancel", 0, 0, self.dlg)
-        progress.setWindowTitle("Regression Kriging")
-        progress.setWindowModality(Qt.WindowModal)
+        progress = QProgressDialog(
+            "Preparing Regression Kriging for Framework validation",
+            "Cancel",
+            0,
+            100,
+            self.dlg,
+        )
+        progress.setWindowTitle("Framework validation")
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.show()
         QCoreApplication.processEvents()
 
         def _progress(done, total, label=None):
             if label:
-                progress.setLabelText(str(label))
+                progress.setLabelText(clean_display_name(str(label)))
+            if total is None or total <= 0:
+                progress.setRange(0, 0)
+            else:
+                progress.setRange(0, int(total))
+                progress.setValue(int(done))
+            QCoreApplication.processEvents()
+            if progress.wasCanceled():
+                raise KeyboardInterrupt("Canceled by user")
+
+        try:
+            self._fit_rf_stage(
+                progress_fn=_progress,
+                feature_names=feature_names,
+                prompt_for_predictors=False,
+                framework_mode=True,
+                max_validation_samples=max_validation_samples,
+            )
+            progress.setRange(0, 0)
+            progress.setLabelText("Fitting residual semivariogram")
+            QCoreApplication.processEvents()
+            self._fit_variogram_stage()
+
+            fit = self._variogram_fit
+            if fit is None or self._rf_fit_config is None:
+                raise ValueError("Regression Kriging parameters could not be prepared.")
+            self._last_interpolation_config = {
+                "train_df": self._train_df.copy(deep=True),
+                "target_name": str(self._target_name),
+                "feature_names": list(self._covariate_names),
+                "rf_params": dict(self._rf_fit_config["resolved_params"]),
+                "rf_search_mode": self._rf_fit_config["search_mode"],
+                "validation_sample_count": int(self._rf_fit_config.get("validation_sample_count", len(self._train_df))),
+                "validation_full_sample_count": int(self._rf_fit_config.get("validation_full_sample_count", len(self._train_df))),
+                "validation_subset_used": bool(self._rf_fit_config.get("validation_subset_used", False)),
+                "variogram_fit": VariogramFit(
+                    model=str(fit.model),
+                    nugget=float(fit.nugget),
+                    psill=float(fit.psill),
+                    range_=float(fit.range_),
+                    sse=float(fit.sse),
+                    weak_structure=bool(fit.weak_structure),
+                ),
+                "source": "framework",
+            }
+            return True
+        except KeyboardInterrupt:
+            self.iface.messageBar().pushMessage(
+                "Framework validation",
+                "Regression Kriging preparation was canceled.",
+                level=1,
+            )
+            return False
+        finally:
+            progress.close()
+
+    def _on_fit_rf_clicked(self):
+        if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
+            return
+
+        progress = QProgressDialog("Fitting RF parameters", "Cancel", 0, 0, self.dlg)
+        progress.setWindowTitle("Regression Kriging")
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
+        progress.setMinimumDuration(0)
+        progress.show()
+        QCoreApplication.processEvents()
+
+        def _progress(done, total, label=None):
+            if label:
+                progress.setLabelText(clean_display_name(str(label)))
             if total is None or total <= 0:
                 progress.setRange(0, 0)
             else:
@@ -779,7 +950,7 @@ class RegressionKrigingRFController:
         try:
             self._fit_rf_stage(progress_fn=_progress)
             if self._residuals is not None and self._train_df is not None:
-                progress.setLabelText("Fitting residual semivariogram…")
+                progress.setLabelText("Fitting residual semivariogram")
                 progress.setRange(0, 0)
                 QCoreApplication.processEvents()
                 self._fit_variogram_stage()
@@ -798,160 +969,147 @@ class RegressionKrigingRFController:
 
     @staticmethod
     def _pairwise_distances(x, y):
-        n = x.size
-        d = np.empty(n * (n - 1) // 2, dtype=float)
-        k = 0
-        for i in range(n - 1):
-            dx = x[i + 1:] - x[i]
-            dy = y[i + 1:] - y[i]
-            m = np.hypot(dx, dy)
-            d[k:k + m.size] = m
-            k += m.size
-        return d
+        return np.asarray([max_pairwise_distance(x, y)], dtype=float)
 
     @staticmethod
     def _nearest_neighbor_dist(x, y):
-        x = np.asarray(x, dtype=float)
-        y = np.asarray(y, dtype=float)
-        n = x.size
-        if n < 2:
-            return np.nan
-        scale = max(float(np.nanmax(np.abs(x))) if x.size else 0.0,
-                    float(np.nanmax(np.abs(y))) if y.size else 0.0,
-                    1.0)
-        zero_tol = np.finfo(float).eps * scale * 32.0
-        dmin = np.inf
-        for i in range(n):
-            dx = x - x[i]
-            dy = y - y[i]
-            dist = np.hypot(dx, dy)
-            dist[i] = np.inf
-            dist = dist[np.isfinite(dist) & (dist > zero_tol)]
-            if dist.size == 0:
-                continue
-            dmin = min(dmin, float(np.min(dist)))
-        return dmin if np.isfinite(dmin) else np.nan
+        return nearest_neighbor_distance(x, y)
 
     def _safe_lag_width(self, x, y, cutoff, lag_width, max_bins=10000):
-        try:
-            cutoff = float(cutoff)
-        except Exception:
-            cutoff = np.nan
-        if not np.isfinite(cutoff) or cutoff <= 0:
-            return np.nan
-        try:
-            lag_width = float(lag_width)
-        except Exception:
-            lag_width = np.nan
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = float(self._nearest_neighbor_dist(x, y))
-        if not np.isfinite(lag_width) or lag_width <= 0:
-            lag_width = cutoff / 12.0
-        min_width = cutoff / float(max(1, int(max_bins)))
-        if lag_width < min_width:
-            lag_width = min_width
-        return float(lag_width)
+        return safe_lag_width(x, y, cutoff, lag_width, max_bins=max_bins)
 
     def _bin_variogram(self, x, y, z, cutoff, lag_width):
-        cutoff = float(cutoff)
-        lag_width = self._safe_lag_width(x, y, cutoff, lag_width)
-        if not np.isfinite(cutoff) or cutoff <= 0 or not np.isfinite(lag_width) or lag_width <= 0:
-            return np.array([], dtype=float), np.array([], dtype=float)
-        nbins = max(1, int(math.floor(cutoff / lag_width)))
-        if nbins > 10000:
-            nbins = 10000
-            lag_width = cutoff / float(nbins)
-        sums = np.zeros(nbins, dtype=float)
-        counts = np.zeros(nbins, dtype=int)
-        dists = np.zeros(nbins, dtype=float)
-
-        n = x.size
-        for i in range(n - 1):
-            xi, yi, zi = x[i], y[i], z[i]
-            xj = x[i + 1:]
-            yj = y[i + 1:]
-            zj = z[i + 1:]
-            dd = np.hypot(xj - xi, yj - yi)
-            mask = (dd > 0) & (dd <= cutoff)
-            if not np.any(mask):
-                continue
-            dd = dd[mask]
-            gj = 0.5 * (zi - zj[mask]) ** 2
-            bin_idx = np.floor(dd / lag_width).astype(int)
-            bin_idx[bin_idx == nbins] = nbins - 1
-            for b, dval, gval in zip(bin_idx, dd, gj):
-                sums[b] += gval
-                counts[b] += 1
-                dists[b] += dval
-
-        valid = counts > 0
-        default_centers = np.linspace(lag_width * 0.5, nbins * lag_width - lag_width * 0.5, nbins)
-        lags = np.where(valid, dists / np.maximum(counts, 1), default_centers)
-        gamma = np.where(valid, sums / np.maximum(counts, 1), np.nan)
-        keep = ~np.isnan(gamma)
-        return lags[keep], gamma[keep]
+        lags, gamma, info = bin_experimental_variogram(
+            x, y, z, cutoff, lag_width, return_info=True
+        )
+        self._variogram_pair_info = info
+        return lags, gamma
 
     def _guess_initial_params(self, lags, gamma, cutoff):
-        if lags.size == 0:
-            return 0.0, 1.0, max(1.0, cutoff * 0.4)
-        nugget = float(max(0.0, np.nanmin(gamma[: max(1, min(3, gamma.size))])))
-        plateau = float(np.nanmedian(gamma[-max(3, gamma.size // 4):]))
-        sill_total = float(max(np.nanmax(gamma), plateau))
-        sill_total = max(sill_total, nugget + 1e-6)
-        target = 0.95 * sill_total
-        idx = np.where(gamma >= target)[0]
-        if idx.size > 0:
-            rng = float(lags[idx[0]])
-        else:
-            rng = float(0.5 * cutoff)
-        rng = max(rng, float(lags[0]) if lags.size else 1.0)
-        return nugget, sill_total - nugget, rng
+        return SemivariogramEngine("residual")._guess_initial_params(lags, gamma, cutoff)
 
     def _model_func(self, h, model, nugget, psill, rng):
-        h = np.asarray(h, dtype=float)
-        c0 = float(nugget)
-        c = float(psill)
-        a = max(float(rng), 1e-9)
-        if model == "spherical":
-            hr = np.clip(h / a, 0.0, 1.0)
-            sph = c * (1.5 * hr - 0.5 * (hr ** 3))
-            return np.where(h <= a, c0 + sph, c0 + c)
-        if model == "gaussian":
-            return c0 + c * (1.0 - np.exp(-(h * h) / (a * a)))
-        return c0 + c * (1.0 - np.exp(-h / a))
+        return SemivariogramEngine("residual")._model_func(h, model, nugget, psill, rng)
 
     def _fit_variogram_candidates(self, lags, gamma, cutoff) -> List[VariogramFit]:
-        nugget0, psill0, range0 = self._guess_initial_params(lags, gamma, cutoff)
-        candidates = []
-        nugget_grid = [max(0.0, nugget0 * f) for f in (0.0, 0.5, 1.0, 1.5)]
-        psill_grid = [max(1e-9, psill0 * f) for f in (0.5, 1.0, 1.5, 2.0)]
-        range_grid = [max(1e-9, range0 * f) for f in (0.5, 0.75, 1.0, 1.25, 1.5)]
-        weak_structure = False
-        if gamma.size >= 3:
-            head = float(np.nanmean(gamma[: min(3, gamma.size)]))
-            tail = float(np.nanmean(gamma[-min(3, gamma.size):]))
-            weak_structure = tail <= 0 or ((tail - head) / max(abs(tail), 1e-12) < 0.10)
+        fits = SemivariogramEngine("residual")._fit_variogram_candidates(lags, gamma, cutoff)
+        selected = getattr(self, "_candidate_overrides", ("spherical", "exponential", "gaussian"))
+        return [fit for fit in fits if fit.model in selected]
 
-        for model in ("spherical", "exponential", "gaussian"):
-            best_fit = None
-            for nugget in nugget_grid:
-                for psill in psill_grid:
-                    for range_ in range_grid:
-                        theo = self._model_func(lags, model, nugget, psill, range_)
-                        sse = float(np.nansum((gamma - theo) ** 2))
-                        fit = VariogramFit(
-                            model=model,
-                            nugget=float(nugget),
-                            psill=float(psill),
-                            range_=float(range_),
-                            sse=sse,
-                            weak_structure=weak_structure,
-                        )
-                        if best_fit is None or fit.sse < best_fit.sse:
-                            best_fit = fit
-            if best_fit is not None:
-                candidates.append(best_fit)
-        return candidates
+    def _default_cutoff_and_lag(self, x, y):
+        all_d = self._pairwise_distances(x, y)
+        cutoff = 0.5 * float(np.nanmax(all_d))
+        lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
+        return cutoff, lagw
+
+    def _sync_variogram_binning_ui(self, cutoff, lagw, force=False):
+        for name, value in (("spinRKCutoff", cutoff), ("spinRKLag", lagw)):
+            w = getattr(self.dlg, name, None)
+            if w is None or not hasattr(w, "setValue"):
+                continue
+            try:
+                current = float(w.value())
+                if force or current <= 0:
+                    w.blockSignals(True)
+                    w.setValue(float(value))
+                    w.blockSignals(False)
+            except Exception:  # nosec B110
+                try:
+                    w.blockSignals(False)
+                except Exception:  # nosec B110
+                    pass
+
+    def _resolve_variogram_binning(self, x, y):
+        default_cutoff, default_lagw = self._default_cutoff_and_lag(x, y)
+        cutoff = default_cutoff
+        lagw = default_lagw
+        w_cutoff = getattr(self.dlg, "spinRKCutoff", None)
+        w_lag = getattr(self.dlg, "spinRKLag", None)
+        try:
+            if w_cutoff is not None and float(w_cutoff.value()) > 0:
+                cutoff = float(w_cutoff.value())
+        except Exception:  # nosec B110
+            pass
+        try:
+            if w_lag is not None and float(w_lag.value()) > 0:
+                lagw = float(w_lag.value())
+        except Exception:  # nosec B110
+            pass
+        cutoff = max(float(cutoff), 1e-9)
+        lagw = self._safe_lag_width(x, y, cutoff, lagw)
+        self._sync_variogram_binning_ui(cutoff, lagw, force=False)
+        self._rk_cutoff = float(cutoff)
+        self._rk_lag_width = float(lagw)
+        return float(cutoff), float(lagw)
+
+    def _on_variogram_binning_changed(self, *args):
+        self._variogram_lags = None
+        self._variogram_gamma = None
+        self._variogram_fit = None
+        self._rk_model_validation_results = []
+        self._set_variogram_validation_summary("Residual variogram needs to be refitted after changing cutoff/lag width.")
+        self._refresh_status()
+
+    @staticmethod
+    def _validation_metrics(obs, pred):
+        return SemivariogramEngine("residual")._validation_metrics(obs, pred)
+
+    def _residual_model_cv_metrics(self, x, y, z, fit):
+        return SemivariogramEngine("residual")._residual_model_cv_metrics(x, y, z, fit)
+
+    def _validate_variogram_candidates(self, x, y, z, candidates):
+        rows = []
+        for fit in candidates:
+            try:
+                metrics = self._residual_model_cv_metrics(x, y, z, fit)
+            except Exception:
+                metrics = {"rmse": float("nan"), "mae": float("nan"), "r2": float("nan"), "pearson": float("nan"), "lccc": float("nan"), "n": 0, "strategy": "failed"}
+            row = {
+                "model": fit.model,
+                "fit": fit,
+                "sse": float(fit.sse),
+                **metrics,
+            }
+            rows.append(row)
+        self._rk_model_validation_results = rows
+        self._update_variogram_validation_summary()
+        return rows
+
+    @staticmethod
+    def _fmt_metric(value, decimals=3):
+        try:
+            value = float(value)
+        except Exception:
+            return "--"
+        if not np.isfinite(value):
+            return "--"
+        return f"{value:.{decimals}f}"
+
+    def _update_variogram_validation_summary(self):
+        rows = list(getattr(self, "_rk_model_validation_results", []) or [])
+        if not rows:
+            self._set_variogram_validation_summary()
+            return
+        lines = ["<b>Residual model validation</b>"]
+        for row in rows:
+            lines.append(
+                f"{str(row.get('model', '')).capitalize()}: "
+                f"RMSE={self._fmt_metric(row.get('rmse'))}, "
+                f"MAE={self._fmt_metric(row.get('mae'))}, "
+                f"LCCC={self._fmt_metric(row.get('lccc'))}, "
+                f"SSE={self._fmt_metric(row.get('sse'))}"
+            )
+        valid_rows = [
+            row for row in rows
+            if np.isfinite(float(row.get("rmse", float("nan"))))
+        ]
+        if valid_rows:
+            best = sorted(valid_rows, key=lambda row: (float(row.get("rmse", float("inf"))), float(row.get("sse", float("inf")))))[0]
+            lines.append(f"<b>Selected:</b> {str(best.get('model', '')).capitalize()} ({best.get('strategy', 'validation')})")
+        self._set_variogram_validation_summary("<br>".join(lines))
+
+    def _select_best_variogram_fit(self, candidates, validation_rows):
+        return SemivariogramEngine("residual")._select_best_variogram_fit(candidates, validation_rows)
 
     def _fit_variogram_stage(self):
         if self._train_df is None or self._residuals is None:
@@ -961,9 +1119,7 @@ class RegressionKrigingRFController:
         y = self._train_df["y"].to_numpy(dtype=float)
         z = np.asarray(self._residuals, dtype=float)
 
-        all_d = self._pairwise_distances(x, y)
-        cutoff = 0.5 * float(np.nanmax(all_d))
-        lagw = self._safe_lag_width(x, y, cutoff, self._nearest_neighbor_dist(x, y))
+        cutoff, lagw = self._resolve_variogram_binning(x, y)
         lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)
 
         if lags.size == 0:
@@ -977,13 +1133,19 @@ class RegressionKrigingRFController:
         if not candidates:
             raise ValueError("Residual variogram fitting failed.")
 
-        fit = sorted(candidates, key=lambda item: item.sse)[0]
+        validation_rows = self._validate_variogram_candidates(x, y, z, candidates)
+        fit = self._select_best_variogram_fit(candidates, validation_rows)
         self._variogram_lags = lags
         self._variogram_gamma = gamma
         self._variogram_fit = fit
         self._set_variogram_ui(fit)
         self._draw_variogram_plot()
         self._refresh_status()
+
+    def _on_validate_variogram_models_clicked(self):
+        """Validate residual candidates with the shared numerical task engine."""
+        from .semivariogram_dialog import show_advanced_settings
+        show_advanced_settings(self,residual=True,validate=True)
 
     def _on_fit_variogram_clicked(self):
         try:
@@ -1020,19 +1182,46 @@ class RegressionKrigingRFController:
 
         self._grid_df, self._grid_meta = self.grid_builder(self._covariate_names)
         if self._grid_df is None or self._grid_meta is None:
-            raise ValueError("Interpolation grid could not be prepared.")
+            detail = ""
+            try:
+                ml_ctrl = getattr(getattr(self, "parent_plugin", None), "ml_ctrl", None)
+                detail = str(getattr(ml_ctrl, "_last_grid_error", "") or "").strip()
+            except Exception:  # nosec B110
+                detail = ""
+            raise ValueError(
+                "Interpolation grid could not be prepared."
+                + (f" {detail}" if detail else "")
+            )
+        self._grid_meta["sample_count"] = int(len(self._train_df))
 
-        grid_cols = self._unique_columns(["x", "y"] + list(self._covariate_names))
+        grid_extra_cols = [
+            col for col in ("__flat_index", "__grid_row", "__grid_col")
+            if col in self._grid_df.columns
+        ]
+        grid_cols = self._unique_columns(["x", "y"] + grid_extra_cols + list(self._covariate_names))
         grid_clean = self._grid_df[grid_cols].dropna().copy()
+        if grid_clean.empty:
+            raise ValueError(
+                "Interpolation grid has no complete predictor rows for Regression Kriging."
+            )
         X_grid = grid_clean[list(self._covariate_names)].to_numpy(dtype=float)
 
         if progress_fn is not None:
-            progress_fn(20, 100, "Predicting RF trend on the interpolation grid…")
+            progress_fn(20, 100, "Predicting RF trend on the interpolation grid")
 
-        rf_pred = np.asarray(self._rf_model.predict(X_grid), dtype=float)
+        def _trend_progress(done, total, label=None):
+            if progress_fn is not None:
+                progress_fn(20 + int(30 * done / max(total, 1)), 100, label)
+
+        rf_pred = predict_in_chunks(
+            self._rf_model,
+            X_grid,
+            progress_fn=_trend_progress,
+            label="Predicting RF trend on the interpolation grid",
+        )
 
         if progress_fn is not None:
-            progress_fn(55, 100, "Kriging RF residuals on the interpolation grid…")
+            progress_fn(55, 100, "Kriging RF residuals on the interpolation grid")
 
         fit = self._read_variogram_ui() if self._variogram_lags is not None else self._variogram_fit
         if fit is None:
@@ -1048,6 +1237,14 @@ class RegressionKrigingRFController:
             float(fit.psill),
             float(fit.range_),
             {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}[fit.model],
+            progress_fn=(
+                (lambda done, total: progress_fn(
+                    55 + int(35 * done / max(total, 1)),
+                    100,
+                    "Kriging RF residuals on the interpolation grid",
+                ))
+                if progress_fn is not None else None
+            ),
         )
 
         final_pred = rf_pred + np.asarray(residual_pred, dtype=float)
@@ -1055,14 +1252,40 @@ class RegressionKrigingRFController:
         grid_clean[pred_col] = final_pred
 
         merged = self._grid_df.copy()
-        merged = pd.merge(
-            merged,
-            grid_clean[["x", "y", pred_col]],
-            on=["x", "y"],
-            how="left",
-        )
+        if "__flat_index" in merged.columns and "__flat_index" in grid_clean.columns:
+            merged = pd.merge(
+                merged,
+                grid_clean[["__flat_index", pred_col]],
+                on="__flat_index",
+                how="left",
+            )
+        else:
+            merged = pd.merge(
+                merged,
+                grid_clean[["x", "y", pred_col]],
+                on=["x", "y"],
+                how="left",
+            )
 
         self._grid_with_pred = merged
+
+        if self._rf_fit_config is None:
+            raise ValueError("The RF configuration used by Regression Kriging is unavailable.")
+        interpolation_config = {
+            "train_df": self._train_df.copy(deep=True),
+            "target_name": str(self._target_name),
+            "feature_names": list(self._covariate_names),
+            "rf_params": dict(self._rf_fit_config["resolved_params"]),
+            "rf_search_mode": self._rf_fit_config["search_mode"],
+            "variogram_fit": VariogramFit(
+                model=str(fit.model),
+                nugget=float(fit.nugget),
+                psill=float(fit.psill),
+                range_=float(fit.range_),
+                sse=float(fit.sse),
+                weak_structure=bool(fit.weak_structure),
+            ),
+        }
 
         if self.raster_writer is not None:
             out_ref = self.raster_writer(
@@ -1081,29 +1304,16 @@ class RegressionKrigingRFController:
                 except Exception:  # nosec B110
                     pass
                 return
+            interpolation_config["raster_path"] = str(out_ref)
 
-        if self._rf_fit_config is None:
-            raise ValueError("The RF configuration used by Regression Kriging is unavailable.")
-        self._last_interpolation_config = {
-            "train_df": self._train_df.copy(deep=True),
-            "target_name": str(self._target_name),
-            "feature_names": list(self._covariate_names),
-            "rf_params": dict(self._rf_fit_config["resolved_params"]),
-            "rf_search_mode": self._rf_fit_config["search_mode"],
-            "variogram_fit": VariogramFit(
-                model=str(fit.model),
-                nugget=float(fit.nugget),
-                psill=float(fit.psill),
-                range_=float(fit.range_),
-                sse=float(fit.sse),
-                weak_structure=bool(fit.weak_structure),
-            ),
-        }
+        self._last_interpolation_config = interpolation_config
 
         if progress_fn is not None:
             progress_fn(100, 100, "Regression Kriging interpolation completed.")
 
         self._draw_map_plot(pred_col)
+        from .interpolation_result import publish_result
+        publish_result(self,'RK',interpolation_config,self._map_fig)
         self._refresh_status()
 
     def _on_run_rk_clicked(self):
@@ -1114,16 +1324,21 @@ class RegressionKrigingRFController:
             return
         self._rk_running = True
 
-        progress = QProgressDialog("Running Regression Kriging…", "Cancel", 0, 100, self.dlg)
+        progress = QProgressDialog("Running Regression Kriging", "Cancel", 0, 100, self.dlg)
         progress.setWindowTitle("Regression Kriging")
-        progress.setWindowModality(Qt.WindowModal)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
+        try:
+            progress.setAutoClose(False)
+            progress.setAutoReset(False)
+        except Exception:  # nosec B110
+            pass
         progress.show()
         QCoreApplication.processEvents()
 
         def _progress(done, total, label=None):
             if label:
-                progress.setLabelText(str(label))
+                progress.setLabelText(clean_display_name(str(label)))
             progress.setRange(0, int(total) if total else 100)
             progress.setValue(int(done))
             QCoreApplication.processEvents()
@@ -1263,9 +1478,9 @@ class RegressionKrigingRFController:
         self._cv_running = True
         self._reset_validation_metric_labels()
 
-        progress = QProgressDialog("Preparing RK cross-validation…", "Cancel", 0, 0, self.dlg)
+        progress = QProgressDialog("Preparing RK cross validation", "Cancel", 0, 0, self.dlg)
         progress.setWindowTitle("Regression Kriging CV")
-        progress.setWindowModality(Qt.WindowModal)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.show()
         QCoreApplication.processEvents()
@@ -1276,7 +1491,7 @@ class RegressionKrigingRFController:
             cols = self._unique_columns(["x", "y"] + feature_names + [target_name])
             train_df = config["train_df"][cols].dropna().copy()
             if len(train_df) < 5:
-                raise ValueError("At least 5 valid points are required for cross-validation.")
+                raise ValueError("At least 5 valid points are required for cross validation.")
 
             X_all = train_df[feature_names].to_numpy(dtype=float)
             y_all = train_df[target_name].to_numpy(dtype=float)
@@ -1292,7 +1507,14 @@ class RegressionKrigingRFController:
                 if k_auto is not None:
                     k = k_auto
 
-            if mode == "loocv":
+            holdout_idx = ml_holdout_validation_indices(n)
+            if holdout_idx is not None:
+                folds = [holdout_idx.tolist()]
+                cv_desc = (
+                    f"RK hold-out validation "
+                    f"(train={n - len(holdout_idx):,}, test={len(holdout_idx):,}; n={n:,})"
+                )
+            elif mode == "loocv":
                 folds = [[i] for i in range(n)]
                 cv_desc = f"RK LOOCV (n={n})"
             else:
@@ -1311,7 +1533,7 @@ class RegressionKrigingRFController:
                     raise KeyboardInterrupt("Canceled by user")
 
                 progress.setValue(fold_idx - 1)
-                progress.setLabelText(f"Running {cv_desc} — fold {fold_idx}/{total_folds}…")
+                progress.setLabelText(f"Running {cv_desc} fold {fold_idx}/{total_folds}")
                 QCoreApplication.processEvents()
 
                 test_idx = np.asarray(test_idx_list, dtype=int)
@@ -1355,7 +1577,7 @@ class RegressionKrigingRFController:
                 preds[test_idx] = rf_test_pred + np.asarray(residual_test_pred, dtype=float)
 
             progress.setValue(total_folds)
-            progress.setLabelText("Computing RK validation metrics…")
+            progress.setLabelText("Computing RK validation metrics")
             QCoreApplication.processEvents()
 
             rmse = self._rmse(y_all, preds)
@@ -1373,6 +1595,9 @@ class RegressionKrigingRFController:
                 "r2": r2,
                 "mae": mae,
                 "pearson_r": pearson_r,
+                "cv_desc": cv_desc,
+                "validation_strategy": "spatial_holdout" if holdout_idx is not None else mode,
+                "validation_n": int(np.count_nonzero(np.isfinite(preds))),
             }
 
             self._update_validation_metrics_ui(rmse, lccc, rmse_pct, r2, mae, pearson_r)
@@ -1427,7 +1652,7 @@ class RegressionKrigingRFController:
         ax = self._vario_fig.add_subplot(111)
         plot_lags = self._variogram_lags[1:] if (self._variogram_lags is not None and self._variogram_lags.size > 1) else self._variogram_lags
         plot_gamma = self._variogram_gamma[1:] if (self._variogram_gamma is not None and self._variogram_gamma.size > 1) else self._variogram_gamma
-        ax.plot(plot_lags, plot_gamma, "o", color="#2f0dee", label="Experimental")
+        ax.plot(plot_lags, plot_gamma, "o", color=COLORS["primary"], label="Experimental")
         xmax = max(float(np.nanmax(plot_lags)), float(fit.range_), 1.0)
         h = np.linspace(0.0, xmax, 200)
         ax.plot(
@@ -1518,6 +1743,8 @@ class RegressionKrigingRFController:
     def _draw_validation_plot(self, obs, pred, title):
         if self._val_fig is None or self._val_canvas is None:
             return
+        from .map_controls import disable_display_settings
+        disable_display_settings(self._val_canvas)
         self._val_fig.clear()
         ax = self._val_fig.add_subplot(111)
 

@@ -67,7 +67,7 @@ def load_notifications():
     sys.modules["qgis.PyQt.QtWidgets"] = widgets
 
     path = ROOT / "notifications.py"
-    spec = importlib.util.spec_from_file_location("popup_notifications", path)
+    spec = importlib.util.spec_from_file_location("bestfitinterpolator.popup_notifications", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

@@ -3,6 +3,7 @@
 Automatic dependency bootstrap for machine learning modules.
 All code comments are in English.
 """
+from .compat import enum_value, qt_exec, ml_dependency_requirements
 
 import os
 import sys
@@ -76,6 +77,10 @@ def _candidate_python_paths():
             os.path.join(app_root, "Python311", "python.exe"),
             os.path.join(app_root, "Python310", "python.exe"),
         ])
+        # Include the interpreter layout shipped by older supported QGIS builds.
+        for python_tag in ("Python37","Python38","Python39"):
+            candidates.append(os.path.join(install_root,"apps",python_tag,"python.exe"))
+            candidates.append(os.path.join(app_root,python_tag,"python.exe"))
 
     exe_dir = os.path.dirname(sys.executable) if sys.executable else ""
     if exe_dir:
@@ -127,7 +132,7 @@ def _run_subprocess(command, parent=None):
 
     try:
         if app is not None:
-            app.setOverrideCursor(Qt.WaitCursor)
+            app.setOverrideCursor(enum_value(Qt, "CursorShape", "WaitCursor"))
             cursor_set = True
 
         process = subprocess.run(  # nosec B603
@@ -199,12 +204,7 @@ def install_ml_dependencies(parent=None):
 
     deps_dir = _deps_dir()
 
-    packages = [
-        "joblib>=1.3",
-        "threadpoolctl>=3.1",
-        "scipy>=1.11",
-        "scikit-learn>=1.4"
-    ]
+    packages = ml_dependency_requirements(sys.version_info)
 
     command = [
         python_exe,
@@ -258,11 +258,11 @@ def ensure_ml_ready(parent=None, method_name="Machine Learning"):
             f"{method_name} needs additional Python packages the first time it runs.\n\n"
             "Do you want the plugin to install them automatically now?"
         ),
-        QMessageBox.Yes | QMessageBox.No,
-        QMessageBox.Yes
+        enum_value(QMessageBox, "StandardButton", "Yes") | enum_value(QMessageBox, "StandardButton", "No"),
+        enum_value(QMessageBox, "StandardButton", "Yes")
     )
 
-    if reply != QMessageBox.Yes:
+    if reply != enum_value(QMessageBox, "StandardButton", "Yes"):
         return False
 
     ok, msg = install_ml_dependencies(parent=parent)
