@@ -116,13 +116,24 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Require successful prerequisite jobs
+        env:
+          DISCOVERY_RESULT: ${{ needs.discover.result }}
+          RUNTIME_RESULT: ${{ needs.runtime.result }}
+          CHECKER_RESULT: ${{ needs.qgis4-checker.result }}
+        run: |
+          test "$DISCOVERY_RESULT" = success
+          test "$RUNTIME_RESULT" = success
+          test "$CHECKER_RESULT" = success
       - name: Download evidence with the GitHub API
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
         run: gh run download "$RUN_ID" --repo "$REPOSITORY" --dir compatibility-results/evidence
       - name: Generate summary and enforce required coverage
+        if: always()
         run: python3 ci/summarize.py --discovery compatibility-results/evidence/compatibility-discovery/discovery.json
       - name: Enforce checker review
         if: always()

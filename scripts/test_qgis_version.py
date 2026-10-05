@@ -72,7 +72,10 @@ def main():
         result['category']='UI LIFECYCLE'
         result.setdefault('errors',[]).append('Container exited with code {} after writing evidence.'.format(code))
     result.update(aliases=target['aliases'], required=target['required'], resolution=target['resolution'])
-    path.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+    # Docker may create the evidence as root; replace its directory entry from the host.
+    finalized = path.with_suffix('.host.json')
+    finalized.write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+    finalized.replace(path)
     return (0 if not code and result['status']=='EXECUTED' else 1) if target['required'] else 0
 
 
