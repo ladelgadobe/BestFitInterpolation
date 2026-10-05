@@ -3601,7 +3601,7 @@ class BestFitInterpolator:
 
         # Progress dialog
         progress = QProgressDialog("Running Kriging CV", "Cancel", 0, len(folds), self.dlg)
-        progress.setWindowModality(True)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
 
@@ -4029,7 +4029,7 @@ class BestFitInterpolator:
             return
         self._notify_dense_profile(z_vals.size, "IDW")
         progress = QProgressDialog("Interpolating (IDW)", "Cancel", 0, total_inside, self.dlg)
-        progress.setWindowModality(True)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
 
@@ -4109,7 +4109,7 @@ class BestFitInterpolator:
             return
 
         progress = QProgressDialog("Interpolating (TPS)", "Cancel", 0, total_inside, self.dlg)
-        progress.setWindowModality(True)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
         self._notify_dense_profile(z.size, "Thin Plate Spline")
@@ -4219,7 +4219,7 @@ class BestFitInterpolator:
             return
 
         progress = QProgressDialog("Interpolating (Ordinary Kriging)", "Cancel", 0, total_inside, self.dlg)
-        progress.setWindowModality(True)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
         self._notify_dense_profile(z.size, "Ordinary Kriging")

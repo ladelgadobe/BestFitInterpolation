@@ -46,7 +46,7 @@ def main():
     app = None
     try:
         if not __debug__:
-            raise RuntimeError('Tests cannot run with assertions disabled; use PYTHONOPTIMIZE=0.')
+            raise RuntimeError('Tests cannot run with assertions disabled; unset PYTHONOPTIMIZE and omit -O.')
         if os.name == 'nt':
             install = Path(os.environ.get('BFI_QGIS_INSTALL', r'C:\Program Files\QGIS 3.44.8'))
             qgis_dir = install / 'apps' / ('qgis-ltr' if (install / 'apps/qgis-ltr').exists() else 'qgis')

@@ -24,3 +24,5 @@ bestfitinterpolator/_deps/
 # Generated compatibility evidence is published as CI artifacts.
 compatibility-results/
 ci/.cache/
+TEST_RESULTS.json
+last_check_error.txt

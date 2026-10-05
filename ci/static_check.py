@@ -12,6 +12,7 @@ PATTERNS = {
     'legacy exec alias': r'\.exec_\(',
     'legacy QVariant assumption': r'QVariant\.(?:Int|Double|String|LongLong|Bool)',
     'Qt legacy enum': r'\bQt\.(?:Align\w+|UserRole|DisplayRole|KeepAspectRatio|Horizontal|Vertical)\b',
+    'Qt window modality boolean': r'\.setWindowModality\((?:True|False)\)',
     'QGIS legacy type alias': r'QgsWkbTypes\.\w+Geometry|QgsUnitTypes\.Distance\w+',
     'legacy Matplotlib backend': r'backend_qt5agg|Qt5Agg',
     'modern NumPy dependency': r'default_rng|equal_nan\s*=',

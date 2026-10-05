@@ -27,6 +27,13 @@ class PolicyTests(unittest.TestCase):
         self.assertIsNone(resolver.version_from_tag('latest'))
         self.assertEqual(resolver.version_from_tag('final-3_14_15'),(3,14,15))
 
+    def test_archived_distribution_suffix_is_resolved(self):
+        resolver=load('resolve_images')
+        self.assertEqual(resolver.version_from_tag('final-3_14_15_focal'),(3,14,15))
+        tags=[dict(name='final-3_14_15',digest='sha256:'+'a'*64,images=[dict(architecture='amd64',os='linux')]),
+              dict(name='final-3_14_15_focal',digest='sha256:'+'b'*64,images=[dict(architecture='amd64',os='linux')])]
+        self.assertEqual(resolver.resolve(tags,'3.14')['tag'],'qgis/qgis:final-3_14_15_focal')
+
     def test_report_never_marks_static_as_pass(self):
         with tempfile.TemporaryDirectory() as folder:
             target=dict(requested='3.14',aliases=['3.14'],required=True,pdf=False,resolution=None)

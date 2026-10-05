@@ -66,7 +66,8 @@ class RuntimeCases:
     def cases(self):
         return [('plugin_import', self.imports), ('classFactory', self.factory),
                 ('initGui_unload_signals', self.gui_lifecycle), ('main_window', self.main_window),
-                ('data_loading', self.data), ('deterministic_semivariogram_geostatistics', self.numerical),
+                ('data_loading', self.data), ('numerical_baseline', self.numerical),
+                ('semivariogram_geostatistics', self.geostatistics),
                 ('spatial_diagnostics', self.diagnostics), ('regression_kriging', self.regression),
                 ('framework', self.framework), ('map_comparison', self.comparison),
                 ('report', self.report), ('repeated_open_close', self.reopen)]
@@ -155,6 +156,7 @@ class RuntimeCases:
             actual = self.numerical_results[key]
             if key == 'lisa': assert actual == expected, 'NUMERICAL LISA classes differ'
             else: np.testing.assert_allclose(actual, expected, rtol=baseline['rtol'], atol=baseline['atol'], err_msg=key)
+    def geostatistics(self):
         self.plugin.dlg.mainTabs.setCurrentIndex(2)
         events()
         controller = self.plugin.ok_ctrl._active

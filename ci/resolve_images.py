@@ -15,7 +15,7 @@ def get_json(url):
 
 
 def version_from_tag(tag):
-    match = re.fullmatch(r'(?:final-|release-)?(\d+)[_.](\d+)(?:[_.](\d+))?(?:-([a-z0-9]+))?', tag)
+    match = re.fullmatch(r'(?:final-|release-)?(\d+)[_.](\d+)(?:[_.](\d+))?(?:[-_]([a-z0-9]+))?', tag)
     return tuple(int(v or 0) for v in match.groups()[:3]) if match else None
 
 
