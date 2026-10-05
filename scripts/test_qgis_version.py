@@ -56,11 +56,11 @@ def main():
     command += [str(ROOT)]
     if run(command, log): return fallback(target, folder, 'Official image pull or scientific environment build failed; see Docker log.')
     output_name = target['requested'] + '.json'
-    command = ['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'python3',
-               '-e', 'QT_QPA_PLATFORM=offscreen', '-e', 'PYTHONOPTIMIZE=0',
+    command = ['docker', 'run', '--rm', '--network', 'none', '--entrypoint', '/usr/bin/env',
+               '-e', 'QT_QPA_PLATFORM=offscreen',
                '-e', 'PYTHONDONTWRITEBYTECODE=1', '-v', str(ROOT) + ':/workspace:ro',
                '-v', str(folder) + ':/results', '-w', '/workspace', tag,
-               '/workspace/scripts/run_qgis_tests.py', '--requested', target['requested'],
+               '-u', 'PYTHONOPTIMIZE', 'python3', '/workspace/scripts/run_qgis_tests.py', '--requested', target['requested'],
                '--image', image, '--output', '/results/' + output_name]
     if target['pdf']: command.append('--pdf')
     code = run(command, log)

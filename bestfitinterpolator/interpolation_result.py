@@ -63,8 +63,8 @@ def publish_result(owner,method,configuration,figure=None,raster_path=None):
     purpose=getattr(plugin,'_bfi_interpolation_purpose','standalone')
     if purpose=='comparison': return result
     plugin._last_interpolation_result=result
-    import copy
-    plugin._last_interpolation_figure=copy.deepcopy(figure) if figure is not None else None
+    from .mpl_compat import clone_figure
+    plugin._last_interpolation_figure=clone_figure(figure) if figure is not None else None
     framework=getattr(plugin,'framework_ctrl',None)
     if framework is not None and purpose=='final':
         framework.state.__dict__['executed_result']=result

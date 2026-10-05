@@ -13,6 +13,17 @@ from .theme import style_figure
 from qgis.PyQt.QtCore import QSize
 from qgis.PyQt.QtWidgets import QSizePolicy
 from .compat import enum_value
+
+
+def clone_figure(figure):
+    """Clone our own figure graph on Matplotlib versions that forbid transform copies."""
+    import copy
+    try:
+        return copy.deepcopy(figure)
+    except NotImplementedError:
+        # These bytes originate only from the in-memory figure, never from external files.
+        import pickle
+        return pickle.loads(pickle.dumps(figure,protocol=4))
 try:
     from matplotlib.colors import TwoSlopeNorm
 except ImportError:

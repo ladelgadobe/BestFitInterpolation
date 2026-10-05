@@ -1,5 +1,5 @@
 """Enlarge the current figure without recomputing or changing its display state."""
-import copy
+from .mpl_compat import clone_figure
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout,QApplication
 from .compat import enum_value, is_alive
@@ -15,7 +15,7 @@ class LargerViewDialog(QDialog):
         self.setWindowTitle(clean_display_name(title))
         self.source=source_figure
         self.source_canvas=source_figure.canvas
-        self.figure=copy.deepcopy(source_figure)
+        self.figure=clone_figure(source_figure)
         self.canvas=FigureCanvas(self.figure)
         self.canvas._bfi_display_source=self.source_canvas
         self.layout_=QVBoxLayout(self)
@@ -37,7 +37,7 @@ class LargerViewDialog(QDialog):
         if not is_alive(self.canvas): return
         if event.canvas is not self.source_canvas or self.source_canvas.is_saving(): return
         # A figure copy retains images, masks, normalizations, artists and limits.
-        figure=copy.deepcopy(self.source)
+        figure=clone_figure(self.source)
         self.canvas.figure=figure; figure.set_canvas(self.canvas)
         self.figure=figure
         self.canvas.draw_idle()

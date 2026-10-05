@@ -2785,11 +2785,11 @@ class FrameworkTabController(QObject):
         if source_fig is None or getattr(self.plugin,'_bfi_interpolation_purpose','final')=='comparison': return
         result=self.state.__dict__.get('executed_result')
         if result is None or getattr(source_fig,'_bfi_execution_id',None)!=result.execution_id: return
-        import copy
+        from .mpl_compat import clone_figure
         from .map_controls import attach_map_controls
         old=getattr(self,'_interpolation_source_connection',None)
         if old is not None: old[0].mpl_disconnect(old[1])
-        self.interpolation_fig=copy.deepcopy(source_fig)
+        self.interpolation_fig=clone_figure(source_fig)
         self.interpolation_canvas.figure=self.interpolation_fig
         self.interpolation_fig.set_canvas(self.interpolation_canvas)
         self.plugin._last_interpolation_figure=self.interpolation_fig
@@ -2812,11 +2812,11 @@ class FrameworkTabController(QObject):
         if source_fig is None or target_fig is None or target_canvas is None:
             return
         try:
-            import copy
+            from .mpl_compat import clone_figure
             from .map_controls import attach_map_controls
             # Preserve scalar artists so palette/range controls remain editable.
             previous = target_canvas.figure
-            mirrored = copy.deepcopy(source_fig)
+            mirrored = clone_figure(source_fig)
             target_canvas.figure = mirrored
             mirrored.set_canvas(target_canvas)
             if getattr(self, "framework_corr_fig", None) in (target_fig, previous):

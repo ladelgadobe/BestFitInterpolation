@@ -98,7 +98,7 @@ def action_icon(kind='info'):
         painter.drawEllipse(QPointF(16,16),4,4)
     else:
         painter.drawEllipse(QPointF(16,16),12,12)
-        painter.setFont(QFont('Arial',15,QFont.Bold))
+        painter.setFont(QFont('Arial',15,enum_value(QFont,'Weight','Bold')))
         painter.drawText(pixmap.rect(),enum_value(Qt,'AlignmentFlag','AlignCenter'),'i')
     painter.end()
     return QIcon(pixmap)
