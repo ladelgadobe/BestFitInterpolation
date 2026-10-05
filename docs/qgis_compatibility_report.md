@@ -6,6 +6,18 @@ Current minimum actually tested: **QGIS 3.14.15**. Current maximum actually test
 
 The [pre-change audit](qgis_compatibility_audit.md) preceded implementation. The Git checkout previously contained an older 1.1 source, so this branch also brings in the already verified local 1.2 interface. One plugin source serves all tested versions.
 
+## Windows QGIS 4.2 correction
+
+The initial Linux matrix below predates this correction. It used Matplotlib 3.10.1 for QGIS 4.x and did not establish compatibility with the newer Windows distribution.
+
+Windows QGIS 4.2.3 was reproduced using Qt 6.11.0, Python 3.12.14, Matplotlib 3.11.2, NumPy 2.4.6, SciPy 1.18.1 and scikit-learn 1.9.1. The original build failed Framework initialization and embedded drawing because Matplotlib removed `cm.get_cmap`.
+
+The palette adapter now uses the public registry where available and retains the historical lookup for old Matplotlib. Palette previews are resolved before a parented Qt widget is constructed, avoiding orphan controls after errors. Information-button guards belong to each dialog, so reopening recreates them. All controllers retain a readable 120×160 minimum canvas size; pages scroll internally rather than crushing the semivariogram on a small viewport.
+
+The corrected Windows 4.2.3 and 3.44.8 distributions each passed 107 checks, all 13 functional blocks, numerical baselines and full IDW/TPS/OK/RF/SVM/RK sessions. Actual Qt preview pixels were checked after optimized IDW, Larger View and repeated tab switches at 1000×700 and 800×600. Source hashes bind the Windows evidence to the correction. These API-removal and pixel checks also run in every CI target. [Windows reproduction and correction evidence](windows_qgis_4_2_report.json) records the failure, dependencies, successful results, full session and screenshot hashes.
+
+The original Linux table and measurements below remain a historical record. Current expanded CI results are published as workflow artifacts and linked from draft PR #3. Offscreen tests use real QGIS/Qt widgets with synthetic data and a small iface double; they do not certify every desktop, monitor scale or large dataset.
+
 ## Interface delivered
 
 - View HTML opens an automatically generated temporary file in the browser without asking for a save path. Each preview is immutable; temporary files are removed with the owning report UI. Images are embedded.

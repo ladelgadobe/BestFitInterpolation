@@ -37,6 +37,7 @@ def main():
     parser.add_argument('--output', default=str(ROOT / 'compatibility-results/local.json'))
     parser.add_argument('--pdf', action='store_true')
     parser.add_argument('--image', default='local installed runtime')
+    parser.add_argument('--plugin-root', default=str(ROOT/'bestfitinterpolator'), help='Plugin source directory to exercise, including an installed copy')
     args = parser.parse_args()
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -45,6 +46,11 @@ def main():
     dll_handles = []
     app = None
     try:
+        plugin_root=Path(args.plugin_root).resolve()
+        if plugin_root.name!='bestfitinterpolator' or not (plugin_root/'__init__.py').is_file():
+            raise RuntimeError('The requested plugin source directory is invalid')
+        sys.path.insert(0,str(plugin_root.parent))
+        report['plugin_source']=str(plugin_root)
         if not __debug__:
             raise RuntimeError('Tests cannot run with assertions disabled; unset PYTHONOPTIMIZE and omit -O.')
         if os.name == 'nt':
@@ -82,6 +88,9 @@ def main():
             app = QgsApplication([], False, profile)
             app.initQgis()
             from runtime_cases import RuntimeCases
+            import bestfitinterpolator
+            if Path(bestfitinterpolator.__file__).resolve().parent!=plugin_root:
+                raise RuntimeError('Plugin source mismatch; refusing to test a substituted copy')
             suite = RuntimeCases(app, output.parent, args.pdf)
             for name, case in suite.cases():
                 try:

@@ -49,11 +49,11 @@ class FigureCanvas(_FigureCanvas):
         figure.bbox.invalidate()
         super().__init__(figure)
         self._bfi_base_dpi=original_dpi
-        self.setMinimumSize(64,64)
+        self.setMinimumSize(120,160)
         self.setSizePolicy(enum_value(QSizePolicy,'Policy','Expanding'),enum_value(QSizePolicy,'Policy','Expanding'))
 
     def minimumSizeHint(self):
-        return QSize(64,64)
+        return QSize(120,160)
 
     def sizeHint(self):
         return QSize(480,300)

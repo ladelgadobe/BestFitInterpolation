@@ -1224,7 +1224,7 @@ class BestFitInterpolator:
         """Keep Matplotlib canvases from resizing their parent after redraws."""
         try:
             canvas.setSizePolicy(enum_value(QSizePolicy, "Policy", "Expanding"), enum_value(QSizePolicy, "Policy", "Expanding"))
-            canvas.setMinimumSize(1, 1)
+            canvas.setMinimumSize(120, 160)
             canvas.updateGeometry()
         except Exception:  # nosec B110
             pass
