@@ -59,7 +59,12 @@ class MapDisplayControls(QWidget):
     scaleRequested = pyqtSignal(float)
 
     def __init__(self,parent=None):
+        # Resolve palette previews before constructing a parented widget. A failed
+        # constructor must not leave visible controls outside the tab's layout.
+        previews=[(palette_icon(name if name in ('Spectral','RdYlGn') else name.lower()),name)
+                  for name in PALETTES]
         super().__init__(parent)
+        self.hide()
         self.state=MapDisplayState()
         self._customized=False
         layout=QVBoxLayout(self); layout.setContentsMargins(0,0,0,0); layout.setSpacing(10)
@@ -72,7 +77,7 @@ class MapDisplayControls(QWidget):
         form.addRow('Scale 1 :',scale_row)
         fit=QPushButton("Fit to layer"); fit.clicked.connect(self.fitRequested); form.addRow('',fit)
         self.palette=QComboBox(); self.palette.setIconSize(QSize(112,16))
-        for name in PALETTES: self.palette.addItem(palette_icon(name.lower() if name not in ('Spectral','RdYlGn') else name),name)
+        for icon,name in previews: self.palette.addItem(icon,name)
         form.addRow('Palette',self.palette)
         self.automatic=QCheckBox("Automatic value range"); self.automatic.setChecked(True); form.addRow('',self.automatic)
         self.minimum=QDoubleSpinBox(); self.maximum=QDoubleSpinBox()
@@ -109,6 +114,12 @@ class MapDisplayControls(QWidget):
 
 
 def scientific_colormap(name):
+    import matplotlib
+    registry=getattr(matplotlib,'colormaps',None)
+    if registry is not None:
+        try: return registry[name]
+        except (KeyError,ValueError): return registry['viridis']
+    # QGIS 3.14 ships Matplotlib versions predating the public registry.
     from matplotlib import cm
     try: return cm.get_cmap(name)
     except ValueError:

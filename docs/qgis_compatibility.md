@@ -32,6 +32,8 @@ The official pyqgis4-checker image is resolved to a digest and runs `--dry_run` 
 
 The runner uses a small iface test double with real QgsApplication, QgsMapCanvas, layers, widgets and signals. It does not verify every action in a complete interactive QGIS desktop. External R/rpy2 integration is outside this matrix; ordinary SciPy and residual kriging are exercised. Static API inventories are not exhaustive substitutes for execution.
 
+The Windows QGIS 4.2.3 distribution ships Qt 6.11.0 and Matplotlib 3.11.2; the official Linux image tested earlier shipped Qt 6.9.2 and Matplotlib 3.10.1. Linux execution did not establish Windows compatibility. A Windows reproduction exposed the removed `matplotlib.cm.get_cmap` API, which aborted embedded drawing and Framework initialization. The shared palette adapter now uses the public registry when available, with the legacy lookup reserved for historical Matplotlib. Runtime tests exercise both API branches, reject incomplete palette controls, and inspect actual Qt preview pixels after optimized IDW, Larger View and repeated Data/Framework/Geostatistics tab changes at 1000×700 and 800×600. Fresh-session tests also require recreated information buttons.
+
 ## Run locally
 
 Docker is optional for developers and never required by plugin users. No additional desktop QGIS installation is needed:
@@ -48,6 +50,15 @@ With an existing QGIS Python interpreter:
 ```bash
 python3 scripts/run_qgis_tests.py --requested 3.44 --pdf
 ```
+
+For an already installed Windows QGIS 4.2.3 (PowerShell), without modifying its user profile:
+
+```powershell
+$env:BFI_QGIS_INSTALL='C:\Program Files\QGIS 4.2.3'
+& 'C:\Program Files\QGIS 4.2.3\bin\python-qgis.bat' scripts\run_qgis_tests.py --requested 4.2 --pdf --output compatibility-results\windows-4.2\result.json
+```
+
+The API-removal regressions and preview checks run in every CI target through the same entry point. Local Windows evidence is recorded separately from the Linux matrix; an unchanged QGIS version does not imply identical Qt/scientific dependencies on different operating systems.
 
 To trigger full GitHub Actions, open Actions → QGIS compatibility → Run workflow → full. The same container runner is invoked locally and in CI. Download `qgis-compatibility-report` for Markdown/JSON, each runtime artifact for logs/figures/PDFs and `pyqgis4-checker` for the migration diagnostics. The final report includes actual versions, component results, warnings/errors and numerical differences against the baseline.
 

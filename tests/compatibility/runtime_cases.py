@@ -99,8 +99,17 @@ class RuntimeCases:
         events()
 
     def main_window(self):
+        from bestfitinterpolator.test.test_matplotlib_palette_compatibility import (
+            test_registry_does_not_call_removed_cm_get_cmap,
+            test_old_matplotlib_lookup_and_missing_turbo_fallback,
+            test_failed_palette_creation_leaves_no_orphan_controls)
+        test_registry_does_not_call_removed_cm_get_cmap()
+        test_old_matplotlib_lookup_and_missing_turbo_fallback()
+        test_failed_palette_creation_leaves_no_orphan_controls()
         p = self.plugin
         assert p.framework_ctrl is not None and p.rk_ctrl is not None and p.ml_ctrl is not None
+        p.dlg.resize(1000,700)
+        events()
         labels = [p.dlg.mainTabs.tabText(i) for i in range(p.dlg.mainTabs.count())]
         assert all(name in labels for name in ('Data', 'Deterministics', 'Geostatistics', 'Machine Learning', 'Framework'))
         assert p.dlg.grpRKRF is not None and p.dlg.grpRKKriging is not None
@@ -147,6 +156,12 @@ class RuntimeCases:
         self.alerts[:] = [item for item in self.alerts if item not in expected]
         data = p.framework_ctrl._collect_current_plugin_data()
         assert len(data['z']) == 24 and np.isfinite(data['z']).all()
+        p.dlg.mainTabs.setCurrentIndex(0)
+        p.plot_map_tab1(); events()
+        from render_checks import assert_rendered, select_preview
+        select_preview(p.data_canvas)
+        assert_rendered(p.data_canvas,self.output/'data-preview.png')
+        self.alerts[:] = [item for item in self.alerts if 'Removed 1 rows with incomplete or invalid data.' not in item]
 
     def numerical(self):
         from numerical import calculate
@@ -158,6 +173,7 @@ class RuntimeCases:
             else: np.testing.assert_allclose(actual, expected, rtol=baseline['rtol'], atol=baseline['atol'], err_msg=key)
     def geostatistics(self):
         self.plugin.dlg.mainTabs.setCurrentIndex(2)
+        self.plugin.dlg.cmbOKModel.setCurrentText('Exp')
         events()
         controller = self.plugin.ok_ctrl._active
         assert controller._exp_lags is not None and len(controller._exp_lags) > 1
@@ -165,6 +181,7 @@ class RuntimeCases:
         controller._on_run_cv_clicked()
         events()
         assert controller._krig_map_fig.axes and self.plugin.ok_cv_fig.axes
+        assert controller._krig_vario_canvas.figure.axes[0].lines, 'Semivariogram model was not drawn'
 
     def diagnostics(self):
         from bestfitinterpolator.diagnostics_engine import DiagnosticsEngine, classify
@@ -223,6 +240,41 @@ class RuntimeCases:
         assert widget.method_a.count() == widget.method_b.count() == 2
         widget.calculate(); wait_jobs(widget)
         assert widget.state.statistics['count'] > 0 and len(widget.axes) == 3
+        self.preview_navigation()
+
+    def preview_navigation(self):
+        from render_checks import assert_rendered, select_preview
+        from bestfitinterpolator.larger_view import show_larger_view
+        p=self.plugin
+        main=p.dlg.mainTabs
+        main.setCurrentIndex(1)
+        p._on_option_toggled('opt',True)
+        p.run_interpolation(); events()
+        select_preview(p.det_interp_canvas)
+        assert_rendered(p.det_interp_canvas,self.output/'idw-optimized-preview.png')
+        large=show_larger_view(p.det_interp_fig,p.dlg)
+        events(); assert_rendered(large.canvas,self.output/'idw-larger-view.png')
+        large.close(); events()
+        for iteration in range(3):
+            p.dlg.resize(800,600) if iteration==1 else p.dlg.resize(1000,700)
+            main.setCurrentIndex(4)
+            p.framework_ctrl.framework_subtabs.setCurrentWidget(p.framework_ctrl.comparison_widget)
+            events()
+            select_preview(p.framework_ctrl.comparison_widget.canvas)
+            assert_rendered(p.framework_ctrl.comparison_widget.canvas,self.output/'comparison-preview.png')
+            main.setCurrentIndex(2)
+            events()
+            select_preview(p.ok_ctrl._active._krig_vario_canvas)
+            assert_rendered(p.ok_ctrl._active._krig_vario_canvas,self.output/'semivariogram-preview.png')
+            main.setCurrentIndex(0)
+            events()
+            assert not p.framework_ctrl.comparison_widget.isVisible()
+            assert not p.dlg.tabFrameworkOverview.isVisible()
+            assert_rendered(p.data_canvas,self.output/'data-return-preview.png')
+            main.setCurrentIndex(1)
+            events()
+            assert_rendered(p.det_interp_canvas,self.output/'idw-return-preview.png')
+        self.alerts[:] = [item for item in self.alerts if 'Removed 1 rows with incomplete or invalid data.' not in item]
 
     def report(self):
         from bestfitinterpolator.report_model import snapshot_framework_report, report_html, export_report_html
@@ -271,6 +323,8 @@ class RuntimeCases:
             previous.close(); events(); p.run(); events()
             assert p.dlg is not previous and not is_alive(previous)
             assert p.dlg.mainTabs.currentIndex() == 0 and p.dlg.Points.currentText() == ''
+            assert p.dlg.findChild(QWidget,'btnDataProfileInfo').isVisible()
+            assert p.dlg.radCVAuto.property('bfiInfoAdded')
             assert p.framework_ctrl is not None and not p.framework_ctrl.interpolation_fig.axes
 
     def cleanup(self):

@@ -875,10 +875,8 @@ class BestFitInterpolator:
 
     def _add_info_icon_next_to_widget(self, widget_name: str, tooltip: str) -> None:
         """Add the standard hover info icon beside an existing widget."""
-        if getattr(self, f"_info_added_{widget_name}", False):
-            return
         widget = getattr(self.dlg, widget_name, None)
-        if widget is None:
+        if widget is None or widget.property('bfiInfoAdded'):
             return
         try:
             parent = widget.parentWidget()
@@ -896,7 +894,7 @@ class BestFitInterpolator:
                 layout.addWidget(icon, row, col + max(1, colspan - 1), 1, 1)
             else:
                 layout.addWidget(icon, row, col + 1, 1, 1)
-            setattr(self, f"_info_added_{widget_name}", True)
+            widget.setProperty('bfiInfoAdded',True)
         except Exception:  # nosec B110
             pass
 
@@ -915,7 +913,7 @@ class BestFitInterpolator:
 
     def _ensure_data_profile_info_button(self) -> None:
         """Add a clickable Data-tab info icon for sample-count profile classes."""
-        if getattr(self, "_data_profile_info_added", False):
+        if self.dlg.findChild(QWidget,'widgetDataProfileInfo') is not None:
             return
         grid = getattr(self.dlg, "gridLayout_data", None)
         if grid is None:
