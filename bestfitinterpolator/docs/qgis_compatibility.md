@@ -14,7 +14,7 @@ The pre-change [audit](qgis_compatibility_audit.md) records existing risks. The 
 
 EXECUTED means the requested QGIS major/minor matched the runtime and every functional case passed. FAILED means runtime setup or plugin tests failed with diagnostic evidence. STATICALLY_CHECKED means import/API/Qt/Python/dependency inventory ran, but that target did not execute; no PASS is displayed. UNAVAILABLE means no usable environment/evidence could be produced. Infrastructure errors remain visible even when static fallback is available.
 
-The local starting point was QGIS 3.44.8. The full matrix subsequently executed every requested stable target successfully. Read exact runtimes, dependencies and limits in the [measured report](qgis_compatibility_report.md); image discovery alone proves availability, not plugin compatibility. Existing metadata 3.14–4.99 is retained as repository eligibility. The maximum actually executed is 4.2.3; future stable versions must pass the dynamically discovered required target.
+The local starting point was QGIS 3.44.8. The full matrix subsequently executed every requested stable target successfully. Read exact runtimes, dependencies and limits in the [measured report](QGIS_COMPATIBILITY_REPORT.md); image discovery alone proves availability, not plugin compatibility. Existing metadata 3.14–4.99 is retained as repository eligibility. The maximum actually executed is 4.2.3; future stable versions must pass the dynamically discovered required target.
 
 ## Containers and provenance
 

@@ -129,3 +129,8 @@ Clean session reset on reopening; Data → Outlier diagnostic; gradient palettes
 ## Interface feedback — 2026-10-03
 
 Validation has no palette controls. IDW/TPS have separate subtle borders. RF runs only from Interpolation; RK panels stay side by side with a shared Adjust semivariogram dialog. Framework starts empty and isolates standalone results. Compare maps retains full grid extents. Report includes a navigable session summary and portable HTML export with embedded images.
+
+
+## Compatibility and report preview — 2026-10-05
+
+The current build opens HTML reports as temporary browser previews with working navigation and collapsible sections. Framework Comparison contains maps only; method metrics remain in Validation. QGIS 3.14, 3.16, 3.22, 3.28, 3.34, 3.40, 3.44, 4.0 and 4.2 passed the functional matrix. Exact runtimes, scientific dependencies and limitations are in [the measured compatibility report](docs/QGIS_COMPATIBILITY_REPORT.md). Earlier dated delivery paragraphs describe historical states. Plugin users do not need Docker. The repository has fast/full CI and a required compatibility gate. Metadata remains 1.2; no release is published.

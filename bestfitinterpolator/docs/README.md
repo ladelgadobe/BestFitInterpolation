@@ -1,4 +1,4 @@
-# Best Fit Interpolator interface update 2026-10-04
+# Best Fit Interpolator update 2026-10-05
 
 Incremental delivery based on the local 1.2 source. The base source is preserved
 and this revision uses a distinct ZIP name. This build has not been published.
@@ -12,11 +12,13 @@ Plugin titles, buttons, context menus, report headings and Larger View names use
 - Larger View preserves the current map and synchronizes display settings.
 - IDW and TPS have discreet separate borders. RF interpolation runs only from Interpolation.
 - RK retains RF and residual kriging side by side, with one Adjust semivariogram dialog and a visible Interpolate action.
-- Framework → Comparison lists every evaluated alternative, actual configuration and metrics; Maps & difference retains exact A−B.
+- Framework → Comparison contains maps only, with every valid alternative available in the map selectors and exact A−B. Method metrics remain in Validation.
 - Framework → Interpolation starts empty and shows only results executed from Framework. Standalone runs and comparison generation cannot replace it.
-- Framework → Report has a navigable summary, validation, executed output and diagnostics, PDF options, and portable HTML export with embedded images and collapsible sections.
+- Framework → Report has a navigable summary, validation, executed output and diagnostics, PDF options, and View HTML. HTML opens automatically in the browser from a temporary file, with embedded images, working section links, and Expand all / Collapse all. No download path is requested.
 
-100 checks pass in QGIS 3.44.8 on Windows. Five clean session reopenings and IDW/TPS/OK/RF/SVM/RK integration pass. Comparison displays all six evaluated methods. Every tab was reviewed in real Qt at 1000×700 and 800×600; Full Covariates also fits a small screen and retains editable scalar correlation and colorbar. Other QGIS versions are statically reviewed and untested.
+104 checks pass in QGIS 3.44.8 on Windows. Five clean session reopenings and IDW/TPS/OK/RF/SVM/RK integration pass. Comparison offers all six validated methods in its selectors. Every tab was reviewed in real Qt at 1000×700 and 800×600; Full Covariates also fits a small screen and retains editable scalar correlation and colorbar. Current multi-version results, exact runtimes, dependencies and limits are recorded in [QGIS compatibility report](QGIS_COMPATIBILITY_REPORT.md).
+
+The repository has fast PR/push compatibility tests, a full manual/weekly/release matrix, official image discovery with immutable digests, a read-only QGIS 4 checker and a strict required gate. Plugin users do not need Docker. A single source serves Qt5 and Qt6.
 
 The mathematical methods and existing selection/validation policies are retained for identical inputs. Explicit exclusions change model inputs. No source-layer features are deleted.
 

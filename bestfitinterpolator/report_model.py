@@ -3,7 +3,7 @@ from dataclasses import dataclass,field
 import html
 import re
 import os
-from .theme import COLORS
+from .theme import COLORS,clean_display_name
 
 
 @dataclass
@@ -91,7 +91,7 @@ def snapshot_framework_report(framework):
     parts=re.split(r"<h2>(.*?)</h2>",body,flags=re.S)
     state=ReportState()
     for index in range(1,len(parts),2):
-        title=re.sub(r"^\d+\.\s*","",parts[index])
+        title=clean_display_name(re.sub(r"^\d+\.\s*","",parts[index]))
         content=parts[index+1]
         figures=re.findall(r"<div class='figure-block'.*?</div>",content,flags=re.S)
         content=re.sub(r"<div class='figure-block'.*?</div>","",content,flags=re.S)
@@ -99,7 +99,9 @@ def snapshot_framework_report(framework):
         if content.strip(): state.sections.append(ReportSection("legacy_"+str(index),title,content,mandatory=True))
         for j,figure in enumerate(figures):
             caption=re.search(r"class='figure-caption'>(.*?)</p>",figure,flags=re.S)
-            text=html.unescape(caption.group(1)) if caption else title+" figure"
+            text=clean_display_name(html.unescape(caption.group(1))) if caption else title+" figure"
+            if caption:
+                figure=figure[:caption.start(1)]+html.escape(text)+figure[caption.end(1):]
             state.sections.append(ReportSection("figure_{}_{}".format(index,j),text,figures=[ReportFigure(text,figure)]))
     plugin=framework.plugin
     if plugin is not None:
@@ -153,13 +155,13 @@ def export_report_html(state,path):
         data=base64.b64encode(source.read_bytes()).decode('ascii')
         mime=mimetypes.guess_type(str(source))[0] or 'image/png'
         return 'src="data:{};base64,{}"'.format(mime,data)
-    body='<header><h1>'+esc(state.title)+'</h1>'
+    body='<header><h1>'+esc(clean_display_name(state.title))+'</h1>'
     for label,value in (('Study',state.study_name),('Author',state.author),('Notes',state.notes)):
         if value: body+='<p><b>'+label+':</b> '+esc(value)+'</p>'
     body+='</header><div class="tools"><button type="button" data-sections="open">Expand all</button><button type="button" data-sections="close">Collapse all</button></div><nav aria-label="Report sections">'
-    body+=' · '.join('<a href="#section-{}">{}</a>'.format(i,esc(section.title)) for i,section in enumerate(sections))+'</nav>'
+    body+=' · '.join('<a href="#section-{}">{}</a>'.format(i,esc(clean_display_name(section.title))) for i,section in enumerate(sections))+'</nav>'
     for i,section in enumerate(sections):
-        body+='<details id="section-{}"{}><summary>{}. {}</summary><div class="section-body">'.format(i,' open' if i==0 else '',i+1,esc(section.title))
+        body+='<details id="section-{}"{}><summary>{}. {}</summary><div class="section-body">'.format(i,' open' if i==0 else '',i+1,esc(clean_display_name(section.title)))
         body+=section.body+''.join(table.html() for table in section.tables)+''.join(figure.image_html for figure in section.figures)
         body+='</div></details>'
     body=re.sub(r'src\s*=\s*([\'"])(.*?)\1',embedded,body,flags=re.I)

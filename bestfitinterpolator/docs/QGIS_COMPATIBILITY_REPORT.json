@@ -1,0 +1,4259 @@
+{
+  "date": "2026-10-05",
+  "run_url": "https://github.com/ladelgadobe/BestFitInterpolation/actions/runs/37340079859",
+  "minimum_actually_tested": "3.14.15",
+  "maximum_actually_tested": "4.2.3",
+  "mathematical_behavior_changed": false,
+  "maximum_absolute_fixture_difference": 4.884981308350689e-15,
+  "metadata_recommendation": {
+    "qgisMinimumVersion": "3.14",
+    "qgisMaximumVersion": "4.99"
+  },
+  "checker": {
+    "status": "STATICALLY_CHECKED",
+    "image_tag": "ghcr.io/qgis/pyqgis4-checker:main-ubuntu",
+    "mode": "dry_run",
+    "source_modified": false,
+    "image_digest": "ghcr.io/qgis/pyqgis4-checker@sha256:c96df111845eb0c86ad56364fb792d35fa6931e01d3d629d2b1bc6388ed43ece",
+    "returncode": 0,
+    "review_required": false,
+    "findings": [],
+    "unreviewed": []
+  },
+  "static_analysis": {
+    "status": "STATICALLY_CHECKED",
+    "syntax_floor": "Python 3.7 grammar",
+    "syntax_errors": [],
+    "imports": [
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 32,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 33,
+        "module": "matplotlib"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 35,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 37,
+        "module": "matplotlib.path"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 38,
+        "module": "matplotlib.patches"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 39,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 40,
+        "module": "pandas"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 42,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 55,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 56,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 64,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 779,
+        "module": "matplotlib.ticker"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 1194,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 1195,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 1975,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 1976,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 1977,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 13,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 14,
+        "module": "pandas"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 35,
+        "module": "sklearn.metrics"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 36,
+        "module": "sklearn.model_selection"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 37,
+        "module": "sklearn.pipeline"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 38,
+        "module": "sklearn.preprocessing"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 39,
+        "module": "sklearn.svm"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 128,
+        "module": "sklearn.kernel_approximation"
+      },
+      {
+        "file": "bestfitinterpolator/SVM_Interpolation.py",
+        "line": 129,
+        "module": "sklearn.svm"
+      },
+      {
+        "file": "bestfitinterpolator/Thin_plate_spline.py",
+        "line": 2,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/Thin_plate_spline.py",
+        "line": 3,
+        "module": "scipy.interpolate"
+      },
+      {
+        "file": "bestfitinterpolator/Thin_plate_spline.py",
+        "line": 6,
+        "module": "scipy.interpolate"
+      },
+      {
+        "file": "bestfitinterpolator/interpolation_result.py",
+        "line": 6,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/interpolation_result.py",
+        "line": 55,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/performance_policy.py",
+        "line": 9,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_plot.py",
+        "line": 2,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 21,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 26,
+        "module": "qgis.PyQt"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 27,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 28,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 29,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 35,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 46,
+        "module": "matplotlib.path"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 47,
+        "module": "matplotlib.patches"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 48,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 51,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 2465,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 1587,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 1588,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 1761,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 2494,
+        "module": "matplotlib.ticker"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 1538,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/BestFitInterpolator.py",
+        "line": 2186,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/larger_view.py",
+        "line": 3,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/larger_view.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 27,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 28,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 29,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 34,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 35,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 37,
+        "module": "matplotlib.ticker"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 38,
+        "module": "matplotlib.path"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 39,
+        "module": "matplotlib.patches"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 40,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 41,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 974,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_reml.py",
+        "line": 975,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/notifications.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/notifications.py",
+        "line": 50,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/reml_bridge.py",
+        "line": 9,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/array_shape_utils.py",
+        "line": 12,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 24,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 42,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 43,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 59,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 64,
+        "module": "matplotlib.ticker"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 66,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 67,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 83,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 88,
+        "module": "matplotlib.ticker"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 265,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 266,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_sdi_dialog.py",
+        "line": 401,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/RF_Interpolation.py",
+        "line": 23,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/RF_Interpolation.py",
+        "line": 24,
+        "module": "pandas"
+      },
+      {
+        "file": "bestfitinterpolator/RF_Interpolation.py",
+        "line": 121,
+        "module": "sklearn.ensemble"
+      },
+      {
+        "file": "bestfitinterpolator/RF_Interpolation.py",
+        "line": 122,
+        "module": "sklearn.metrics"
+      },
+      {
+        "file": "bestfitinterpolator/RF_Interpolation.py",
+        "line": 123,
+        "module": "sklearn.model_selection"
+      },
+      {
+        "file": "bestfitinterpolator/RF_Interpolation.py",
+        "line": 271,
+        "module": "sklearn.metrics"
+      },
+      {
+        "file": "bestfitinterpolator/map_controls.py",
+        "line": 3,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/map_controls.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/map_controls.py",
+        "line": 5,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/map_controls.py",
+        "line": 6,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/map_controls.py",
+        "line": 112,
+        "module": "matplotlib"
+      },
+      {
+        "file": "bestfitinterpolator/map_controls.py",
+        "line": 262,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/map_controls.py",
+        "line": 263,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_engine.py",
+        "line": 8,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/resources.py",
+        "line": 9,
+        "module": "qgis.PyQt"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 2,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 3,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 5,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 62,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 84,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 141,
+        "module": "matplotlib.transforms"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 182,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison_ui.py",
+        "line": 186,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/kriging_ordinary.py",
+        "line": 13,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/kriging_ordinary.py",
+        "line": 15,
+        "module": "scipy.spatial"
+      },
+      {
+        "file": "bestfitinterpolator/kriging_ordinary.py",
+        "line": 16,
+        "module": "scipy.spatial.distance"
+      },
+      {
+        "file": "bestfitinterpolator/kriging_ordinary.py",
+        "line": 17,
+        "module": "scipy.linalg"
+      },
+      {
+        "file": "bestfitinterpolator/IDW_optimized.py",
+        "line": 15,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/IDW_optimized.py",
+        "line": 18,
+        "module": "scipy.spatial"
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_dialog.py",
+        "line": 2,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_dialog.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_dialog.py",
+        "line": 7,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_dialog.py",
+        "line": 62,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ui_refinement.py",
+        "line": 2,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/ui_refinement.py",
+        "line": 3,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/async_jobs.py",
+        "line": 2,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/grid_utils.py",
+        "line": 6,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 22,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 23,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 33,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 48,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 49,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 59,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 603,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_decision_tree_view.py",
+        "line": 605,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 29,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 30,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 31,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 32,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 38,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 39,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 41,
+        "module": "matplotlib.ticker"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 42,
+        "module": "matplotlib.path"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 43,
+        "module": "matplotlib.patches"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 44,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 45,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 1000,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 1001,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ok_r_integration_MoM.py",
+        "line": 1315,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/report_builder.py",
+        "line": 3,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/report_builder.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/report_builder.py",
+        "line": 5,
+        "module": "qgis.PyQt.QtPrintSupport"
+      },
+      {
+        "file": "bestfitinterpolator/report_builder.py",
+        "line": 6,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/report_builder.py",
+        "line": 93,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 4,
+        "module": "qgis.PyQt"
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 8,
+        "module": "qgis.PyQt"
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 51,
+        "module": "qgis"
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 59,
+        "module": "qgis"
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 68,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 44,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 28,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 29,
+        "module": "pandas"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 30,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 32,
+        "module": "matplotlib.patches"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 34,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 35,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 45,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 46,
+        "module": "matplotlib"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 218,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 219,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 506,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 507,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/RF_RegressionKriging.py",
+        "line": 508,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_engine.py",
+        "line": 4,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_engine.py",
+        "line": 6,
+        "module": "scipy.spatial"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_engine.py",
+        "line": 142,
+        "module": "scipy.sparse"
+      },
+      {
+        "file": "bestfitinterpolator/kriging_reml.py",
+        "line": 14,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/kriging_reml.py",
+        "line": 18,
+        "module": "scipy.optimize"
+      },
+      {
+        "file": "bestfitinterpolator/ml_bootstrap.py",
+        "line": 14,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/ml_bootstrap.py",
+        "line": 15,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/ml_bootstrap.py",
+        "line": 16,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/ml_bootstrap.py",
+        "line": 177,
+        "module": "sklearn"
+      },
+      {
+        "file": "bestfitinterpolator/ml_bootstrap.py",
+        "line": 178,
+        "module": "sklearn.ensemble"
+      },
+      {
+        "file": "bestfitinterpolator/variogram_utils.py",
+        "line": 7,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/variogram_utils.py",
+        "line": 19,
+        "module": "scipy.spatial"
+      },
+      {
+        "file": "bestfitinterpolator/variogram_utils.py",
+        "line": 20,
+        "module": "scipy.spatial.distance"
+      },
+      {
+        "file": "bestfitinterpolator/variogram_utils.py",
+        "line": 48,
+        "module": "scipy.spatial"
+      },
+      {
+        "file": "bestfitinterpolator/theme.py",
+        "line": 5,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/theme.py",
+        "line": 6,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/theme.py",
+        "line": 7,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/theme.py",
+        "line": 160,
+        "module": "matplotlib.offsetbox"
+      },
+      {
+        "file": "bestfitinterpolator/theme.py",
+        "line": 174,
+        "module": "matplotlib.image"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 13,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 14,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 5,
+        "module": "matplotlib.backends.backend_qtagg"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 6,
+        "module": "matplotlib.backends.backend_qtagg"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 28,
+        "module": "matplotlib.colors"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 8,
+        "module": "matplotlib.backends.backend_qt5agg"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 9,
+        "module": "matplotlib.backends.backend_qt5agg"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 31,
+        "module": "matplotlib.colors"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 33,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 34,
+        "module": "matplotlib.colors"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 27,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 48,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 49,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 50,
+        "module": "qgis.PyQt.QtPrintSupport"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 51,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 75,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 80,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 82,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 83,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 84,
+        "module": "qgis.PyQt.QtPrintSupport"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 85,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 109,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 114,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 1981,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 2037,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 764,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 765,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 782,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 2242,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 3032,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 3342,
+        "module": "matplotlib.cm"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 784,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 3034,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison.py",
+        "line": 5,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison.py",
+        "line": 59,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/map_comparison.py",
+        "line": 32,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_table.py",
+        "line": 2,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_table.py",
+        "line": 3,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/report_model.py",
+        "line": 106,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/report_model.py",
+        "line": 118,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/spatial_diagnostics.py",
+        "line": 8,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/spatial_diagnostics.py",
+        "line": 23,
+        "module": "scipy.spatial"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_ui.py",
+        "line": 2,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_ui.py",
+        "line": 3,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_ui.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_ui.py",
+        "line": 7,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_ui.py",
+        "line": 27,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_ui.py",
+        "line": 151,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_ui.py",
+        "line": 281,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/test/benchmark_dense_v12.py",
+        "line": 7,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_interpolation_routing_and_na_contract.py",
+        "line": 7,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_translations.py",
+        "line": 2,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/test/utilities.py",
+        "line": 26,
+        "module": "qgis.PyQt"
+      },
+      {
+        "file": "bestfitinterpolator/test/utilities.py",
+        "line": 27,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/test/utilities.py",
+        "line": 28,
+        "module": "qgis.gui"
+      },
+      {
+        "file": "bestfitinterpolator/test/utilities.py",
+        "line": 29,
+        "module": "qgis_interface"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_framework_variogram_sync_contract.py",
+        "line": 6,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 8,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 5,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 6,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_tasks.py",
+        "line": 3,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_tasks.py",
+        "line": 4,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_diagnostics.py",
+        "line": 2,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_diagnostics.py",
+        "line": 112,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_version_1_2_foundation_contract.py",
+        "line": 6,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_qgis_environment.py",
+        "line": 2,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_maps_reports.py",
+        "line": 4,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_maps_reports.py",
+        "line": 5,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_maps_reports.py",
+        "line": 12,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_maps_reports.py",
+        "line": 114,
+        "module": "matplotlib.image"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 5,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 6,
+        "module": "matplotlib.figure"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 7,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 8,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 17,
+        "module": "matplotlib.colors"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 42,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 62,
+        "module": "matplotlib.colors"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 122,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 123,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 159,
+        "module": "osgeo"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 160,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_ui_refinement.py",
+        "line": 201,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_resources.py",
+        "line": 17,
+        "module": "qgis.PyQt.QtGui"
+      },
+      {
+        "file": "bestfitinterpolator/test/__init__.py",
+        "line": 2,
+        "module": "qgis"
+      },
+      {
+        "file": "bestfitinterpolator/test/qgis_interface.py",
+        "line": 27,
+        "module": "qgis.PyQt.QtCore"
+      },
+      {
+        "file": "bestfitinterpolator/test/qgis_interface.py",
+        "line": 28,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/test/qgis_interface.py",
+        "line": 29,
+        "module": "qgis.gui"
+      },
+      {
+        "file": "bestfitinterpolator/test/smoke_qgis_release.py",
+        "line": 9,
+        "module": "qgis.core"
+      },
+      {
+        "file": "bestfitinterpolator/test/smoke_qgis_release.py",
+        "line": 10,
+        "module": "qgis.PyQt.QtWidgets"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_figure_clone_compatibility.py",
+        "line": 3,
+        "module": "numpy"
+      },
+      {
+        "file": "bestfitinterpolator/test/test_figure_clone_compatibility.py",
+        "line": 4,
+        "module": "matplotlib.figure"
+      }
+    ],
+    "findings": [
+      {
+        "file": "bestfitinterpolator/machine_learning_tab.py",
+        "line": 135,
+        "category": "legacy Matplotlib backend",
+        "code": "matplotlib.use(\"Qt5Agg\")",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/performance_policy.py",
+        "line": 103,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(int(random_state))",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/performance_policy.py",
+        "line": 136,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(int(random_state))",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/performance_policy.py",
+        "line": 227,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(int(random_state))",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_engine.py",
+        "line": 241,
+        "category": "modern NumPy dependency",
+        "code": "np.random.default_rng(20).shuffle(shuffled)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_engine.py",
+        "line": 337,
+        "category": "modern NumPy dependency",
+        "code": "np.random.default_rng(20).shuffle(shuffled)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_engine.py",
+        "line": 451,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(20)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/semivariogram_engine.py",
+        "line": 459,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(20)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/IDW_optimized.py",
+        "line": 243,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(int(random_state))",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 63,
+        "category": "QGIS legacy type alias",
+        "code": "return unit == core.QgsUnitTypes.DistanceMeters",
+        "reviewed_adapter": true
+      },
+      {
+        "file": "bestfitinterpolator/compat.py",
+        "line": 67,
+        "category": "modern NumPy dependency",
+        "code": "\"\"\"Compare snapshots on NumPy releases predating array_equal(equal_nan=...).\"\"\"",
+        "reviewed_adapter": true
+      },
+      {
+        "file": "bestfitinterpolator/diagnostics_engine.py",
+        "line": 148,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(seed)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/kriging_reml.py",
+        "line": 311,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(123)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/variogram_utils.py",
+        "line": 109,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(int(random_state))",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 8,
+        "category": "legacy Matplotlib backend",
+        "code": "from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as _FigureCanvas",
+        "reviewed_adapter": true
+      },
+      {
+        "file": "bestfitinterpolator/mpl_compat.py",
+        "line": 9,
+        "category": "legacy Matplotlib backend",
+        "code": "from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar",
+        "reviewed_adapter": true
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 3429,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(20)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/framework_tab.py",
+        "line": 3436,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(20)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/spatial_diagnostics.py",
+        "line": 124,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(random_seed)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/benchmark_dense_v12.py",
+        "line": 27,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(120)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 58,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(4)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 70,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(10)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 84,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(13)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 102,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(9)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 117,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(14)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 188,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(62)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 213,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(31)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 235,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(45)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_dense_processing_v12_contract.py",
+        "line": 252,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(44)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 26,
+        "category": "modern NumPy dependency",
+        "code": "rng=np.random.default_rng(3);xy=rng.uniform(0,20,(12,2));v=np.sin(xy[:,0])+rng.normal(0,.1,12)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 35,
+        "category": "modern NumPy dependency",
+        "code": "np.testing.assert_allclose(actual[key],expected[key],rtol=0,atol=0,equal_nan=True)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 41,
+        "category": "modern NumPy dependency",
+        "code": "rng=np.random.default_rng(8);xy=rng.uniform(0,30,(15,2));v=rng.normal(size=15)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 47,
+        "category": "modern NumPy dependency",
+        "code": "for key in (\"rmse\",\"mae\",\"r2\",\"pearson\",\"lccc\"):np.testing.assert_allclose(ea[key],eb[key],rtol=0,atol=0,equal_nan=True)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 56,
+        "category": "modern NumPy dependency",
+        "code": "rng=np.random.default_rng(17);xy=rng.uniform(0.,12.,(8,2));v=np.sin(xy[:,0]/3.)+.15*xy[:,1]",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_numerical_baseline.py",
+        "line": 69,
+        "category": "modern NumPy dependency",
+        "code": "np.testing.assert_allclose(actual[key],expected[key],rtol=0,atol=0,equal_nan=True)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_diagnostics.py",
+        "line": 40,
+        "category": "modern NumPy dependency",
+        "code": "rng=np.random.default_rng(10)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_version_1_2_foundation_contract.py",
+        "line": 29,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(seed)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_version_1_2_foundation_contract.py",
+        "line": 46,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(42)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_version_1_2_foundation_contract.py",
+        "line": 86,
+        "category": "modern NumPy dependency",
+        "code": "rng = np.random.default_rng(7)",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_validation_configuration_contract.py",
+        "line": 175,
+        "category": "legacy Matplotlib backend",
+        "code": "assert \"backend_qt5agg\" in compat",
+        "reviewed_adapter": false
+      },
+      {
+        "file": "bestfitinterpolator/test/test_development_maps_reports.py",
+        "line": 66,
+        "category": "modern NumPy dependency",
+        "code": "ds=gdal.Open(out);np.testing.assert_allclose(ds.ReadAsArray(),difference_arrays(a,b),rtol=0,atol=0,equal_nan=True);ds=None",
+        "reviewed_adapter": false
+      }
+    ],
+    "metadata_minimum": "3.14",
+    "metadata_maximum": "4.99",
+    "limitations": [
+      "Import inventory is not runtime import execution.",
+      "Feature-detected aliases require runtime testing; deprecated API inventory is not exhaustive.",
+      "Dependency versions and availability must be measured in each container."
+    ]
+  },
+  "runtimes": [
+    {
+      "requested": "3.14",
+      "aliases": [
+        "3.14"
+      ],
+      "required": true,
+      "pdf": false,
+      "resolution": {
+        "tag": "qgis/qgis:final-3_14_15_focal",
+        "image": "qgis/qgis@sha256:ce12d68788daababbcebccabe63fca5d2987eb1b78e3e1a93c671604ad321cba",
+        "digest": "sha256:ce12d68788daababbcebccabe63fca5d2987eb1b78e3e1a93c671604ad321cba",
+        "origin": "Archived official QGIS image"
+      },
+      "discovery_error": null,
+      "actual": "3.14.15-Pi",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:ce12d68788daababbcebccabe63fca5d2987eb1b78e3e1a93c671604ad321cba",
+      "environment": {
+        "QGIS": "3.14.15-Pi",
+        "Qt": "5.12.8",
+        "Python": "3.8.2",
+        "GDAL": "3.0.4",
+        "PROJ": "6.3.1",
+        "NumPy": "1.17.4",
+        "SciPy": "1.3.3",
+        "scikit-learn": "0.22.2.post1",
+        "matplotlib": "3.1.2",
+        "pandas": "0.25.3"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all axes decorations. ",
+        "an integer is required (got type WindowFlags).  Implicit conversion to integers using __int__ is deprecated, and may be removed in a future version of Python.",
+        "tight_layout : falling back to Agg renderer"
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.3223166795052521,
+          1.5891469092710937,
+          1.3229276718485283,
+          0.8693552569714101,
+          0.7838258559832191
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642398,
+          1.2711187205439172,
+          0.7497804164582639,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.35692189983858386,
+          0.27695415715824323,
+          0.7666129986184054,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843813,
+          1.5270352637096238,
+          1.2879606114588382,
+          0.7261169108446754,
+          0.6830461348476488
+        ],
+        "cv_exponential": [
+          0.38351529003446166,
+          0.314863704372387,
+          0.7305391729733313,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595722,
+          8.0
+        ],
+        "model_gaussian": [
+          0.3299010556287253,
+          0.5069819422309856,
+          0.6753901819658868,
+          0.8941282879145016
+        ],
+        "kriging_gaussian": [
+          1.2979382039283167,
+          1.6239619821997433,
+          1.309565578199251,
+          0.7834863658700989,
+          0.6635981816355382
+        ],
+        "cv_gaussian": [
+          0.31110074380999264,
+          0.2655993762686591,
+          0.8226903506100459,
+          0.8845926826092142
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123707,
+          1.5214051002770677,
+          1.3546621329723165,
+          0.8343407879450476,
+          0.7516391032456522
+        ]
+      }
+    },
+    {
+      "requested": "3.16",
+      "aliases": [
+        "3.16"
+      ],
+      "required": false,
+      "pdf": false,
+      "resolution": {
+        "tag": "qgis/qgis:release-3_16",
+        "image": "qgis/qgis@sha256:e186075df76f8ea88c4d3ca1abf3364d0018b96d5b443429f829a26b48e948e4",
+        "digest": "sha256:e186075df76f8ea88c4d3ca1abf3364d0018b96d5b443429f829a26b48e948e4",
+        "origin": "Official QGIS Docker Hub"
+      },
+      "discovery_error": null,
+      "actual": "3.16.16-Hannover",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:e186075df76f8ea88c4d3ca1abf3364d0018b96d5b443429f829a26b48e948e4",
+      "environment": {
+        "QGIS": "3.16.16-Hannover",
+        "Qt": "5.12.8",
+        "Python": "3.8.10",
+        "GDAL": "3.0.4",
+        "PROJ": "6.3.1",
+        "NumPy": "1.17.4",
+        "SciPy": "1.3.3",
+        "scikit-learn": "0.22.2.post1",
+        "matplotlib": "3.1.2",
+        "pandas": "0.25.3"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all axes decorations. ",
+        "an integer is required (got type WindowFlags).  Implicit conversion to integers using __int__ is deprecated, and may be removed in a future version of Python.",
+        "tight_layout : falling back to Agg renderer"
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.3223166795052521,
+          1.5891469092710937,
+          1.3229276718485283,
+          0.8693552569714101,
+          0.7838258559832191
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642398,
+          1.2711187205439172,
+          0.7497804164582639,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.35692189983858386,
+          0.27695415715824323,
+          0.7666129986184054,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843813,
+          1.5270352637096238,
+          1.2879606114588382,
+          0.7261169108446754,
+          0.6830461348476488
+        ],
+        "cv_exponential": [
+          0.38351529003446166,
+          0.314863704372387,
+          0.7305391729733313,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595722,
+          8.0
+        ],
+        "model_gaussian": [
+          0.3299010556287253,
+          0.5069819422309856,
+          0.6753901819658868,
+          0.8941282879145016
+        ],
+        "kriging_gaussian": [
+          1.2979382039283167,
+          1.6239619821997433,
+          1.309565578199251,
+          0.7834863658700989,
+          0.6635981816355382
+        ],
+        "cv_gaussian": [
+          0.31110074380999264,
+          0.2655993762686591,
+          0.8226903506100459,
+          0.8845926826092142
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123707,
+          1.5214051002770677,
+          1.3546621329723165,
+          0.8343407879450476,
+          0.7516391032456522
+        ]
+      }
+    },
+    {
+      "requested": "3.22",
+      "aliases": [
+        "3.22"
+      ],
+      "required": false,
+      "pdf": false,
+      "resolution": {
+        "tag": "qgis/qgis:3.22.16-focal",
+        "image": "qgis/qgis@sha256:7eb48f1af09cfbb10a8941767cb1e7615ba7480426e191605cce27d33a299263",
+        "digest": "sha256:7eb48f1af09cfbb10a8941767cb1e7615ba7480426e191605cce27d33a299263",
+        "origin": "Official QGIS Docker Hub"
+      },
+      "discovery_error": null,
+      "actual": "3.22.16-Bia\u0142owie\u017ca",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:7eb48f1af09cfbb10a8941767cb1e7615ba7480426e191605cce27d33a299263",
+      "environment": {
+        "QGIS": "3.22.16-Bia\u0142owie\u017ca",
+        "Qt": "5.12.8",
+        "Python": "3.8.10",
+        "GDAL": "3.0.4",
+        "PROJ": "6.3.1",
+        "NumPy": "1.17.4",
+        "SciPy": "1.3.3",
+        "scikit-learn": "0.22.2.post1",
+        "matplotlib": "3.1.2",
+        "pandas": "0.25.3"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all axes decorations. ",
+        "an integer is required (got type WindowFlags).  Implicit conversion to integers using __int__ is deprecated, and may be removed in a future version of Python.",
+        "tight_layout : falling back to Agg renderer"
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.3223166795052521,
+          1.5891469092710937,
+          1.3229276718485283,
+          0.8693552569714101,
+          0.7838258559832191
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642398,
+          1.2711187205439172,
+          0.7497804164582639,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.35692189983858386,
+          0.27695415715824323,
+          0.7666129986184054,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843813,
+          1.5270352637096238,
+          1.2879606114588382,
+          0.7261169108446754,
+          0.6830461348476488
+        ],
+        "cv_exponential": [
+          0.38351529003446166,
+          0.314863704372387,
+          0.7305391729733313,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595722,
+          8.0
+        ],
+        "model_gaussian": [
+          0.3299010556287253,
+          0.5069819422309856,
+          0.6753901819658868,
+          0.8941282879145016
+        ],
+        "kriging_gaussian": [
+          1.2979382039283167,
+          1.6239619821997433,
+          1.309565578199251,
+          0.7834863658700989,
+          0.6635981816355382
+        ],
+        "cv_gaussian": [
+          0.31110074380999264,
+          0.2655993762686591,
+          0.8226903506100459,
+          0.8845926826092142
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123707,
+          1.5214051002770677,
+          1.3546621329723165,
+          0.8343407879450476,
+          0.7516391032456522
+        ]
+      }
+    },
+    {
+      "requested": "3.28",
+      "aliases": [
+        "3.28"
+      ],
+      "required": false,
+      "pdf": false,
+      "resolution": {
+        "tag": "qgis/qgis:final-3_28_15",
+        "image": "qgis/qgis@sha256:ac32c27d2fa816f525e3ac264c1c5243454e6f857cb0cfd04345a4e9022fb85c",
+        "digest": "sha256:ac32c27d2fa816f525e3ac264c1c5243454e6f857cb0cfd04345a4e9022fb85c",
+        "origin": "Archived official QGIS image"
+      },
+      "discovery_error": null,
+      "actual": "3.28.15-Firenze",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:ac32c27d2fa816f525e3ac264c1c5243454e6f857cb0cfd04345a4e9022fb85c",
+      "environment": {
+        "QGIS": "3.28.15-Firenze",
+        "Qt": "5.15.3",
+        "Python": "3.10.12",
+        "GDAL": "3.4.1",
+        "PROJ": "8.2.1",
+        "NumPy": "1.21.5",
+        "SciPy": "1.8.0",
+        "scikit-learn": "0.23.2",
+        "matplotlib": "3.5.1",
+        "pandas": "1.3.5"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Please use `line_search_wolfe1` from the `scipy.optimize` namespace, the `scipy.optimize.linesearch` namespace is deprecated.",
+        "Please use `line_search_wolfe2` from the `scipy.optimize` namespace, the `scipy.optimize.linesearch` namespace is deprecated.",
+        "Please use `spmatrix` from the `scipy.sparse` namespace, the `scipy.sparse.base` namespace is deprecated.",
+        "Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all axes decorations."
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.322316679505252,
+          1.5891469092710935,
+          1.3229276718485279,
+          0.8693552569714105,
+          0.7838258559832192
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909467,
+          1.53883974566424,
+          1.2711187205439178,
+          0.7497804164582647,
+          0.6525905083665717
+        ],
+        "cv_spherical": [
+          0.35692189983858374,
+          0.2769541571582433,
+          0.7666129986184056,
+          0.8305507901428671
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843813,
+          1.5270352637096245,
+          1.2879606114588387,
+          0.7261169108446764,
+          0.6830461348476491
+        ],
+        "cv_exponential": [
+          0.3835152900344617,
+          0.314863704372387,
+          0.7305391729733313,
+          0.8020400363112048
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595722,
+          8.0
+        ],
+        "model_gaussian": [
+          0.3299010556287253,
+          0.5069819422309856,
+          0.6753901819658868,
+          0.8941282879145016
+        ],
+        "kriging_gaussian": [
+          1.2979382039283156,
+          1.6239619821997433,
+          1.3095655781992506,
+          0.7834863658700995,
+          0.6635981816355372
+        ],
+        "cv_gaussian": [
+          0.3111007438099925,
+          0.2655993762686589,
+          0.822690350610046,
+          0.8845926826092142
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123713,
+          1.5214051002770632,
+          1.3546621329723192,
+          0.8343407879450464,
+          0.7516391032456481
+        ]
+      }
+    },
+    {
+      "requested": "3.34",
+      "aliases": [
+        "3.34"
+      ],
+      "required": false,
+      "pdf": false,
+      "resolution": {
+        "tag": "qgis/qgis:3.34.15-noble",
+        "image": "qgis/qgis@sha256:6cf6c4b6aa9874c2a3513d18788361fe16a1f947c57b06648e011c17711e0214",
+        "digest": "sha256:6cf6c4b6aa9874c2a3513d18788361fe16a1f947c57b06648e011c17711e0214",
+        "origin": "Official QGIS Docker Hub"
+      },
+      "discovery_error": null,
+      "actual": "3.34.15-Prizren",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:6cf6c4b6aa9874c2a3513d18788361fe16a1f947c57b06648e011c17711e0214",
+      "environment": {
+        "QGIS": "3.34.15-Prizren",
+        "Qt": "5.15.13",
+        "Python": "3.12.3",
+        "GDAL": "3.8.4",
+        "PROJ": "9.4.0",
+        "NumPy": "1.26.4",
+        "SciPy": "1.11.4",
+        "scikit-learn": "1.4.1.post1",
+        "matplotlib": "3.6.3",
+        "pandas": "2.1.4"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Neither gdal.UseExceptions() nor gdal.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.",
+        "Pickle, copy, and deepcopy support will be removed from itertools in Python 3.14.",
+        "The get_cmap function will be deprecated in a future version. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap(obj)`` instead.",
+        "Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all axes decorations."
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.3223166795052521,
+          1.5891469092710937,
+          1.3229276718485283,
+          0.8693552569714101,
+          0.7838258559832191
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642395,
+          1.271118720543918,
+          0.7497804164582639,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.3569218998385838,
+          0.27695415715824323,
+          0.7666129986184055,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843816,
+          1.5270352637096243,
+          1.2879606114588382,
+          0.7261169108446754,
+          0.6830461348476486
+        ],
+        "cv_exponential": [
+          0.38351529003446155,
+          0.31486370437238687,
+          0.7305391729733315,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595722,
+          8.0
+        ],
+        "model_gaussian": [
+          0.3299010556287253,
+          0.5069819422309856,
+          0.6753901819658868,
+          0.8941282879145016
+        ],
+        "kriging_gaussian": [
+          1.2979382039283163,
+          1.623961982199743,
+          1.3095655781992512,
+          0.7834863658700992,
+          0.6635981816355391
+        ],
+        "cv_gaussian": [
+          0.31110074380999236,
+          0.26559937626865887,
+          0.8226903506100463,
+          0.8845926826092143
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123704,
+          1.5214051002770663,
+          1.3546621329723165,
+          0.8343407879450466,
+          0.7516391032456515
+        ]
+      }
+    },
+    {
+      "requested": "3.40",
+      "aliases": [
+        "3.40"
+      ],
+      "required": false,
+      "pdf": false,
+      "resolution": {
+        "tag": "qgis/qgis:3.40.15-noble",
+        "image": "qgis/qgis@sha256:d664f1eca1ef4f615efd92b944c90896622bc75f0446357dc50c2e56b379ddd9",
+        "digest": "sha256:d664f1eca1ef4f615efd92b944c90896622bc75f0446357dc50c2e56b379ddd9",
+        "origin": "Official QGIS Docker Hub"
+      },
+      "discovery_error": null,
+      "actual": "3.40.15-Bratislava",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:d664f1eca1ef4f615efd92b944c90896622bc75f0446357dc50c2e56b379ddd9",
+      "environment": {
+        "QGIS": "3.40.15-Bratislava",
+        "Qt": "5.15.13",
+        "Python": "3.12.3",
+        "GDAL": "3.8.4",
+        "PROJ": "9.4.0",
+        "NumPy": "1.26.4",
+        "SciPy": "1.11.4",
+        "scikit-learn": "1.4.1.post1",
+        "matplotlib": "3.6.3",
+        "pandas": "2.1.4"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Neither gdal.UseExceptions() nor gdal.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.",
+        "Pickle, copy, and deepcopy support will be removed from itertools in Python 3.14.",
+        "The get_cmap function will be deprecated in a future version. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap(obj)`` instead.",
+        "Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all axes decorations."
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.3223166795052521,
+          1.5891469092710937,
+          1.3229276718485283,
+          0.8693552569714101,
+          0.7838258559832191
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642402,
+          1.2711187205439178,
+          0.7497804164582637,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.3569218998385838,
+          0.2769541571582434,
+          0.7666129986184055,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843818,
+          1.527035263709624,
+          1.2879606114588382,
+          0.7261169108446762,
+          0.6830461348476486
+        ],
+        "cv_exponential": [
+          0.38351529003446194,
+          0.3148637043723871,
+          0.7305391729733309,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595726,
+          8.0
+        ],
+        "model_gaussian": [
+          0.32990105562872535,
+          0.5069819422309857,
+          0.675390181965887,
+          0.8941282879145017
+        ],
+        "kriging_gaussian": [
+          1.297938203928317,
+          1.6239619821997429,
+          1.3095655781992508,
+          0.7834863658700996,
+          0.6635981816355386
+        ],
+        "cv_gaussian": [
+          0.3111007438099924,
+          0.2655993762686589,
+          0.8226903506100461,
+          0.8845926826092143
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123693,
+          1.5214051002770663,
+          1.354662132972316,
+          0.8343407879450465,
+          0.7516391032456514
+        ]
+      }
+    },
+    {
+      "requested": "3.44",
+      "aliases": [
+        "3.44"
+      ],
+      "required": true,
+      "pdf": true,
+      "resolution": {
+        "tag": "qgis/qgis:3.44.15-noble",
+        "image": "qgis/qgis@sha256:497c1629c68ced7735dc25c25e33ada0040f5144099e92b78fae978bdf233466",
+        "digest": "sha256:497c1629c68ced7735dc25c25e33ada0040f5144099e92b78fae978bdf233466",
+        "origin": "Official QGIS Docker Hub"
+      },
+      "discovery_error": null,
+      "actual": "3.44.15-Solothurn",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:497c1629c68ced7735dc25c25e33ada0040f5144099e92b78fae978bdf233466",
+      "environment": {
+        "QGIS": "3.44.15-Solothurn",
+        "Qt": "5.15.13",
+        "Python": "3.12.3",
+        "GDAL": "3.8.4",
+        "PROJ": "9.4.0",
+        "NumPy": "1.26.4",
+        "SciPy": "1.11.4",
+        "scikit-learn": "1.4.1.post1",
+        "matplotlib": "3.6.3",
+        "pandas": "2.1.4"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Neither gdal.UseExceptions() nor gdal.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.",
+        "Pickle, copy, and deepcopy support will be removed from itertools in Python 3.14.",
+        "The get_cmap function will be deprecated in a future version. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap(obj)`` instead.",
+        "Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all axes decorations."
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.3223166795052521,
+          1.5891469092710937,
+          1.3229276718485283,
+          0.8693552569714101,
+          0.7838258559832191
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642402,
+          1.2711187205439178,
+          0.7497804164582637,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.3569218998385838,
+          0.2769541571582434,
+          0.7666129986184055,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843818,
+          1.527035263709624,
+          1.2879606114588382,
+          0.7261169108446762,
+          0.6830461348476486
+        ],
+        "cv_exponential": [
+          0.38351529003446194,
+          0.3148637043723871,
+          0.7305391729733309,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595726,
+          8.0
+        ],
+        "model_gaussian": [
+          0.32990105562872535,
+          0.5069819422309857,
+          0.675390181965887,
+          0.8941282879145017
+        ],
+        "kriging_gaussian": [
+          1.297938203928317,
+          1.6239619821997429,
+          1.3095655781992508,
+          0.7834863658700996,
+          0.6635981816355386
+        ],
+        "cv_gaussian": [
+          0.3111007438099924,
+          0.2655993762686589,
+          0.8226903506100461,
+          0.8845926826092143
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123693,
+          1.5214051002770663,
+          1.354662132972316,
+          0.8343407879450465,
+          0.7516391032456514
+        ]
+      }
+    },
+    {
+      "requested": "4.0",
+      "aliases": [
+        "4.0"
+      ],
+      "required": true,
+      "pdf": true,
+      "resolution": {
+        "tag": "qgis/qgis:4.0.3-questing",
+        "image": "qgis/qgis@sha256:7f3ee7c526eb8f5c71d670cc6bf2c640bc2d6fdf57a928749bb76239c942c90b",
+        "digest": "sha256:7f3ee7c526eb8f5c71d670cc6bf2c640bc2d6fdf57a928749bb76239c942c90b",
+        "origin": "Official QGIS Docker Hub"
+      },
+      "discovery_error": null,
+      "actual": "4.0.3-Norrk\u00f6ping",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:7f3ee7c526eb8f5c71d670cc6bf2c640bc2d6fdf57a928749bb76239c942c90b",
+      "environment": {
+        "QGIS": "4.0.3-Norrk\u00f6ping",
+        "Qt": "6.9.2",
+        "Python": "3.13.7",
+        "GDAL": "3.10.3",
+        "PROJ": "9.6.0",
+        "NumPy": "2.2.4",
+        "SciPy": "1.15.3",
+        "scikit-learn": "1.4.2",
+        "matplotlib": "3.10.1+dfsg1",
+        "pandas": "2.2.3"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Neither gdal.UseExceptions() nor gdal.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.",
+        "The get_cmap function was deprecated in Matplotlib 3.7 and will be removed in 3.11. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap()`` or ``pyplot.get_cmap()`` instead.",
+        "vert: bool will be deprecated in a future version. Use orientation: {'vertical', 'horizontal'} instead."
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.322316679505252,
+          1.5891469092710935,
+          1.322927671848528,
+          0.8693552569714105,
+          0.7838258559832192
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642395,
+          1.271118720543918,
+          0.7497804164582639,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.3569218998385838,
+          0.27695415715824323,
+          0.7666129986184055,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843816,
+          1.527035263709624,
+          1.2879606114588378,
+          0.7261169108446766,
+          0.6830461348476483
+        ],
+        "cv_exponential": [
+          0.38351529003446183,
+          0.3148637043723871,
+          0.730539172973331,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595722,
+          8.0
+        ],
+        "model_gaussian": [
+          0.3299010556287253,
+          0.5069819422309856,
+          0.6753901819658868,
+          0.8941282879145016
+        ],
+        "kriging_gaussian": [
+          1.2979382039283172,
+          1.6239619821997433,
+          1.3095655781992512,
+          0.7834863658700998,
+          0.6635981816355384
+        ],
+        "cv_gaussian": [
+          0.3111007438099925,
+          0.2655993762686589,
+          0.8226903506100461,
+          0.8845926826092142
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123707,
+          1.5214051002770663,
+          1.3546621329723172,
+          0.8343407879450473,
+          0.7516391032456511
+        ]
+      }
+    },
+    {
+      "requested": "4.2",
+      "aliases": [
+        "4.2",
+        "latest4"
+      ],
+      "required": true,
+      "pdf": true,
+      "resolution": {
+        "tag": "qgis/qgis:4.2.3-questing",
+        "image": "qgis/qgis@sha256:8996496c15887a8fae0da05fa38103093ddbf104525bcbd67bf733a914fb1444",
+        "digest": "sha256:8996496c15887a8fae0da05fa38103093ddbf104525bcbd67bf733a914fb1444",
+        "origin": "Official QGIS Docker Hub"
+      },
+      "discovery_error": null,
+      "actual": "4.2.3-Bel\u00e9m do Par\u00e1",
+      "status": "EXECUTED",
+      "image": "qgis/qgis@sha256:8996496c15887a8fae0da05fa38103093ddbf104525bcbd67bf733a914fb1444",
+      "environment": {
+        "QGIS": "4.2.3-Bel\u00e9m do Par\u00e1",
+        "Qt": "6.9.2",
+        "Python": "3.13.7",
+        "GDAL": "3.10.3",
+        "PROJ": "9.6.0",
+        "NumPy": "2.2.4",
+        "SciPy": "1.15.3",
+        "scikit-learn": "1.4.2",
+        "matplotlib": "3.10.1+dfsg1",
+        "pandas": "2.2.3"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "PASS"
+        },
+        "semivariogram_geostatistics": {
+          "result": "PASS"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "PASS"
+        },
+        "framework": {
+          "result": "PASS"
+        },
+        "map_comparison": {
+          "result": "PASS"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "Neither gdal.UseExceptions() nor gdal.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.",
+        "The get_cmap function was deprecated in Matplotlib 3.7 and will be removed in 3.11. Use ``matplotlib.colormaps[name]`` or ``matplotlib.colormaps.get_cmap()`` or ``pyplot.get_cmap()`` instead.",
+        "vert: bool will be deprecated in a future version. Use orientation: {'vertical', 'horizontal'} instead."
+      ],
+      "errors": [],
+      "numerical_results": {
+        "idw": [
+          1.2899055015722145,
+          1.3956979397011269,
+          1.3922114712863314,
+          0.6545193255359112,
+          0.8610260313785848
+        ],
+        "tps": [
+          1.322316679505252,
+          1.5891469092710935,
+          1.322927671848528,
+          0.8693552569714105,
+          0.7838258559832192
+        ],
+        "lags": [
+          2.2394057759173234,
+          3.937550176367387,
+          5.232669673427092,
+          6.860893669791111
+        ],
+        "semivariance": [
+          0.23441977782224618,
+          0.5642181817286926,
+          0.6067042745898802,
+          0.9390731355567532
+        ],
+        "metrics": [
+          0.3500000000000001,
+          10.769230769230772,
+          0.32500000000000007,
+          0.9667796610169491,
+          0.9850192912279306,
+          0.9821428571428573
+        ],
+        "fit_spherical": [
+          0.23441977782224618,
+          0.5061797217955247,
+          8.0
+        ],
+        "model_spherical": [
+          0.44140745567065454,
+          0.5779500494888073,
+          0.6602225733096391,
+          0.7259363751718463
+        ],
+        "kriging_spherical": [
+          1.2558692096909447,
+          1.5388397456642395,
+          1.271118720543918,
+          0.7497804164582639,
+          0.6525905083665716
+        ],
+        "cv_spherical": [
+          0.3569218998385838,
+          0.27695415715824323,
+          0.7666129986184055,
+          0.830550790142867
+        ],
+        "fit_exponential": [
+          0.23441977782224618,
+          0.8705763658823433,
+          8.0
+        ],
+        "model_exponential": [
+          0.44697980634596324,
+          0.572826823495786,
+          0.6523676111540693,
+          0.7357203500694642
+        ],
+        "kriging_exponential": [
+          1.2715663807843816,
+          1.527035263709624,
+          1.2879606114588378,
+          0.7261169108446766,
+          0.6830461348476483
+        ],
+        "cv_exponential": [
+          0.38351529003446183,
+          0.3148637043723871,
+          0.730539172973331,
+          0.8020400363112046
+        ],
+        "fit_gaussian": [
+          0.23441977782224618,
+          1.2668839053595722,
+          8.0
+        ],
+        "model_gaussian": [
+          0.3299010556287253,
+          0.5069819422309856,
+          0.6753901819658868,
+          0.8941282879145016
+        ],
+        "kriging_gaussian": [
+          1.2979382039283172,
+          1.6239619821997433,
+          1.3095655781992512,
+          0.7834863658700998,
+          0.6635981816355384
+        ],
+        "cv_gaussian": [
+          0.3111007438099925,
+          0.2655993762686589,
+          0.8226903506100461,
+          0.8845926826092142
+        ],
+        "moran": [
+          0.539225806217463,
+          0.01
+        ],
+        "local_moran": [
+          0.01768105102561978,
+          0.7426358676289345,
+          1.961128157731414,
+          1.2962243586355804,
+          0.2879030457312016,
+          -0.04003424530083312,
+          0.5491104044782448,
+          1.251985486465381,
+          0.5355438271439614,
+          -0.015600773375149332,
+          0.2952272369005904,
+          -0.002027351429032874,
+          0.1081874629730839,
+          -0.014868753189821967,
+          0.5949275659418879,
+          1.0927592918719327,
+          0.3695257790018316,
+          0.12377596698159865,
+          0.6666186204698745,
+          0.9638131246629597
+        ],
+        "lisa": [
+          "HH",
+          "NS",
+          "HH",
+          "HH",
+          "HH",
+          "NS",
+          "NS",
+          "HH",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "NS",
+          "LL",
+          "LL"
+        ],
+        "statistical_votes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "rk_residuals": [
+          -0.1993070490530453,
+          0.6700346141078872,
+          0.9145269593306322,
+          0.6647831767451429,
+          0.025877950877565725,
+          -0.32312422420180487,
+          0.4834857193287352,
+          0.6916796254095157,
+          0.4211159846339678,
+          -0.2890741942181385,
+          -0.6266250240050568,
+          0.27177649068145904,
+          0.4993479303949565,
+          0.24093129253023604,
+          -0.3751639307592392,
+          -1.0850505210683137,
+          -0.3086996246786804,
+          -0.11882763106048799,
+          -0.34367240498420565,
+          -1.0841216309772177
+        ],
+        "rk_final": [
+          1.2717535875123707,
+          1.5214051002770663,
+          1.3546621329723172,
+          0.8343407879450473,
+          0.7516391032456511
+        ]
+      }
+    }
+  ]
+}
