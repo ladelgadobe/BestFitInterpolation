@@ -24,6 +24,12 @@ The current followup restores the published v1.1 distinction: REML displays its 
 
 Framework semivariogram settings now validate Spherical, Exponential and Gaussian using the current data, cutoff, lag and fit. Metrics, the existing R²/RMSE ranking, and manual application are visible. Changed data/settings invalidate the results. Windows QGIS 3.44.8 and 4.2.3 each pass 109 checks and all 13 expanded functional blocks, including real pixels after six strategy switches and reopened method groups. Nine numerical comparisons with published v1.1 are exact. See [the semivariogram correction](semivariogram_revision_20261005.md) and the updated Windows JSON evidence. The earlier measurements below remain historical.
 
+## Native integer and intermediate-version followup 2026-10-06
+
+QGIS 3.14.0 was reproduced in its actual Windows 32-bit interpreter. Native NumPy bin indices correct the shared geostatistics, residual RK and Framework failure; wide counters and pair ordinals remain int64. Both NumPy 1.18.3 (original runtime) and 1.21.6 (existing ML package stack) were exercised. ML dependency loading now separates Python/platform ABIs and prefers the current interpreter's working stack, avoiding WinError 193 when 3.14 and 3.44 share QGIS3's profile. Legacy packages are preserved.
+
+Windows 3.14.0, 3.44.8 and 4.2.3 each passed 114 contracts, all 13 functional blocks including RF manual/grid residual fitting, and the complete interpolation/comparison/report session. The expanded full CI passed all 18 stable targets: every stable minor from 3.14 through 3.44 and QGIS 4.0/4.2. New released stable 4.x minors enter the matrix automatically; weekly nightly remains informational. Every stable full-matrix target is required. The schedule changes are in draft PR 3 and use GitHub's default branch after integration. See [the correction and CI links](integer_compatibility_20261006.md) and [measured Windows/CI evidence](integer_compatibility_20261006.json). Older tables below remain historical.
+
 ## Interface delivered
 
 - View HTML opens an automatically generated temporary file in the browser without asking for a save path. Each preview is immutable; temporary files are removed with the owning report UI. Images are embedded.

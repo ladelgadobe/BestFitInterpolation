@@ -85,12 +85,14 @@
       "Qt": "6.11.0",
       "Python": "3.12.14",
       "GDAL": "3.13.3",
+      "pointer_bits": 64,
       "PROJ": "9.8.1",
       "NumPy": "2.4.6",
       "SciPy": "1.18.1",
       "scikit-learn": "1.9.1",
       "matplotlib": "3.11.2",
-      "pandas": "3.0.6"
+      "pandas": "3.0.6",
+      "index_dtype": "int64"
     },
     "tests": {
       "plugin_import": {
@@ -359,12 +361,14 @@
       "Qt": "5.15.13",
       "Python": "3.12.13",
       "GDAL": "3.12.2",
+      "pointer_bits": 64,
       "PROJ": "9.8.0",
       "NumPy": "2.4.2",
       "SciPy": "1.17.0",
       "scikit-learn": "1.9.1",
       "matplotlib": "3.10.8",
-      "pandas": "3.0.1"
+      "pandas": "3.0.1",
+      "index_dtype": "int64"
     },
     "tests": {
       "plugin_import": {
@@ -624,8 +628,8 @@
     }
   },
   "unit_checks": {
-    "executed_at_utc": "2026-10-06T01:00:00.798100+00:00",
-    "passed": 109,
+    "executed_at_utc": "2026-10-06T05:15:03.204621+00:00",
+    "passed": 114,
     "failed": 0,
     "qgis": "4.2.3-Belém do Pará",
     "qt": "6.11.0",
@@ -646,7 +650,7 @@
       "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
       "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
       "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
-      "framework_tab.py": "e8160956bb220f328978fc2225a47c31b7da25c3364ef7acd6153442921d2a2b",
+      "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
       "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
       "icon.png": "a12ecdd331512880f8e2f8d431e8c9c50489f1a6c3a03a7de42d2f1372b5bfc9",
       "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
@@ -654,14 +658,14 @@
       "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
       "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
       "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
-      "larger_view.py": "4fbd33c6cac0ff934e394cb151ccdc513a3d1485dadb82dda2d5c127ca5f5806",
+      "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
       "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
       "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
       "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
-      "map_controls.py": "e336f199660eeab8626d90ffe8d60491f204a204876cf14b7ea2f5379085fefc",
+      "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
       "metadata.txt": "d2a4a0d8b6ca907ac9f16c184a5feefb1f2ded8362bd9800398ef97d9d0dc8e1",
-      "ml_bootstrap.py": "7537e064b34ccdb5270f2f2f888bea605d1fc197a8a2c0e03f747e000396a8c5",
-      "mpl_compat.py": "19bf62814e1041458bfd9cca9b22543165b85eebc0f37d40d0604b95f92a97a2",
+      "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+      "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
       "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
       "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
       "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
@@ -681,17 +685,17 @@
       "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
       "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
       "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
-      "theme.py": "83c31d7e07e7039e248fdf0c36b5e3b3c3d24126b7e69fbc833950babb12777a",
+      "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
       "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
       "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
       "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
       "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
       "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
-      "variogram_utils.py": "ef2d5772c83e7692c8a73e86adf38c63350226b4fad1ccd9daba1b753086bbb0"
+      "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
     }
   },
   "session": {
-    "executed_at_utc": "2026-10-06T01:01:00.227516+00:00",
+    "executed_at_utc": "2026-10-06T15:14:14.878078+00:00",
     "qgis": "4.2.3-Belém do Pará",
     "mode": "Real QGIS / Qt offscreen, isolated profile, synthetic datasets",
     "window_sizes": [
@@ -793,19 +797,19 @@
       "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
       "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
       "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
-      "framework_tab.py": "e8160956bb220f328978fc2225a47c31b7da25c3364ef7acd6153442921d2a2b",
+      "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
       "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
       "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
       "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
       "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
       "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
-      "larger_view.py": "4fbd33c6cac0ff934e394cb151ccdc513a3d1485dadb82dda2d5c127ca5f5806",
+      "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
       "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
       "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
       "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
-      "map_controls.py": "e336f199660eeab8626d90ffe8d60491f204a204876cf14b7ea2f5379085fefc",
-      "ml_bootstrap.py": "7537e064b34ccdb5270f2f2f888bea605d1fc197a8a2c0e03f747e000396a8c5",
-      "mpl_compat.py": "19bf62814e1041458bfd9cca9b22543165b85eebc0f37d40d0604b95f92a97a2",
+      "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
+      "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+      "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
       "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
       "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
       "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
@@ -825,13 +829,13 @@
       "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
       "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
       "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
-      "theme.py": "83c31d7e07e7039e248fdf0c36b5e3b3c3d24126b7e69fbc833950babb12777a",
+      "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
       "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
       "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
       "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
       "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
       "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
-      "variogram_utils.py": "ef2d5772c83e7692c8a73e86adf38c63350226b4fad1ccd9daba1b753086bbb0"
+      "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
     }
   },
   "rendering_checks": "Real Qt pixels and visible artists: Data, optimized IDW, comparison, theoretical semivariogram and Larger View, including three tab-return cycles and 1000x700 / 800x600 viewports. All CI targets run the same checks; a Linux 42px semivariogram discovered in the first expanded run motivated the readable minimum size.",
@@ -1062,5 +1066,1755 @@
       "validated-REML.png": "c068b43b8f00dc6ab70ce81f440835ed980b066b32e88e321dd26909f5b6274e"
     }
   },
-  "limits": "Offscreen real Qt and QGIS with synthetic data and iface double; interactive native desktop, all monitor DPI configurations and large datasets are not certified."
+  "limits": "Offscreen real Qt and QGIS with synthetic data and iface double; interactive native desktop, all monitor DPI configurations and large datasets are not certified.",
+  "integer_compatibility_revision": {
+    "date": "2026-10-06",
+    "issue": "Fixed int64 variogram bin indices fail native int32 bincount on 32-bit QGIS.",
+    "correction": "Use np.intp for bounded bin indices in both exact and sampled paths; preserve int64 pair ordinals/counts and all numerical policies.",
+    "reproduced_before": {
+      "requested": "3.14",
+      "actual": "3.14.0-Pi",
+      "status": "FAILED",
+      "image": "local installed runtime",
+      "environment": {
+        "QGIS": "3.14.0-Pi",
+        "Qt": "5.11.2",
+        "Python": "3.7.0",
+        "GDAL": "3.0.4",
+        "pointer_bits": 32,
+        "PROJ": "6.3.2",
+        "NumPy": "1.21.6",
+        "SciPy": "1.7.3",
+        "scikit-learn": "1.0.2",
+        "matplotlib": "3.1.3",
+        "pandas": "1.0.1",
+        "index_dtype": "int32"
+      },
+      "tests": {
+        "plugin_import": {
+          "result": "PASS"
+        },
+        "classFactory": {
+          "result": "PASS"
+        },
+        "initGui_unload_signals": {
+          "result": "PASS"
+        },
+        "main_window": {
+          "result": "PASS"
+        },
+        "data_loading": {
+          "result": "PASS"
+        },
+        "numerical_baseline": {
+          "result": "FAIL",
+          "category": "QGIS API",
+          "error": "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 169, in numerical\n    self.numerical_results = calculate()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\numerical.py\", line 21, in calculate\n    lags, gamma = bin_experimental_variogram(x, y, z, 8., 1.5)\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\variogram_utils.py\", line 155, in bin_experimental_variogram\n    sums += np.bincount(bins, weights=gamma, minlength=nbins)[:nbins]\n  File \"<__array_function__ internals>\", line 6, in bincount\nTypeError: Cannot cast array data from dtype('int64') to dtype('int32') according to the rule 'safe'\n"
+        },
+        "semivariogram_geostatistics": {
+          "result": "FAIL",
+          "category": "QGIS API",
+          "error": "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 179, in geostatistics\n    assert controller._exp_lags is not None and len(controller._exp_lags) > 1\nAssertionError\n"
+        },
+        "spatial_diagnostics": {
+          "result": "PASS"
+        },
+        "regression_kriging": {
+          "result": "FAIL",
+          "category": "QGIS API",
+          "error": "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 209, in regression\n    rk._fit_variogram_stage()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\RF_RegressionKriging.py\", line 1123, in _fit_variogram_stage\n    lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\RF_RegressionKriging.py\", line 983, in _bin_variogram\n    x, y, z, cutoff, lag_width, return_info=True\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\variogram_utils.py\", line 155, in bin_experimental_variogram\n    sums += np.bincount(bins, weights=gamma, minlength=nbins)[:nbins]\n  File \"<__array_function__ internals>\", line 6, in bincount\nTypeError: Cannot cast array data from dtype('int64') to dtype('int32') according to the rule 'safe'\n"
+        },
+        "framework": {
+          "result": "FAIL",
+          "category": "QGIS API",
+          "error": "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 218, in framework\n    check_framework_validation(self.plugin,self.output,events,wait_jobs)\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\semivariogram_checks.py\", line 94, in check_framework_validation\n    labels=[line.get_label() for line in parent.fig.axes[0].lines]\nIndexError: list index out of range\n"
+        },
+        "map_comparison": {
+          "result": "FAIL",
+          "category": "QGIS API",
+          "error": "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 245, in comparison\n    assert widget.method_a.count() == widget.method_b.count() == 2\nAssertionError\n"
+        },
+        "report": {
+          "result": "PASS"
+        },
+        "repeated_open_close": {
+          "result": "PASS"
+        }
+      },
+      "warnings": [
+        "'U' mode is deprecated",
+        "tight_layout : falling back to Agg renderer"
+      ],
+      "errors": [
+        "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 169, in numerical\n    self.numerical_results = calculate()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\numerical.py\", line 21, in calculate\n    lags, gamma = bin_experimental_variogram(x, y, z, 8., 1.5)\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\variogram_utils.py\", line 155, in bin_experimental_variogram\n    sums += np.bincount(bins, weights=gamma, minlength=nbins)[:nbins]\n  File \"<__array_function__ internals>\", line 6, in bincount\nTypeError: Cannot cast array data from dtype('int64') to dtype('int32') according to the rule 'safe'\n",
+        "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 179, in geostatistics\n    assert controller._exp_lags is not None and len(controller._exp_lags) > 1\nAssertionError\n",
+        "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 209, in regression\n    rk._fit_variogram_stage()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\RF_RegressionKriging.py\", line 1123, in _fit_variogram_stage\n    lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\RF_RegressionKriging.py\", line 983, in _bin_variogram\n    x, y, z, cutoff, lag_width, return_info=True\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator\\variogram_utils.py\", line 155, in bin_experimental_variogram\n    sums += np.bincount(bins, weights=gamma, minlength=nbins)[:nbins]\n  File \"<__array_function__ internals>\", line 6, in bincount\nTypeError: Cannot cast array data from dtype('int64') to dtype('int32') according to the rule 'safe'\n",
+        "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 218, in framework\n    check_framework_validation(self.plugin,self.output,events,wait_jobs)\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\semivariogram_checks.py\", line 94, in check_framework_validation\n    labels=[line.get_label() for line in parent.fig.axes[0].lines]\nIndexError: list index out of range\n",
+        "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 115, in main\n    case()\n  File \"C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\tests\\compatibility\\runtime_cases.py\", line 245, in comparison\n    assert widget.method_a.count() == widget.method_b.count() == 2\nAssertionError\n",
+        "Traceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 127, in main\n    raise RuntimeError('Qt or plugin errors: ' + repr(suite.slot_errors + suite.alerts))\nRuntimeError: Qt or plugin errors: ['Traceback (most recent call last):\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\BestFitInterpolator.py\", line 2163, in _on_main_tab_changed\\n    self._update_ok_context()\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\BestFitInterpolator.py\", line 2062, in _update_ok_context\\n    self.ok_ctrl.set_points_layer_and_field(layers[0], z_field)\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\ok_dispatcher.py\", line 148, in set_points_layer_and_field\\n    ctrl.set_points_layer_and_field(layer, field_name)\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\ok_r_integration_MoM.py\", line 572, in set_points_layer_and_field\\n    self.calculate_and_plot_experimental(initial_load=True)\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\ok_r_integration_MoM.py\", line 1120, in calculate_and_plot_experimental\\n    lags, gamma = self._bin_variogram(x, y, z, cutoff, lagw)\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\ok_r_integration_MoM.py\", line 871, in _bin_variogram\\n    x, y, z, cutoff, lag_width, return_info=True\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\variogram_utils.py\", line 155, in bin_experimental_variogram\\n    sums += np.bincount(bins, weights=gamma, minlength=nbins)[:nbins]\\n  File \"<__array_function__ internals>\", line 6, in bincount\\nTypeError: Cannot cast array data from dtype(\\'int64\\') to dtype(\\'int32\\') according to the rule \\'safe\\'\\n', 'Traceback (most recent call last):\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\framework_sdi_dialog.py\", line 732, in apply_selected\\n    self._set_experimental_from_current_structure(\"reml\" if fit_method==\"REML\" else \"mom\")\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\framework_sdi_dialog.py\", line 897, in _set_experimental_from_current_structure\\n    self._lag_width,\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\framework_sdi_dialog.py\", line 1089, in _bin_variogram\\n    x, y, z, cutoff, lag_width, return_info=True\\n  File \"C:\\\\Users\\\\ladel\\\\OneDrive\\\\Documentos\\\\Plugin\\\\github_sync_BestFitInterpolation\\\\bestfitinterpolator\\\\variogram_utils.py\", line 130, in bin_experimental_variogram\\n    cutoff = float(cutoff)\\nTypeError: float() argument must be a string or a number, not \\'NoneType\\'\\n', \"('Framework SDI', 'Max distance must be greater than zero.')\"]\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"scripts\\run_qgis_tests.py\", line 128, in main\n    report['status'] = 'EXECUTED' if not report['errors'] else 'FAILED'\n  File \"C:\\PROGRA~2\\QGIS3~1.14\\apps\\Python37\\lib\\tempfile.py\", line 805, in __exit__\n    self.cleanup()\n  File \"C:\\PROGRA~2\\QGIS3~1.14\\apps\\Python37\\lib\\tempfile.py\", line 809, in cleanup\n    _shutil.rmtree(self.name)\n  File \"C:\\PROGRA~2\\QGIS3~1.14\\apps\\Python37\\lib\\shutil.py\", line 507, in rmtree\n    return _rmtree_unsafe(path, onerror)\n  File \"C:\\PROGRA~2\\QGIS3~1.14\\apps\\Python37\\lib\\shutil.py\", line 391, in _rmtree_unsafe\n    onerror(os.unlink, fullname, sys.exc_info())\n  File \"C:\\PROGRA~2\\QGIS3~1.14\\apps\\Python37\\lib\\shutil.py\", line 389, in _rmtree_unsafe\n    os.unlink(fullname)\nPermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\\\Users\\\\ladel\\\\AppData\\\\Local\\\\Temp\\\\bfi-qgis-profile-gwxrhgcp\\\\qgis-auth.db'\n"
+      ],
+      "dependency_path": "C:\\Users\\ladel\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\bestfitinterpolator\\_deps",
+      "plugin_source": "C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator",
+      "numerical_results": {},
+      "category": "QT"
+    },
+    "windows": {
+      "3.14": {
+        "after": {
+          "requested": "3.14",
+          "actual": "3.14.0-Pi",
+          "status": "EXECUTED",
+          "image": "local installed runtime",
+          "environment": {
+            "QGIS": "3.14.0-Pi",
+            "Qt": "5.11.2",
+            "Python": "3.7.0",
+            "GDAL": "3.0.4",
+            "pointer_bits": 32,
+            "PROJ": "6.3.2",
+            "NumPy": "1.21.6",
+            "SciPy": "1.7.3",
+            "scikit-learn": "1.0.2",
+            "matplotlib": "3.1.3",
+            "pandas": "1.0.1",
+            "index_dtype": "int32"
+          },
+          "tests": {
+            "plugin_import": {
+              "result": "PASS"
+            },
+            "classFactory": {
+              "result": "PASS"
+            },
+            "initGui_unload_signals": {
+              "result": "PASS"
+            },
+            "main_window": {
+              "result": "PASS"
+            },
+            "data_loading": {
+              "result": "PASS"
+            },
+            "numerical_baseline": {
+              "result": "PASS"
+            },
+            "semivariogram_geostatistics": {
+              "result": "PASS"
+            },
+            "spatial_diagnostics": {
+              "result": "PASS"
+            },
+            "regression_kriging": {
+              "result": "PASS"
+            },
+            "framework": {
+              "result": "PASS"
+            },
+            "map_comparison": {
+              "result": "PASS"
+            },
+            "report": {
+              "result": "PASS"
+            },
+            "repeated_open_close": {
+              "result": "PASS"
+            }
+          },
+          "warnings": [
+            "'U' mode is deprecated",
+            "This figure was using constrained_layout==True, but that is incompatible with subplots_adjust and or tight_layout: setting constrained_layout==False. ",
+            "`np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.\nDeprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations",
+            "`np.object` is a deprecated alias for the builtin `object`. To silence this warning, use `object` by itself. Doing this will not modify any behavior and is safe. \nDeprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations",
+            "tight_layout : falling back to Agg renderer"
+          ],
+          "errors": [],
+          "dependency_path": "C:\\Users\\ladel\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\bestfitinterpolator\\_deps",
+          "plugin_source": "C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator",
+          "numerical_results": {
+            "idw": [
+              1.2899055015722145,
+              1.3956979397011269,
+              1.3922114712863314,
+              0.6545193255359112,
+              0.8610260313785848
+            ],
+            "tps": [
+              1.3223166795052523,
+              1.589146909271094,
+              1.3229276718485279,
+              0.8693552569714103,
+              0.7838258559832193
+            ],
+            "lags": [
+              2.2394057759173234,
+              3.937550176367387,
+              5.232669673427092,
+              6.860893669791111
+            ],
+            "semivariance": [
+              0.23441977782224618,
+              0.5642181817286926,
+              0.6067042745898802,
+              0.9390731355567532
+            ],
+            "metrics": [
+              0.3500000000000001,
+              10.769230769230772,
+              0.32500000000000007,
+              0.9667796610169491,
+              0.9850192912279306,
+              0.9821428571428573
+            ],
+            "fit_spherical": [
+              0.23441977782224618,
+              0.5061797217955247,
+              8.0
+            ],
+            "model_spherical": [
+              0.44140745567065454,
+              0.5779500494888073,
+              0.6602225733096391,
+              0.7259363751718463
+            ],
+            "kriging_spherical": [
+              1.255869209690947,
+              1.5388397456642393,
+              1.2711187205439185,
+              0.749780416458263,
+              0.6525905083665714
+            ],
+            "cv_spherical": [
+              0.3569218998385838,
+              0.27695415715824323,
+              0.7666129986184055,
+              0.830550790142867
+            ],
+            "fit_exponential": [
+              0.23441977782224618,
+              0.8705763658823433,
+              8.0
+            ],
+            "model_exponential": [
+              0.44697980634596324,
+              0.572826823495786,
+              0.6523676111540693,
+              0.7357203500694642
+            ],
+            "kriging_exponential": [
+              1.2715663807843816,
+              1.5270352637096238,
+              1.2879606114588384,
+              0.7261169108446767,
+              0.6830461348476489
+            ],
+            "cv_exponential": [
+              0.3835152900344617,
+              0.3148637043723871,
+              0.7305391729733313,
+              0.8020400363112045
+            ],
+            "fit_gaussian": [
+              0.23441977782224618,
+              1.2668839053595722,
+              8.0
+            ],
+            "model_gaussian": [
+              0.3299010556287253,
+              0.5069819422309856,
+              0.6753901819658868,
+              0.8941282879145016
+            ],
+            "kriging_gaussian": [
+              1.2979382039283158,
+              1.623961982199742,
+              1.309565578199251,
+              0.7834863658700995,
+              0.6635981816355384
+            ],
+            "cv_gaussian": [
+              0.31110074380999236,
+              0.265599376268659,
+              0.8226903506100463,
+              0.8845926826092143
+            ],
+            "moran": [
+              0.539225806217463,
+              0.01
+            ],
+            "local_moran": [
+              0.01768105102561978,
+              0.7426358676289345,
+              1.961128157731414,
+              1.2962243586355804,
+              0.2879030457312016,
+              -0.04003424530083312,
+              0.5491104044782447,
+              1.251985486465381,
+              0.5355438271439614,
+              -0.015600773375149332,
+              0.2952272369005904,
+              -0.002027351429032874,
+              0.1081874629730839,
+              -0.014868753189821967,
+              0.5949275659418879,
+              1.0927592918719327,
+              0.3695257790018316,
+              0.12377596698159865,
+              0.6666186204698745,
+              0.9638131246629597
+            ],
+            "lisa": [
+              "HH",
+              "NS",
+              "HH",
+              "HH",
+              "HH",
+              "NS",
+              "NS",
+              "HH",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "LL",
+              "LL"
+            ],
+            "statistical_votes": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rk_residuals": [
+              -0.1993070490530453,
+              0.6700346141078872,
+              0.9145269593306322,
+              0.6647831767451429,
+              0.025877950877565725,
+              -0.32312422420180487,
+              0.4834857193287352,
+              0.6916796254095157,
+              0.4211159846339678,
+              -0.2890741942181385,
+              -0.6266250240050568,
+              0.27177649068145904,
+              0.4993479303949565,
+              0.24093129253023604,
+              -0.3751639307592392,
+              -1.0850505210683137,
+              -0.3086996246786804,
+              -0.11882763106048799,
+              -0.34367240498420565,
+              -1.0841216309772177
+            ],
+            "rk_final": [
+              1.2717535875123713,
+              1.5214051002770683,
+              1.3546621329723159,
+              0.8343407879450481,
+              0.7516391032456514
+            ]
+          }
+        },
+        "unit_checks": {
+          "executed_at_utc": "2026-10-06T05:15:08.548513+00:00",
+          "passed": 114,
+          "failed": 0,
+          "qgis": "3.14.0-Pi",
+          "qt": "5.11.2",
+          "python": "3.7.0",
+          "numpy": "1.21.6",
+          "mode": "offscreen; isolated profile; zero-argument contract tests and unittest suites",
+          "scipy": "1.7.3",
+          "tested_file_sha256": {
+            "__init__.py": "bb1c44ba0a3f523be92100adadb446ba79758c8c19d435b6e00c03c43c4c8741",
+            "array_shape_utils.py": "0118a1d2cc8b13d7bab15d1380ccdb0fc7d0856f9b544d3817fd8a32c7e1ccb3",
+            "async_jobs.py": "3ba59212d01b2f861da12d4f86bace1634cc2db5158d66de6ed9fcd8d89f6db3",
+            "BestFitInterpolator.py": "2ee868024dd2c69fa2dbed8f874be335e6affdbde7b4f58560d8f9c7e9dad3ac",
+            "BestFitInterpolator_dialog_base.ui": "b6f20f043a1b12172415183260b674b2ccc89e810643e75cc0fef7da83ae1ed6",
+            "compat.py": "5b4c85dae4f869e528fb44fe9d494eafb324363f6e0ae7513c46cc4e174c3c57",
+            "diagnostics_engine.py": "234b93374813c1e633bc6394ab937065217c6dc9dbac01e518eb63d39fce2c70",
+            "diagnostics_plot.py": "798d777afd1011f22187d11d94105f9e72d11c4f720518893b1717ac19aa303c",
+            "diagnostics_table.py": "62e7a6531160a115b83e00dec427bf3d44a04b567883645835827e0c6c2bbf10",
+            "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
+            "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
+            "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
+            "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
+            "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
+            "icon.png": "a12ecdd331512880f8e2f8d431e8c9c50489f1a6c3a03a7de42d2f1372b5bfc9",
+            "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
+            "info.png": "10b3aa2ab1c87343b6f4078fd5bb8856be78504eb1b0243a1c2250b26a4a74f2",
+            "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
+            "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
+            "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
+            "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
+            "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
+            "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
+            "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
+            "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
+            "metadata.txt": "d2a4a0d8b6ca907ac9f16c184a5feefb1f2ded8362bd9800398ef97d9d0dc8e1",
+            "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+            "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
+            "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
+            "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
+            "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
+            "ok_mom_integration.py": "88e29d4b6e1e475be6bb044c4f2797f5315e39f134855432be2d5b809fd58497",
+            "ok_r_integration_MoM.py": "0283ba8330d76d9a57b98de24e107ac2cb4d4d22ab70cf5de3786cdadf8293b9",
+            "ok_r_integration_reml.py": "cb906f6d02e4838a408cae08efb5de14196c8e46061f5c7b300fe7cf9c47994a",
+            "ok_reml_integration.py": "fdb5dece217ced2c0e07b2d62aca91afdad8d6f96d586c2ac7946ed3669b3f08",
+            "performance_policy.py": "2af2a28e50699a00bef1e18084a3baa21c7062508972c2e90eec660b4cf4ff73",
+            "plugin_upload.py": "92a21d2d6a521236fbd5c030071e1684ed8d06efac789c954e8ef6ee9bfa754a",
+            "reml_bridge.py": "71e964bd12e46241ec2d3ff446f36e3b9a55356bf97c83f462331e2fe0ab7550",
+            "report_builder.py": "8ac8c14f22a767d396c01f58a2479641cff0e7cb7923e758a7d366cf329c0085",
+            "report_model.py": "e6ddc64c9e8e197aa49b8d3b77a5aed304db10186e86fc3fdcca3b5712af37d7",
+            "resources.py": "c28ecf2d6df48c495f3da8724ba3840e50d147a3367bb2e5ef2b803ecd3dbbfb",
+            "RF_Interpolation.py": "d93e0a28c888a1fbfdbed3d9cc198ba1e88e5f4e631726df2b7cf6e9d4c5cde4",
+            "RF_RegressionKriging.py": "b398f4af0b1e95ccbacb86e177a24a72ad6b9b6a4fca894d19a0f86962c598e7",
+            "semivariogram_dialog.py": "4d9caf334009bff89ad47ccb5cad478b669a8d8722669a9f82383f481d00aabe",
+            "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
+            "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
+            "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
+            "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
+            "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
+            "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
+            "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
+            "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
+            "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
+            "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
+          }
+        },
+        "session": {
+          "executed_at_utc": "2026-10-06T15:14:13.010136+00:00",
+          "qgis": "3.14.0-Pi",
+          "mode": "Real QGIS / Qt offscreen, isolated profile, synthetic datasets",
+          "window_sizes": [
+            [
+              1000,
+              700
+            ],
+            [
+              800,
+              600
+            ]
+          ],
+          "passed": [
+            "clean session after five close/reopen cycles",
+            "MoM / REML controller lifecycle",
+            "Moran, LISA and statistical outliers",
+            "Outlier diagnostic name and brief help for classes, parameters and review workflow",
+            "clickable Moran info, reused reading window and close with diagnostics",
+            "titles and button names without decorative ellipses or dashes",
+            "explicit exclusions and intact source layer",
+            "IDW / TPS / OK / RF / SVM / RK interpolation and validation",
+            "all main tabs and nested tabs at both window sizes",
+            "About logo enlarged to 144 logical pixels and contained at both sizes",
+            "visible RK Interpolate action",
+            "all six evaluated comparison alternatives",
+            "palette gradients and popup settings",
+            "covariates modal fits screen and retains editable scalar correlation",
+            "no palette on validation or validation Larger View",
+            "bordered IDW / TPS options",
+            "RF interpolate action only on Interpolation",
+            "side-by-side RK and shared Adjust dialog",
+            "standalone RK does not populate Framework output",
+            "real Full Framework covariate comparisons TPS / SVM, TPS / RF and TPS / RK",
+            "navigable Report overview and temporary browser HTML without a Save dialog, collapsible sections and embedded images",
+            "Comparison contains only maps, with validation metrics kept in Validation",
+            "Larger View preserves arrays, masks, colormap, normalization and limits",
+            "final TPS provenance survives independent IDW comparison",
+            "QGIS layer and GeoTIFF provenance",
+            "two PDF exports and previews",
+            "no Qt slot exceptions"
+          ],
+          "screenshots": [
+            "00_about.png",
+            "00b_small_about.png",
+            "01_data.png",
+            "01b_moran_outliers.png",
+            "01c_diagnostic_settings.png",
+            "01d_moran_information.png",
+            "01e_outlier_information_usage.png",
+            "02_deterministic_interpolation.png",
+            "03_deterministic_validation.png",
+            "04_kriging_interpolation.png",
+            "05_kriging_validation.png",
+            "06_ml_covariates.png",
+            "07_random_forest.png",
+            "07b_random_forest_validation.png",
+            "08_svm.png",
+            "08b_svm_validation.png",
+            "09_regression_kriging.png",
+            "10_rk_residual_parameters.png",
+            "10b_rk_adjust.png",
+            "10c_rk_grid_search.png",
+            "11_rk_validation.png",
+            "12_framework_0.png",
+            "12_framework_1.png",
+            "12_framework_2.png",
+            "12_framework_3.png",
+            "12_framework_4.png",
+            "12_framework_5.png",
+            "13_comparison_maps_only.png",
+            "14_comparison_maps.png",
+            "15_comparison_settings.png",
+            "16_palette_settings.png",
+            "17_palette_choices.png",
+            "18_larger_view.png",
+            "18b_full_covariates.png",
+            "18c_small_covariates.png",
+            "19_small_screen_framework.png",
+            "19b_all_six_methods.png",
+            "20_small_screen_rk.png",
+            "21_compare_TPS_RFE.png",
+            "21_compare_TPS_RK.png",
+            "21_compare_TPS_SVM.png",
+            "22_report_0.png",
+            "22_report_1.png",
+            "22_report_2.png",
+            "22_report_3.png"
+          ],
+          "tested_file_sha256": {
+            "__init__.py": "bb1c44ba0a3f523be92100adadb446ba79758c8c19d435b6e00c03c43c4c8741",
+            "array_shape_utils.py": "0118a1d2cc8b13d7bab15d1380ccdb0fc7d0856f9b544d3817fd8a32c7e1ccb3",
+            "async_jobs.py": "3ba59212d01b2f861da12d4f86bace1634cc2db5158d66de6ed9fcd8d89f6db3",
+            "BestFitInterpolator.py": "2ee868024dd2c69fa2dbed8f874be335e6affdbde7b4f58560d8f9c7e9dad3ac",
+            "compat.py": "5b4c85dae4f869e528fb44fe9d494eafb324363f6e0ae7513c46cc4e174c3c57",
+            "diagnostics_engine.py": "234b93374813c1e633bc6394ab937065217c6dc9dbac01e518eb63d39fce2c70",
+            "diagnostics_plot.py": "798d777afd1011f22187d11d94105f9e72d11c4f720518893b1717ac19aa303c",
+            "diagnostics_table.py": "62e7a6531160a115b83e00dec427bf3d44a04b567883645835827e0c6c2bbf10",
+            "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
+            "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
+            "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
+            "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
+            "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
+            "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
+            "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
+            "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
+            "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
+            "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
+            "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
+            "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
+            "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
+            "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
+            "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+            "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
+            "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
+            "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
+            "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
+            "ok_mom_integration.py": "88e29d4b6e1e475be6bb044c4f2797f5315e39f134855432be2d5b809fd58497",
+            "ok_r_integration_MoM.py": "0283ba8330d76d9a57b98de24e107ac2cb4d4d22ab70cf5de3786cdadf8293b9",
+            "ok_r_integration_reml.py": "cb906f6d02e4838a408cae08efb5de14196c8e46061f5c7b300fe7cf9c47994a",
+            "ok_reml_integration.py": "fdb5dece217ced2c0e07b2d62aca91afdad8d6f96d586c2ac7946ed3669b3f08",
+            "performance_policy.py": "2af2a28e50699a00bef1e18084a3baa21c7062508972c2e90eec660b4cf4ff73",
+            "plugin_upload.py": "92a21d2d6a521236fbd5c030071e1684ed8d06efac789c954e8ef6ee9bfa754a",
+            "reml_bridge.py": "71e964bd12e46241ec2d3ff446f36e3b9a55356bf97c83f462331e2fe0ab7550",
+            "report_builder.py": "8ac8c14f22a767d396c01f58a2479641cff0e7cb7923e758a7d366cf329c0085",
+            "report_model.py": "e6ddc64c9e8e197aa49b8d3b77a5aed304db10186e86fc3fdcca3b5712af37d7",
+            "resources.py": "c28ecf2d6df48c495f3da8724ba3840e50d147a3367bb2e5ef2b803ecd3dbbfb",
+            "RF_Interpolation.py": "d93e0a28c888a1fbfdbed3d9cc198ba1e88e5f4e631726df2b7cf6e9d4c5cde4",
+            "RF_RegressionKriging.py": "b398f4af0b1e95ccbacb86e177a24a72ad6b9b6a4fca894d19a0f86962c598e7",
+            "semivariogram_dialog.py": "4d9caf334009bff89ad47ccb5cad478b669a8d8722669a9f82383f481d00aabe",
+            "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
+            "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
+            "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
+            "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
+            "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
+            "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
+            "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
+            "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
+            "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
+            "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
+          }
+        },
+        "cold_start": {
+          "qgis": "3.14.0-Pi",
+          "numpy": "1.18.3",
+          "sklearn": "1.0.2",
+          "sklearn_source": "C:\\Users\\ladel\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\bestfitinterpolator\\_deps\\sklearn\\__init__.py",
+          "local_dependency_directory": "C:\\Users\\ladel\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\bestfitinterpolator\\_deps",
+          "checked": [
+            "cold start with NumPy loaded by QGIS first",
+            "matching legacy wheel reuse",
+            "bundled modern sklearn preference",
+            "manual RF + residual binning",
+            "grid RF + residual binning"
+          ]
+        },
+        "checked_regression_modes": [
+          "manual",
+          "grid"
+        ],
+        "screenshot_hashes": {
+          "comparison-preview.png": "ba85ac1b92bd5c9bc719630e3b97de63844c82a179af3debdc48d11e79ca2609",
+          "data-preview.png": "619c8cc277555f460fcce1e32c002c952c6989e42ea639cbd8492e51ad934b73",
+          "data-return-preview.png": "619c8cc277555f460fcce1e32c002c952c6989e42ea639cbd8492e51ad934b73",
+          "deterministic-options-1000.png": "eb6b2c71a72bc5c73a584fa8f4f2728c90b5ff310db28bd6b3106099697adebc",
+          "deterministic-options-800.png": "13c27e9dcf646a306721005795a8ad930aa5badca3052fb8658fc32329a00902",
+          "framework-validation-MoM.png": "db98e662bcb54835353f02e191f02a713caa8e2a38bedc5c5c732070bfa2e076",
+          "framework-validation-REML.png": "201723949183040836ab8438b5fed01e83f7a291c0ae40af75b8d884978f86ae",
+          "groupIDWOptions-1000.png": "ba3e2470b920da0ce2a61e87edfae357042361b57e8072084cf7915b5f1f3fd6",
+          "groupIDWOptions-800.png": "c1df784764d2a01b179b3e468340571268dd8f462674c9e5f80ff7bcd001b2c9",
+          "groupTPSOptions-1000.png": "7f093b9b9bf4723b9cad5d8b092c11e8554e2779ea16f8007e7a619149e8c3c6",
+          "groupTPSOptions-800.png": "7f093b9b9bf4723b9cad5d8b092c11e8554e2779ea16f8007e7a619149e8c3c6",
+          "idw-larger-view.png": "a2840b5269f2700ff6161eb40cf3a1765f9cf4cb8232149477fdc07c99d2fed2",
+          "idw-optimized-preview.png": "51689d448537e3b2e1eff03292b4247a69769901a4b9f2fd1f70ea5b5d0e9dd3",
+          "idw-return-preview.png": "51689d448537e3b2e1eff03292b4247a69769901a4b9f2fd1f70ea5b5d0e9dd3",
+          "return-0-REML.png": "182427a480772fbfa05b9850348ac75e6ca0b028a4a7086c2b6581d0e470cc6a",
+          "return-1-MoM.png": "37c2507a448b4e9d426c48fc3794de25b895259970552531fb426bc392b4730c",
+          "return-2-REML.png": "182427a480772fbfa05b9850348ac75e6ca0b028a4a7086c2b6581d0e470cc6a",
+          "return-3-MoM.png": "37c2507a448b4e9d426c48fc3794de25b895259970552531fb426bc392b4730c",
+          "return-4-REML.png": "182427a480772fbfa05b9850348ac75e6ca0b028a4a7086c2b6581d0e470cc6a",
+          "return-5-MoM.png": "27d66094e18217a90bd15c6ef84a2fccdf5e8fbf67ce4f4bedb33e4dd5e26bd0",
+          "semivariogram-preview.png": "e203f73ce0c9f39c0ba8ece90fbb3660f8c6af2196fb2b5dcefb5cb555636434",
+          "switch-0-REML.png": "e1e3126761cee3804880bca8d5bfea2f04c4aad63260c4280379f1b3eca0fa11",
+          "switch-1-MoM.png": "cbf0d42405487c38eb6829c7c94a72a39cf3c28d79720e67a77500e2299609a4",
+          "switch-2-REML.png": "a34785efc497ba34dbb466879d128c0c7bb584bfd23723eedbfff8c2acf47c45",
+          "switch-3-MoM.png": "cbf0d42405487c38eb6829c7c94a72a39cf3c28d79720e67a77500e2299609a4",
+          "switch-4-REML.png": "a34785efc497ba34dbb466879d128c0c7bb584bfd23723eedbfff8c2acf47c45",
+          "switch-5-MoM.png": "09f3ae155e8664acf49aadff9b83d70a49edb2deed7511edbad57defb47d7df6",
+          "validated-MoM.png": "e203f73ce0c9f39c0ba8ece90fbb3660f8c6af2196fb2b5dcefb5cb555636434",
+          "validated-REML.png": "a34785efc497ba34dbb466879d128c0c7bb584bfd23723eedbfff8c2acf47c45"
+        }
+      },
+      "3.44": {
+        "after": {
+          "requested": "3.44",
+          "actual": "3.44.8-Solothurn",
+          "status": "EXECUTED",
+          "image": "local installed runtime",
+          "environment": {
+            "QGIS": "3.44.8-Solothurn",
+            "Qt": "5.15.13",
+            "Python": "3.12.13",
+            "GDAL": "3.12.2",
+            "pointer_bits": 64,
+            "PROJ": "9.8.0",
+            "NumPy": "2.4.2",
+            "SciPy": "1.17.0",
+            "scikit-learn": "1.9.1",
+            "matplotlib": "3.10.8",
+            "pandas": "3.0.1",
+            "index_dtype": "int64"
+          },
+          "tests": {
+            "plugin_import": {
+              "result": "PASS"
+            },
+            "classFactory": {
+              "result": "PASS"
+            },
+            "initGui_unload_signals": {
+              "result": "PASS"
+            },
+            "main_window": {
+              "result": "PASS"
+            },
+            "data_loading": {
+              "result": "PASS"
+            },
+            "numerical_baseline": {
+              "result": "PASS"
+            },
+            "semivariogram_geostatistics": {
+              "result": "PASS"
+            },
+            "spatial_diagnostics": {
+              "result": "PASS"
+            },
+            "regression_kriging": {
+              "result": "PASS"
+            },
+            "framework": {
+              "result": "PASS"
+            },
+            "map_comparison": {
+              "result": "PASS"
+            },
+            "report": {
+              "result": "PASS"
+            },
+            "repeated_open_close": {
+              "result": "PASS"
+            }
+          },
+          "warnings": [
+            "Neither gdal.UseExceptions() nor gdal.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.",
+            "The figure layout has changed to tight",
+            "Tight layout not applied. The left and right margins cannot be made large enough to accommodate all Axes decorations.",
+            "vert: bool will be deprecated in a future version. Use orientation: {'vertical', 'horizontal'} instead."
+          ],
+          "errors": [],
+          "plugin_source": "C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator",
+          "numerical_results": {
+            "idw": [
+              1.2899055015722145,
+              1.3956979397011269,
+              1.3922114712863314,
+              0.6545193255359112,
+              0.8610260313785848
+            ],
+            "tps": [
+              1.322316679505252,
+              1.5891469092710935,
+              1.3229276718485279,
+              0.8693552569714103,
+              0.783825855983219
+            ],
+            "lags": [
+              2.2394057759173234,
+              3.937550176367387,
+              5.232669673427092,
+              6.860893669791111
+            ],
+            "semivariance": [
+              0.2344197778222462,
+              0.5642181817286928,
+              0.6067042745898802,
+              0.9390731355567532
+            ],
+            "metrics": [
+              0.3500000000000001,
+              10.769230769230772,
+              0.32500000000000007,
+              0.9667796610169491,
+              0.9850192912279306,
+              0.9821428571428573
+            ],
+            "fit_spherical": [
+              0.2344197778222462,
+              0.5061797217955247,
+              8.0
+            ],
+            "model_spherical": [
+              0.44140745567065454,
+              0.5779500494888073,
+              0.6602225733096391,
+              0.7259363751718464
+            ],
+            "kriging_spherical": [
+              1.255869209690947,
+              1.5388397456642404,
+              1.2711187205439183,
+              0.7497804164582638,
+              0.652590508366572
+            ],
+            "cv_spherical": [
+              0.3569218998385839,
+              0.27695415715824334,
+              0.7666129986184054,
+              0.830550790142867
+            ],
+            "fit_exponential": [
+              0.2344197778222462,
+              0.8705763658823433,
+              8.0
+            ],
+            "model_exponential": [
+              0.44697980634596324,
+              0.572826823495786,
+              0.6523676111540693,
+              0.7357203500694642
+            ],
+            "kriging_exponential": [
+              1.271566380784382,
+              1.527035263709624,
+              1.2879606114588387,
+              0.7261169108446762,
+              0.6830461348476485
+            ],
+            "cv_exponential": [
+              0.38351529003446166,
+              0.314863704372387,
+              0.7305391729733313,
+              0.8020400363112046
+            ],
+            "fit_gaussian": [
+              0.2344197778222462,
+              1.2668839053595724,
+              8.0
+            ],
+            "model_gaussian": [
+              0.32990105562872535,
+              0.5069819422309856,
+              0.675390181965887,
+              0.8941282879145017
+            ],
+            "kriging_gaussian": [
+              1.297938203928316,
+              1.623961982199743,
+              1.3095655781992517,
+              0.7834863658700999,
+              0.6635981816355385
+            ],
+            "cv_gaussian": [
+              0.3111007438099927,
+              0.26559937626865915,
+              0.8226903506100458,
+              0.8845926826092141
+            ],
+            "moran": [
+              0.539225806217463,
+              0.01
+            ],
+            "local_moran": [
+              0.01768105102561978,
+              0.7426358676289345,
+              1.961128157731414,
+              1.2962243586355806,
+              0.2879030457312016,
+              -0.04003424530083312,
+              0.5491104044782448,
+              1.2519854864653814,
+              0.5355438271439615,
+              -0.015600773375149332,
+              0.2952272369005904,
+              -0.002027351429032874,
+              0.10818746297308397,
+              -0.014868753189821967,
+              0.5949275659418879,
+              1.0927592918719327,
+              0.3695257790018316,
+              0.12377596698159865,
+              0.6666186204698745,
+              0.9638131246629597
+            ],
+            "lisa": [
+              "HH",
+              "NS",
+              "HH",
+              "HH",
+              "HH",
+              "NS",
+              "NS",
+              "HH",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "LL",
+              "LL"
+            ],
+            "statistical_votes": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rk_residuals": [
+              -0.1993070490530453,
+              0.6700346141078872,
+              0.9145269593306322,
+              0.6647831767451429,
+              0.025877950877565503,
+              -0.32312422420180487,
+              0.4834857193287352,
+              0.6916796254095157,
+              0.4211159846339678,
+              -0.28907419421813874,
+              -0.6266250240050568,
+              0.27177649068145904,
+              0.4993479303949565,
+              0.24093129253023615,
+              -0.3751639307592391,
+              -1.0850505210683137,
+              -0.3086996246786804,
+              -0.11882763106048799,
+              -0.34367240498420565,
+              -1.0841216309772177
+            ],
+            "rk_final": [
+              1.2717535875123687,
+              1.521405100277066,
+              1.3546621329723152,
+              0.8343407879450513,
+              0.7516391032456525
+            ]
+          }
+        },
+        "unit_checks": {
+          "executed_at_utc": "2026-10-06T05:15:13.323174+00:00",
+          "passed": 114,
+          "failed": 0,
+          "qgis": "3.44.8-Solothurn",
+          "qt": "5.15.13",
+          "python": "3.12.13",
+          "numpy": "2.4.2",
+          "mode": "offscreen; isolated profile; zero-argument contract tests and unittest suites",
+          "scipy": "1.17.0",
+          "tested_file_sha256": {
+            "__init__.py": "bb1c44ba0a3f523be92100adadb446ba79758c8c19d435b6e00c03c43c4c8741",
+            "array_shape_utils.py": "0118a1d2cc8b13d7bab15d1380ccdb0fc7d0856f9b544d3817fd8a32c7e1ccb3",
+            "async_jobs.py": "3ba59212d01b2f861da12d4f86bace1634cc2db5158d66de6ed9fcd8d89f6db3",
+            "BestFitInterpolator.py": "2ee868024dd2c69fa2dbed8f874be335e6affdbde7b4f58560d8f9c7e9dad3ac",
+            "BestFitInterpolator_dialog_base.ui": "b6f20f043a1b12172415183260b674b2ccc89e810643e75cc0fef7da83ae1ed6",
+            "compat.py": "5b4c85dae4f869e528fb44fe9d494eafb324363f6e0ae7513c46cc4e174c3c57",
+            "diagnostics_engine.py": "234b93374813c1e633bc6394ab937065217c6dc9dbac01e518eb63d39fce2c70",
+            "diagnostics_plot.py": "798d777afd1011f22187d11d94105f9e72d11c4f720518893b1717ac19aa303c",
+            "diagnostics_table.py": "62e7a6531160a115b83e00dec427bf3d44a04b567883645835827e0c6c2bbf10",
+            "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
+            "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
+            "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
+            "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
+            "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
+            "icon.png": "a12ecdd331512880f8e2f8d431e8c9c50489f1a6c3a03a7de42d2f1372b5bfc9",
+            "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
+            "info.png": "10b3aa2ab1c87343b6f4078fd5bb8856be78504eb1b0243a1c2250b26a4a74f2",
+            "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
+            "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
+            "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
+            "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
+            "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
+            "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
+            "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
+            "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
+            "metadata.txt": "d2a4a0d8b6ca907ac9f16c184a5feefb1f2ded8362bd9800398ef97d9d0dc8e1",
+            "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+            "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
+            "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
+            "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
+            "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
+            "ok_mom_integration.py": "88e29d4b6e1e475be6bb044c4f2797f5315e39f134855432be2d5b809fd58497",
+            "ok_r_integration_MoM.py": "0283ba8330d76d9a57b98de24e107ac2cb4d4d22ab70cf5de3786cdadf8293b9",
+            "ok_r_integration_reml.py": "cb906f6d02e4838a408cae08efb5de14196c8e46061f5c7b300fe7cf9c47994a",
+            "ok_reml_integration.py": "fdb5dece217ced2c0e07b2d62aca91afdad8d6f96d586c2ac7946ed3669b3f08",
+            "performance_policy.py": "2af2a28e50699a00bef1e18084a3baa21c7062508972c2e90eec660b4cf4ff73",
+            "plugin_upload.py": "92a21d2d6a521236fbd5c030071e1684ed8d06efac789c954e8ef6ee9bfa754a",
+            "reml_bridge.py": "71e964bd12e46241ec2d3ff446f36e3b9a55356bf97c83f462331e2fe0ab7550",
+            "report_builder.py": "8ac8c14f22a767d396c01f58a2479641cff0e7cb7923e758a7d366cf329c0085",
+            "report_model.py": "e6ddc64c9e8e197aa49b8d3b77a5aed304db10186e86fc3fdcca3b5712af37d7",
+            "resources.py": "c28ecf2d6df48c495f3da8724ba3840e50d147a3367bb2e5ef2b803ecd3dbbfb",
+            "RF_Interpolation.py": "d93e0a28c888a1fbfdbed3d9cc198ba1e88e5f4e631726df2b7cf6e9d4c5cde4",
+            "RF_RegressionKriging.py": "b398f4af0b1e95ccbacb86e177a24a72ad6b9b6a4fca894d19a0f86962c598e7",
+            "semivariogram_dialog.py": "4d9caf334009bff89ad47ccb5cad478b669a8d8722669a9f82383f481d00aabe",
+            "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
+            "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
+            "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
+            "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
+            "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
+            "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
+            "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
+            "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
+            "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
+            "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
+          }
+        },
+        "session": {
+          "executed_at_utc": "2026-10-06T15:13:59.303766+00:00",
+          "qgis": "3.44.8-Solothurn",
+          "mode": "Real QGIS / Qt offscreen, isolated profile, synthetic datasets",
+          "window_sizes": [
+            [
+              1000,
+              700
+            ],
+            [
+              800,
+              600
+            ]
+          ],
+          "passed": [
+            "clean session after five close/reopen cycles",
+            "MoM / REML controller lifecycle",
+            "Moran, LISA and statistical outliers",
+            "Outlier diagnostic name and brief help for classes, parameters and review workflow",
+            "clickable Moran info, reused reading window and close with diagnostics",
+            "titles and button names without decorative ellipses or dashes",
+            "explicit exclusions and intact source layer",
+            "IDW / TPS / OK / RF / SVM / RK interpolation and validation",
+            "all main tabs and nested tabs at both window sizes",
+            "About logo enlarged to 144 logical pixels and contained at both sizes",
+            "visible RK Interpolate action",
+            "all six evaluated comparison alternatives",
+            "palette gradients and popup settings",
+            "covariates modal fits screen and retains editable scalar correlation",
+            "no palette on validation or validation Larger View",
+            "bordered IDW / TPS options",
+            "RF interpolate action only on Interpolation",
+            "side-by-side RK and shared Adjust dialog",
+            "standalone RK does not populate Framework output",
+            "real Full Framework covariate comparisons TPS / SVM, TPS / RF and TPS / RK",
+            "navigable Report overview and temporary browser HTML without a Save dialog, collapsible sections and embedded images",
+            "Comparison contains only maps, with validation metrics kept in Validation",
+            "Larger View preserves arrays, masks, colormap, normalization and limits",
+            "final TPS provenance survives independent IDW comparison",
+            "QGIS layer and GeoTIFF provenance",
+            "two PDF exports and previews",
+            "no Qt slot exceptions"
+          ],
+          "screenshots": [
+            "00_about.png",
+            "00b_small_about.png",
+            "01_data.png",
+            "01b_moran_outliers.png",
+            "01c_diagnostic_settings.png",
+            "01d_moran_information.png",
+            "01e_outlier_information_usage.png",
+            "02_deterministic_interpolation.png",
+            "03_deterministic_validation.png",
+            "04_kriging_interpolation.png",
+            "05_kriging_validation.png",
+            "06_ml_covariates.png",
+            "07_random_forest.png",
+            "07b_random_forest_validation.png",
+            "08_svm.png",
+            "08b_svm_validation.png",
+            "09_regression_kriging.png",
+            "10_rk_residual_parameters.png",
+            "10b_rk_adjust.png",
+            "10c_rk_grid_search.png",
+            "11_rk_validation.png",
+            "12_framework_0.png",
+            "12_framework_1.png",
+            "12_framework_2.png",
+            "12_framework_3.png",
+            "12_framework_4.png",
+            "12_framework_5.png",
+            "12_framework_6.png",
+            "13_comparison_maps_only.png",
+            "13_comparison_methods.png",
+            "14_comparison_maps.png",
+            "15_comparison_settings.png",
+            "16_palette_settings.png",
+            "17_palette_choices.png",
+            "18_larger_view.png",
+            "18b_full_covariates.png",
+            "18c_small_covariates.png",
+            "19_small_screen_framework.png",
+            "19b_all_six_methods.png",
+            "20_small_screen_rk.png",
+            "21_compare_TPS_RFE.png",
+            "21_compare_TPS_RK.png",
+            "21_compare_TPS_SVM.png",
+            "22_report_0.png",
+            "22_report_1.png",
+            "22_report_2.png",
+            "22_report_3.png",
+            "review_01.png",
+            "review_02.png",
+            "review_03.png",
+            "review_04.png",
+            "review_05.png",
+            "review_06.png",
+            "review_07.png",
+            "review_08.png",
+            "review_09.png",
+            "review_10.png",
+            "review_11.png"
+          ],
+          "tested_file_sha256": {
+            "__init__.py": "bb1c44ba0a3f523be92100adadb446ba79758c8c19d435b6e00c03c43c4c8741",
+            "array_shape_utils.py": "0118a1d2cc8b13d7bab15d1380ccdb0fc7d0856f9b544d3817fd8a32c7e1ccb3",
+            "async_jobs.py": "3ba59212d01b2f861da12d4f86bace1634cc2db5158d66de6ed9fcd8d89f6db3",
+            "BestFitInterpolator.py": "2ee868024dd2c69fa2dbed8f874be335e6affdbde7b4f58560d8f9c7e9dad3ac",
+            "compat.py": "5b4c85dae4f869e528fb44fe9d494eafb324363f6e0ae7513c46cc4e174c3c57",
+            "diagnostics_engine.py": "234b93374813c1e633bc6394ab937065217c6dc9dbac01e518eb63d39fce2c70",
+            "diagnostics_plot.py": "798d777afd1011f22187d11d94105f9e72d11c4f720518893b1717ac19aa303c",
+            "diagnostics_table.py": "62e7a6531160a115b83e00dec427bf3d44a04b567883645835827e0c6c2bbf10",
+            "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
+            "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
+            "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
+            "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
+            "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
+            "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
+            "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
+            "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
+            "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
+            "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
+            "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
+            "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
+            "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
+            "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
+            "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+            "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
+            "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
+            "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
+            "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
+            "ok_mom_integration.py": "88e29d4b6e1e475be6bb044c4f2797f5315e39f134855432be2d5b809fd58497",
+            "ok_r_integration_MoM.py": "0283ba8330d76d9a57b98de24e107ac2cb4d4d22ab70cf5de3786cdadf8293b9",
+            "ok_r_integration_reml.py": "cb906f6d02e4838a408cae08efb5de14196c8e46061f5c7b300fe7cf9c47994a",
+            "ok_reml_integration.py": "fdb5dece217ced2c0e07b2d62aca91afdad8d6f96d586c2ac7946ed3669b3f08",
+            "performance_policy.py": "2af2a28e50699a00bef1e18084a3baa21c7062508972c2e90eec660b4cf4ff73",
+            "plugin_upload.py": "92a21d2d6a521236fbd5c030071e1684ed8d06efac789c954e8ef6ee9bfa754a",
+            "reml_bridge.py": "71e964bd12e46241ec2d3ff446f36e3b9a55356bf97c83f462331e2fe0ab7550",
+            "report_builder.py": "8ac8c14f22a767d396c01f58a2479641cff0e7cb7923e758a7d366cf329c0085",
+            "report_model.py": "e6ddc64c9e8e197aa49b8d3b77a5aed304db10186e86fc3fdcca3b5712af37d7",
+            "resources.py": "c28ecf2d6df48c495f3da8724ba3840e50d147a3367bb2e5ef2b803ecd3dbbfb",
+            "RF_Interpolation.py": "d93e0a28c888a1fbfdbed3d9cc198ba1e88e5f4e631726df2b7cf6e9d4c5cde4",
+            "RF_RegressionKriging.py": "b398f4af0b1e95ccbacb86e177a24a72ad6b9b6a4fca894d19a0f86962c598e7",
+            "semivariogram_dialog.py": "4d9caf334009bff89ad47ccb5cad478b669a8d8722669a9f82383f481d00aabe",
+            "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
+            "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
+            "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
+            "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
+            "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
+            "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
+            "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
+            "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
+            "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
+            "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
+          }
+        },
+        "cold_start": {
+          "qgis": "3.44.8-Solothurn",
+          "numpy": "2.4.2",
+          "sklearn": "1.9.1",
+          "sklearn_source": "C:\\Users\\ladel\\AppData\\Roaming\\Python\\Python312\\site-packages\\sklearn\\__init__.py",
+          "local_dependency_directory": "C:\\Users\\ladel\\AppData\\Roaming\\QGIS\\QGIS3\\profiles\\default\\python\\plugins\\bestfitinterpolator\\_deps\\cp312_win_amd64",
+          "checked": [
+            "cold start with NumPy loaded by QGIS first",
+            "matching legacy wheel reuse",
+            "bundled modern sklearn preference",
+            "manual RF + residual binning",
+            "grid RF + residual binning"
+          ]
+        },
+        "checked_regression_modes": [
+          "manual",
+          "grid"
+        ],
+        "screenshot_hashes": {
+          "comparison-preview.png": "bf66d8721b4fa193bf9a908851dda9534416091408b6af67a44bf197e2563188",
+          "data-preview.png": "6b1a23e149c05320bd3cb2d1ab2cf961ca5165610f31e939f84f12d95d731c63",
+          "data-return-preview.png": "6b1a23e149c05320bd3cb2d1ab2cf961ca5165610f31e939f84f12d95d731c63",
+          "deterministic-options-1000.png": "e1b0770efdd14f698a5b5a51565abff7d2e95aa1875c3c66d5f14861cc19d5bd",
+          "deterministic-options-800.png": "76af5507b968b214b1d47803990139c90c84c5124dd6f25526123ea5c57a62d5",
+          "framework-validation-MoM.png": "4be28f0627728615b54e7b2cec5e9304f8659a382bb890d6813e93a002bb7dd7",
+          "framework-validation-REML.png": "0fdbdbc29b75c0f7e60d9b0882389e3834778973ec8acc6cc103eb40afd81725",
+          "groupIDWOptions-1000.png": "0d41e19f4fb506b33981aff03a3fe8dba1e8c4ccaa9e3d177a1a04f76905518a",
+          "groupIDWOptions-800.png": "389918fc3157b2309df1e16ac8ee4031eacf44ef2b7d6fd70c705f9e62071c0e",
+          "groupTPSOptions-1000.png": "8a02d9ff239149647380fac1f4ee0e019e6554603454cb1f398558dcde5266c0",
+          "groupTPSOptions-800.png": "8a02d9ff239149647380fac1f4ee0e019e6554603454cb1f398558dcde5266c0",
+          "idw-larger-view.png": "3ddd14ab63cfdefc4edb884c5be974c84122909b19f3f3936e672bcef4b328e0",
+          "idw-optimized-preview.png": "6b780151f85687ab1ae4d274f128636961bad17f2bb976b9ff44e03e5b941591",
+          "idw-return-preview.png": "6b780151f85687ab1ae4d274f128636961bad17f2bb976b9ff44e03e5b941591",
+          "return-0-REML.png": "b7ae36a71dc378f7b8d46e3321388b278678d7706f0e5c739bb6391623e07d71",
+          "return-1-MoM.png": "769c2937e3f40477cbd1a08d8ce4bd5adb534fa388b38cb6906896a1f549ae21",
+          "return-2-REML.png": "93ddc7004676e11cd4cb80eaf377e332e6705fe6c0c0ddf3892f31652155a59d",
+          "return-3-MoM.png": "769c2937e3f40477cbd1a08d8ce4bd5adb534fa388b38cb6906896a1f549ae21",
+          "return-4-REML.png": "93ddc7004676e11cd4cb80eaf377e332e6705fe6c0c0ddf3892f31652155a59d",
+          "return-5-MoM.png": "721f40eb8a03d30eedd6c71557059e3d935a347a444c68efa1aad7fe5d9c4af7",
+          "semivariogram-preview.png": "10600ccb9cc4a4c8f2fa3c5ea3d15f159cbf163a4435acd20b8d660e872c38ec",
+          "switch-0-REML.png": "fbcdb0a062cbd0d30119bd0d7c19f450bd7bbe86dee2bd9eb887b5902f1e2da0",
+          "switch-1-MoM.png": "30fbfd689a1bc02b04a681226a95467fd6ad26bd7c501c7f97c511ec66845daa",
+          "switch-2-REML.png": "96fe3995640e546a7717a051194172feca3076016388d0a596e32de3b771d41a",
+          "switch-3-MoM.png": "30fbfd689a1bc02b04a681226a95467fd6ad26bd7c501c7f97c511ec66845daa",
+          "switch-4-REML.png": "96fe3995640e546a7717a051194172feca3076016388d0a596e32de3b771d41a",
+          "switch-5-MoM.png": "ab2d0176e8605d577035ae52706ba32e7d8e5cdda5bcf4eb08cc1887b0cb8b3a",
+          "validated-MoM.png": "10600ccb9cc4a4c8f2fa3c5ea3d15f159cbf163a4435acd20b8d660e872c38ec",
+          "validated-REML.png": "96fe3995640e546a7717a051194172feca3076016388d0a596e32de3b771d41a"
+        }
+      },
+      "4.2": {
+        "after": {
+          "requested": "4.2",
+          "actual": "4.2.3-Belém do Pará",
+          "status": "EXECUTED",
+          "image": "local installed runtime",
+          "environment": {
+            "QGIS": "4.2.3-Belém do Pará",
+            "Qt": "6.11.0",
+            "Python": "3.12.14",
+            "GDAL": "3.13.3",
+            "pointer_bits": 64,
+            "PROJ": "9.8.1",
+            "NumPy": "2.4.6",
+            "SciPy": "1.18.1",
+            "scikit-learn": "1.9.1",
+            "matplotlib": "3.11.2",
+            "pandas": "3.0.6",
+            "index_dtype": "int64"
+          },
+          "tests": {
+            "plugin_import": {
+              "result": "PASS"
+            },
+            "classFactory": {
+              "result": "PASS"
+            },
+            "initGui_unload_signals": {
+              "result": "PASS"
+            },
+            "main_window": {
+              "result": "PASS"
+            },
+            "data_loading": {
+              "result": "PASS"
+            },
+            "numerical_baseline": {
+              "result": "PASS"
+            },
+            "semivariogram_geostatistics": {
+              "result": "PASS"
+            },
+            "spatial_diagnostics": {
+              "result": "PASS"
+            },
+            "regression_kriging": {
+              "result": "PASS"
+            },
+            "framework": {
+              "result": "PASS"
+            },
+            "map_comparison": {
+              "result": "PASS"
+            },
+            "report": {
+              "result": "PASS"
+            },
+            "repeated_open_close": {
+              "result": "PASS"
+            }
+          },
+          "warnings": [
+            "Neither gdal.UseExceptions() nor gdal.DontUseExceptions() has been explicitly called. In GDAL 4.0, exceptions will be enabled by default.",
+            "The figure layout has changed to tight",
+            "Tight layout not applied. The left and right margins cannot be made large enough to accommodate all Axes decorations.",
+            "vert: bool was deprecated in Matplotlib 3.11 and will be removed in 3.13. Use orientation: {'vertical', 'horizontal'} instead."
+          ],
+          "errors": [],
+          "plugin_source": "C:\\Users\\ladel\\OneDrive\\Documentos\\Plugin\\github_sync_BestFitInterpolation\\bestfitinterpolator",
+          "numerical_results": {
+            "idw": [
+              1.2899055015722145,
+              1.3956979397011269,
+              1.3922114712863314,
+              0.6545193255359112,
+              0.8610260313785848
+            ],
+            "tps": [
+              1.322316679505252,
+              1.5891469092710935,
+              1.3229276718485279,
+              0.8693552569714103,
+              0.783825855983219
+            ],
+            "lags": [
+              2.2394057759173234,
+              3.937550176367387,
+              5.232669673427092,
+              6.860893669791111
+            ],
+            "semivariance": [
+              0.2344197778222462,
+              0.5642181817286928,
+              0.6067042745898802,
+              0.9390731355567532
+            ],
+            "metrics": [
+              0.3500000000000001,
+              10.769230769230772,
+              0.32500000000000007,
+              0.9667796610169491,
+              0.9850192912279306,
+              0.9821428571428573
+            ],
+            "fit_spherical": [
+              0.2344197778222462,
+              0.5061797217955247,
+              8.0
+            ],
+            "model_spherical": [
+              0.44140745567065454,
+              0.5779500494888073,
+              0.6602225733096391,
+              0.7259363751718464
+            ],
+            "kriging_spherical": [
+              1.255869209690947,
+              1.5388397456642404,
+              1.2711187205439183,
+              0.7497804164582638,
+              0.652590508366572
+            ],
+            "cv_spherical": [
+              0.3569218998385839,
+              0.27695415715824334,
+              0.7666129986184054,
+              0.830550790142867
+            ],
+            "fit_exponential": [
+              0.2344197778222462,
+              0.8705763658823433,
+              8.0
+            ],
+            "model_exponential": [
+              0.44697980634596324,
+              0.572826823495786,
+              0.6523676111540693,
+              0.7357203500694642
+            ],
+            "kriging_exponential": [
+              1.271566380784382,
+              1.527035263709624,
+              1.2879606114588387,
+              0.7261169108446762,
+              0.6830461348476485
+            ],
+            "cv_exponential": [
+              0.38351529003446166,
+              0.314863704372387,
+              0.7305391729733313,
+              0.8020400363112046
+            ],
+            "fit_gaussian": [
+              0.2344197778222462,
+              1.2668839053595724,
+              8.0
+            ],
+            "model_gaussian": [
+              0.32990105562872535,
+              0.5069819422309856,
+              0.675390181965887,
+              0.8941282879145017
+            ],
+            "kriging_gaussian": [
+              1.297938203928316,
+              1.623961982199743,
+              1.3095655781992517,
+              0.7834863658700999,
+              0.6635981816355385
+            ],
+            "cv_gaussian": [
+              0.3111007438099927,
+              0.26559937626865915,
+              0.8226903506100458,
+              0.8845926826092141
+            ],
+            "moran": [
+              0.539225806217463,
+              0.01
+            ],
+            "local_moran": [
+              0.01768105102561978,
+              0.7426358676289345,
+              1.961128157731414,
+              1.2962243586355806,
+              0.2879030457312016,
+              -0.04003424530083312,
+              0.5491104044782448,
+              1.2519854864653814,
+              0.5355438271439615,
+              -0.015600773375149332,
+              0.2952272369005904,
+              -0.002027351429032874,
+              0.10818746297308397,
+              -0.014868753189821967,
+              0.5949275659418879,
+              1.0927592918719327,
+              0.3695257790018316,
+              0.12377596698159865,
+              0.6666186204698745,
+              0.9638131246629597
+            ],
+            "lisa": [
+              "HH",
+              "NS",
+              "HH",
+              "HH",
+              "HH",
+              "NS",
+              "NS",
+              "HH",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "NS",
+              "LL",
+              "LL"
+            ],
+            "statistical_votes": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "rk_residuals": [
+              -0.1993070490530453,
+              0.6700346141078872,
+              0.9145269593306322,
+              0.6647831767451429,
+              0.025877950877565503,
+              -0.32312422420180487,
+              0.4834857193287352,
+              0.6916796254095157,
+              0.4211159846339678,
+              -0.28907419421813874,
+              -0.6266250240050568,
+              0.27177649068145904,
+              0.4993479303949565,
+              0.24093129253023615,
+              -0.3751639307592391,
+              -1.0850505210683137,
+              -0.3086996246786804,
+              -0.11882763106048799,
+              -0.34367240498420565,
+              -1.0841216309772177
+            ],
+            "rk_final": [
+              1.2717535875123687,
+              1.521405100277066,
+              1.3546621329723152,
+              0.8343407879450513,
+              0.7516391032456525
+            ]
+          }
+        },
+        "unit_checks": {
+          "executed_at_utc": "2026-10-06T05:15:03.204621+00:00",
+          "passed": 114,
+          "failed": 0,
+          "qgis": "4.2.3-Belém do Pará",
+          "qt": "6.11.0",
+          "python": "3.12.14",
+          "numpy": "2.4.6",
+          "mode": "offscreen; isolated profile; zero-argument contract tests and unittest suites",
+          "scipy": "1.18.1",
+          "tested_file_sha256": {
+            "__init__.py": "bb1c44ba0a3f523be92100adadb446ba79758c8c19d435b6e00c03c43c4c8741",
+            "array_shape_utils.py": "0118a1d2cc8b13d7bab15d1380ccdb0fc7d0856f9b544d3817fd8a32c7e1ccb3",
+            "async_jobs.py": "3ba59212d01b2f861da12d4f86bace1634cc2db5158d66de6ed9fcd8d89f6db3",
+            "BestFitInterpolator.py": "2ee868024dd2c69fa2dbed8f874be335e6affdbde7b4f58560d8f9c7e9dad3ac",
+            "BestFitInterpolator_dialog_base.ui": "b6f20f043a1b12172415183260b674b2ccc89e810643e75cc0fef7da83ae1ed6",
+            "compat.py": "5b4c85dae4f869e528fb44fe9d494eafb324363f6e0ae7513c46cc4e174c3c57",
+            "diagnostics_engine.py": "234b93374813c1e633bc6394ab937065217c6dc9dbac01e518eb63d39fce2c70",
+            "diagnostics_plot.py": "798d777afd1011f22187d11d94105f9e72d11c4f720518893b1717ac19aa303c",
+            "diagnostics_table.py": "62e7a6531160a115b83e00dec427bf3d44a04b567883645835827e0c6c2bbf10",
+            "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
+            "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
+            "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
+            "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
+            "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
+            "icon.png": "a12ecdd331512880f8e2f8d431e8c9c50489f1a6c3a03a7de42d2f1372b5bfc9",
+            "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
+            "info.png": "10b3aa2ab1c87343b6f4078fd5bb8856be78504eb1b0243a1c2250b26a4a74f2",
+            "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
+            "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
+            "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
+            "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
+            "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
+            "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
+            "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
+            "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
+            "metadata.txt": "d2a4a0d8b6ca907ac9f16c184a5feefb1f2ded8362bd9800398ef97d9d0dc8e1",
+            "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+            "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
+            "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
+            "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
+            "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
+            "ok_mom_integration.py": "88e29d4b6e1e475be6bb044c4f2797f5315e39f134855432be2d5b809fd58497",
+            "ok_r_integration_MoM.py": "0283ba8330d76d9a57b98de24e107ac2cb4d4d22ab70cf5de3786cdadf8293b9",
+            "ok_r_integration_reml.py": "cb906f6d02e4838a408cae08efb5de14196c8e46061f5c7b300fe7cf9c47994a",
+            "ok_reml_integration.py": "fdb5dece217ced2c0e07b2d62aca91afdad8d6f96d586c2ac7946ed3669b3f08",
+            "performance_policy.py": "2af2a28e50699a00bef1e18084a3baa21c7062508972c2e90eec660b4cf4ff73",
+            "plugin_upload.py": "92a21d2d6a521236fbd5c030071e1684ed8d06efac789c954e8ef6ee9bfa754a",
+            "reml_bridge.py": "71e964bd12e46241ec2d3ff446f36e3b9a55356bf97c83f462331e2fe0ab7550",
+            "report_builder.py": "8ac8c14f22a767d396c01f58a2479641cff0e7cb7923e758a7d366cf329c0085",
+            "report_model.py": "e6ddc64c9e8e197aa49b8d3b77a5aed304db10186e86fc3fdcca3b5712af37d7",
+            "resources.py": "c28ecf2d6df48c495f3da8724ba3840e50d147a3367bb2e5ef2b803ecd3dbbfb",
+            "RF_Interpolation.py": "d93e0a28c888a1fbfdbed3d9cc198ba1e88e5f4e631726df2b7cf6e9d4c5cde4",
+            "RF_RegressionKriging.py": "b398f4af0b1e95ccbacb86e177a24a72ad6b9b6a4fca894d19a0f86962c598e7",
+            "semivariogram_dialog.py": "4d9caf334009bff89ad47ccb5cad478b669a8d8722669a9f82383f481d00aabe",
+            "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
+            "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
+            "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
+            "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
+            "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
+            "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
+            "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
+            "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
+            "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
+            "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
+          }
+        },
+        "session": {
+          "executed_at_utc": "2026-10-06T15:14:14.878078+00:00",
+          "qgis": "4.2.3-Belém do Pará",
+          "mode": "Real QGIS / Qt offscreen, isolated profile, synthetic datasets",
+          "window_sizes": [
+            [
+              1000,
+              700
+            ],
+            [
+              800,
+              600
+            ]
+          ],
+          "passed": [
+            "clean session after five close/reopen cycles",
+            "MoM / REML controller lifecycle",
+            "Moran, LISA and statistical outliers",
+            "Outlier diagnostic name and brief help for classes, parameters and review workflow",
+            "clickable Moran info, reused reading window and close with diagnostics",
+            "titles and button names without decorative ellipses or dashes",
+            "explicit exclusions and intact source layer",
+            "IDW / TPS / OK / RF / SVM / RK interpolation and validation",
+            "all main tabs and nested tabs at both window sizes",
+            "About logo enlarged to 144 logical pixels and contained at both sizes",
+            "visible RK Interpolate action",
+            "all six evaluated comparison alternatives",
+            "palette gradients and popup settings",
+            "covariates modal fits screen and retains editable scalar correlation",
+            "no palette on validation or validation Larger View",
+            "bordered IDW / TPS options",
+            "RF interpolate action only on Interpolation",
+            "side-by-side RK and shared Adjust dialog",
+            "standalone RK does not populate Framework output",
+            "real Full Framework covariate comparisons TPS / SVM, TPS / RF and TPS / RK",
+            "navigable Report overview and temporary browser HTML without a Save dialog, collapsible sections and embedded images",
+            "Comparison contains only maps, with validation metrics kept in Validation",
+            "Larger View preserves arrays, masks, colormap, normalization and limits",
+            "final TPS provenance survives independent IDW comparison",
+            "QGIS layer and GeoTIFF provenance",
+            "two PDF exports and previews",
+            "no Qt slot exceptions"
+          ],
+          "screenshots": [
+            "00_about.png",
+            "00b_small_about.png",
+            "01_data.png",
+            "01b_moran_outliers.png",
+            "01c_diagnostic_settings.png",
+            "01d_moran_information.png",
+            "01e_outlier_information_usage.png",
+            "02_deterministic_interpolation.png",
+            "03_deterministic_validation.png",
+            "04_kriging_interpolation.png",
+            "05_kriging_validation.png",
+            "06_ml_covariates.png",
+            "07_random_forest.png",
+            "07b_random_forest_validation.png",
+            "08_svm.png",
+            "08b_svm_validation.png",
+            "09_regression_kriging.png",
+            "10_rk_residual_parameters.png",
+            "10b_rk_adjust.png",
+            "10c_rk_grid_search.png",
+            "11_rk_validation.png",
+            "12_framework_0.png",
+            "12_framework_1.png",
+            "12_framework_2.png",
+            "12_framework_3.png",
+            "12_framework_4.png",
+            "12_framework_5.png",
+            "12_framework_6.png",
+            "13_comparison_maps_only.png",
+            "14_comparison_maps.png",
+            "15_comparison_settings.png",
+            "16_palette_settings.png",
+            "17_palette_choices.png",
+            "18_larger_view.png",
+            "18b_full_covariates.png",
+            "18c_small_covariates.png",
+            "19_small_screen_framework.png",
+            "19b_all_six_methods.png",
+            "20_small_screen_rk.png",
+            "21_compare_TPS_RFE.png",
+            "21_compare_TPS_RK.png",
+            "21_compare_TPS_SVM.png",
+            "22_report_0.png",
+            "22_report_1.png",
+            "22_report_2.png",
+            "22_report_3.png"
+          ],
+          "tested_file_sha256": {
+            "__init__.py": "bb1c44ba0a3f523be92100adadb446ba79758c8c19d435b6e00c03c43c4c8741",
+            "array_shape_utils.py": "0118a1d2cc8b13d7bab15d1380ccdb0fc7d0856f9b544d3817fd8a32c7e1ccb3",
+            "async_jobs.py": "3ba59212d01b2f861da12d4f86bace1634cc2db5158d66de6ed9fcd8d89f6db3",
+            "BestFitInterpolator.py": "2ee868024dd2c69fa2dbed8f874be335e6affdbde7b4f58560d8f9c7e9dad3ac",
+            "compat.py": "5b4c85dae4f869e528fb44fe9d494eafb324363f6e0ae7513c46cc4e174c3c57",
+            "diagnostics_engine.py": "234b93374813c1e633bc6394ab937065217c6dc9dbac01e518eb63d39fce2c70",
+            "diagnostics_plot.py": "798d777afd1011f22187d11d94105f9e72d11c4f720518893b1717ac19aa303c",
+            "diagnostics_table.py": "62e7a6531160a115b83e00dec427bf3d44a04b567883645835827e0c6c2bbf10",
+            "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
+            "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
+            "framework_sdi_dialog.py": "d247900f93e122284e2ee9100650808d701e7af69bdd6827ee6fab32c7d44a44",
+            "framework_tab.py": "77df401a3b328321a407563f00fe2d04e6bb2e226ed575d0dd74d447ddf27ab1",
+            "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
+            "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
+            "interpolation_result.py": "2f959bca99b1ff32ca44fc3069d830a15b2518871cbb466a3d6b567f790f852c",
+            "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
+            "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
+            "larger_view.py": "c86de7ce390ac34767848872c2102a5cf2934a90d509fdf1dacdf70be513ecc9",
+            "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
+            "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
+            "map_comparison_ui.py": "966a897c02d04699bafed10397d77d2a935e6b71b14233507477e600c7c4849a",
+            "map_controls.py": "19cc574135be3ab964652b23431d2732ab74f0db7903afa293bf7d03eeb849c6",
+            "ml_bootstrap.py": "a633f7423554a4a972cdcd295acfc754152dd574c94dc9f75c049a4078eeb1bb",
+            "mpl_compat.py": "ae95b7b1925ec03f368da56a452e9b8df80039fab34a6207d9e3581e71bf72e7",
+            "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
+            "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
+            "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
+            "ok_mom_integration.py": "88e29d4b6e1e475be6bb044c4f2797f5315e39f134855432be2d5b809fd58497",
+            "ok_r_integration_MoM.py": "0283ba8330d76d9a57b98de24e107ac2cb4d4d22ab70cf5de3786cdadf8293b9",
+            "ok_r_integration_reml.py": "cb906f6d02e4838a408cae08efb5de14196c8e46061f5c7b300fe7cf9c47994a",
+            "ok_reml_integration.py": "fdb5dece217ced2c0e07b2d62aca91afdad8d6f96d586c2ac7946ed3669b3f08",
+            "performance_policy.py": "2af2a28e50699a00bef1e18084a3baa21c7062508972c2e90eec660b4cf4ff73",
+            "plugin_upload.py": "92a21d2d6a521236fbd5c030071e1684ed8d06efac789c954e8ef6ee9bfa754a",
+            "reml_bridge.py": "71e964bd12e46241ec2d3ff446f36e3b9a55356bf97c83f462331e2fe0ab7550",
+            "report_builder.py": "8ac8c14f22a767d396c01f58a2479641cff0e7cb7923e758a7d366cf329c0085",
+            "report_model.py": "e6ddc64c9e8e197aa49b8d3b77a5aed304db10186e86fc3fdcca3b5712af37d7",
+            "resources.py": "c28ecf2d6df48c495f3da8724ba3840e50d147a3367bb2e5ef2b803ecd3dbbfb",
+            "RF_Interpolation.py": "d93e0a28c888a1fbfdbed3d9cc198ba1e88e5f4e631726df2b7cf6e9d4c5cde4",
+            "RF_RegressionKriging.py": "b398f4af0b1e95ccbacb86e177a24a72ad6b9b6a4fca894d19a0f86962c598e7",
+            "semivariogram_dialog.py": "4d9caf334009bff89ad47ccb5cad478b669a8d8722669a9f82383f481d00aabe",
+            "semivariogram_engine.py": "0632b1877abbeb6e1f5a2d0ad1076ea8ed75641ca1a1ebe80dd503d62c592a1e",
+            "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
+            "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
+            "theme.py": "a7bcc008bb488095cf51a58b3cbdb940dd5bb0e07c54f2b13892eaddaed6ffc4",
+            "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
+            "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
+            "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
+            "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
+            "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
+            "variogram_utils.py": "e41924c5089ee0af66e84d3543e2577368049c2d305f0308b27152012725fb68"
+          }
+        },
+        "cold_start": null,
+        "checked_regression_modes": [
+          "manual",
+          "grid"
+        ],
+        "screenshot_hashes": {
+          "comparison-preview.png": "cded70f388c0dcd1f1c8ae50c9fba70be950a5fd6ee35b5981a9777ac2aee3a9",
+          "data-preview.png": "be2e39df165dac9cc07a9d1e30de07768436a5c1bff16056240922f9e3651456",
+          "data-return-preview.png": "be2e39df165dac9cc07a9d1e30de07768436a5c1bff16056240922f9e3651456",
+          "deterministic-options-1000.png": "408bf7a047dbd451d6292cb2cea18807b4fa8215cb808718056469f6228d6997",
+          "deterministic-options-800.png": "3bf66099a709000f8f3d8f8a5f3bb91491592d6d3a67e2075e5a576e28fce981",
+          "framework-validation-MoM.png": "06aeab015ac4744ef47b1c7c972061049c13155dd6d2ca6d115e623c7db28359",
+          "framework-validation-REML.png": "0fafce91e03c686909fe5a887711148d404ab2b7bcdd6aaab56f697507902de5",
+          "groupIDWOptions-1000.png": "27ae17bb8608384eb14c6db91ec53e9d5bbc48eb35f776ddb42454e7baaa713f",
+          "groupIDWOptions-800.png": "35b61b891724c0dc4a063608286418dae68ec35112afe7277cf78b6b3fc6217a",
+          "groupTPSOptions-1000.png": "2fd4fe6d90d7083f0884949a48c067c03b3604491232a959b6b633e8c891a562",
+          "groupTPSOptions-800.png": "2fd4fe6d90d7083f0884949a48c067c03b3604491232a959b6b633e8c891a562",
+          "idw-larger-view.png": "51577108efd8f26ac073484a63535d8540fa192b274e57930c10cf511431898b",
+          "idw-optimized-preview.png": "00b340a6b738aae8a23e849312ecc9abfc4a097e20ba26a525f21d30e4cce1f0",
+          "idw-return-preview.png": "00b340a6b738aae8a23e849312ecc9abfc4a097e20ba26a525f21d30e4cce1f0",
+          "return-0-REML.png": "9c77e80d1a30accd922b38d6b72f957972ed48073b8cae44f9e4fa85e2f3db75",
+          "return-1-MoM.png": "d2dc1050d390e9ede47ee8250c64c0a4df931fe40713c61ebc807a3300a6006b",
+          "return-2-REML.png": "9e182168fdf737d4e158b7c7fbce442d03f49c4e10406620c10be991139ec612",
+          "return-3-MoM.png": "d2dc1050d390e9ede47ee8250c64c0a4df931fe40713c61ebc807a3300a6006b",
+          "return-4-REML.png": "9e182168fdf737d4e158b7c7fbce442d03f49c4e10406620c10be991139ec612",
+          "return-5-MoM.png": "f0b7dde8bed020f13f9a7a264314b8e0fc802f7a2ad4149db80060ca51ecd4ec",
+          "semivariogram-preview.png": "97f79977b9c3ddc606e159d481e5237b9347976444fb02d276d759b4e5282665",
+          "switch-0-REML.png": "fdaf5195d284d186a25f4d50f35dbf5b411715c9a6f3ecfb0e3204b334e4a7f6",
+          "switch-1-MoM.png": "f3f69dc547869d2ef0235879b7eec60f42030e76d8eee346ccb41b15b32e2ef2",
+          "switch-2-REML.png": "c068b43b8f00dc6ab70ce81f440835ed980b066b32e88e321dd26909f5b6274e",
+          "switch-3-MoM.png": "f3f69dc547869d2ef0235879b7eec60f42030e76d8eee346ccb41b15b32e2ef2",
+          "switch-4-REML.png": "c068b43b8f00dc6ab70ce81f440835ed980b066b32e88e321dd26909f5b6274e",
+          "switch-5-MoM.png": "d7b633e9f65a851cd567b1ecb9b540aa6de8b252b9e9a053b3f9cb5bad1f50cd",
+          "validated-MoM.png": "97f79977b9c3ddc606e159d481e5237b9347976444fb02d276d759b4e5282665",
+          "validated-REML.png": "c068b43b8f00dc6ab70ce81f440835ed980b066b32e88e321dd26909f5b6274e"
+        }
+      }
+    },
+    "mathematical_behavior_changed": false,
+    "ci": {
+      "head": "d9e7a6f2d9bc55281adfcf73787484f6c29da5d4",
+      "full_run": "https://github.com/ladelgadobe/BestFitInterpolation/actions/runs/37416187749",
+      "fast_run": "https://github.com/ladelgadobe/BestFitInterpolation/actions/runs/37416190955",
+      "actual_versions": [
+        "3.14.15-Pi",
+        "3.16.16-Hannover",
+        "3.18.3-Zürich",
+        "3.20.3-Odense",
+        "3.22.16-Białowieża",
+        "3.24.3-Tisler",
+        "3.26.3-Buenos Aires",
+        "3.28.15-Firenze",
+        "3.30.3-'s-Hertogenbosch",
+        "3.32.3-Lima",
+        "3.34.15-Prizren",
+        "3.36.3-Maidenhead",
+        "3.38.3-Grenoble",
+        "3.40.15-Bratislava",
+        "3.42.3-Münster",
+        "3.44.15-Solothurn",
+        "4.0.3-Norrköping",
+        "4.2.3-Belém do Pará"
+      ],
+      "required_stable_targets": 18,
+      "blocks_per_target": 13,
+      "maximum_absolute_fixture_difference": 3.4416913763379853e-15,
+      "exact_lisa_classes": true,
+      "checker": {
+        "status": "STATICALLY_CHECKED",
+        "image_tag": "ghcr.io/qgis/pyqgis4-checker:main-ubuntu",
+        "mode": "dry_run",
+        "source_modified": false,
+        "image_digest": "ghcr.io/qgis/pyqgis4-checker@sha256:c96df111845eb0c86ad56364fb792d35fa6931e01d3d629d2b1bc6388ed43ece",
+        "returncode": 0,
+        "review_required": true
+      }
+    },
+    "portability_contract": "Every runtime checks forced native-int32 exact/sampled bins, wide pair ordinals, RF manual/grid residual fitting, and unchanged committed numerical fixtures.",
+    "future_coverage": "Required full matrix includes every stable 3.x minor from 3.14 through 3.44 and every released stable 4.x minor. Latest 4.x and its intermediate minors are discovered automatically; weekly nightly is informational.",
+    "limits": "Measured real QGIS/Qt offscreen, synthetic layers and an iface double. Future API and dependency changes require new CI evidence."
+  }
 }
