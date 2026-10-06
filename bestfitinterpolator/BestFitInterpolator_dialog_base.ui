@@ -340,7 +340,7 @@
               <item row="7" column="0" colspan="2">
                <widget class="QRadioButton" name="radCVAuto">
                 <property name="toolTip">
-                 <string>Automatic uses LOOCV for n &lt;= 100 and changes to K-Fold from n = 101 (10 folds through n = 1000; 5 folds above 1000).</string>
+                 <string>Automatic uses LOOCV for n &lt;= 100 and changes to K Fold from n = 101 (10 folds through n = 500; 5 folds above 500).</string>
                 </property>
                 <property name="text">
                  <string>Auto</string>
@@ -367,7 +367,7 @@
               <item row="9" column="0">
                <widget class="QRadioButton" name="radCVKFold">
                 <property name="text">
-                 <string>K-Fold</string>
+                 <string>K Fold</string>
                 </property>
                </widget>
               </item>
@@ -395,7 +395,7 @@
               <item row="8" column="0" colspan="2">
                <widget class="QRadioButton" name="radCVLOOCV">
                 <property name="text">
-                 <string>Leave-One-Out (LOOCV)</string>
+                 <string>Leave One Out (LOOCV)</string>
                 </property>
                </widget>
               </item>
@@ -421,7 +421,7 @@
               <item row="10" column="0" colspan="2">
                <widget class="QPushButton" name="btnRunCV">
                 <property name="text">
-                 <string>Run Cross-Validation</string>
+                 <string>Run Cross Validation</string>
                 </property>
                </widget>
               </item>
@@ -638,14 +638,14 @@
                 <item row="6" column="0">
                  <widget class="QPushButton" name="btnOKReset">
                   <property name="text">
-                   <string>Reset…</string>
+                   <string>Reset</string>
                   </property>
                  </widget>
                 </item>
                 <item row="6" column="1">
                  <widget class="QPushButton" name="btnOKCalculate">
                   <property name="text">
-                   <string>Calculate…</string>
+                   <string>Calculate</string>
                   </property>
                  </widget>
                 </item>
@@ -805,7 +805,7 @@
            <item>
             <widget class="QPushButton" name="btnOKInterpolate">
              <property name="text">
-              <string>Interpolate…</string>
+              <string>Interpolate</string>
              </property>
             </widget>
            </item>
@@ -856,7 +856,7 @@
                      <item row="9" column="0">
                       <widget class="QRadioButton" name="radCV_OK_Kfold">
                        <property name="text">
-                        <string>K-Fold</string>
+                        <string>K Fold</string>
                        </property>
                       </widget>
                      </item>
@@ -928,7 +928,7 @@
                      <item row="8" column="0" colspan="2">
                       <widget class="QRadioButton" name="radCV_OK_LOOCV">
                        <property name="text">
-                        <string>Leave-One-Out (LOOCV)</string>
+                        <string>Leave One Out (LOOCV)</string>
                        </property>
                       </widget>
                      </item>
@@ -963,7 +963,7 @@
                      <item row="10" column="0" colspan="2">
                       <widget class="QPushButton" name="btn_OKRunCV">
                        <property name="text">
-                        <string>Run Cross-Validation</string>
+                        <string>Run Cross Validation</string>
                        </property>
                       </widget>
                      </item>
@@ -1179,7 +1179,7 @@
                      <widget class="QComboBox" name="cmbStandardizeMethod">
                       <item>
                        <property name="text">
-                        <string>Z-score</string>
+                        <string>Z score</string>
                        </property>
                       </item>
                       <item>
@@ -1616,12 +1616,12 @@
                     <property name="toolTip">
                      <string>Only used when Grid Search is enabled.
 
-Number of cross-validation folds used to evaluate candidate hyperparameters. Lower values are faster. Recommended: 3 for most computers, 5 only for smaller datasets or more robust tuning.</string>
+Number of cross validation folds used to evaluate candidate hyperparameters. Lower values are faster. Recommended: 3 for most computers, 5 only for smaller datasets or more robust tuning.</string>
                     </property>
                     <property name="whatsThis">
                      <string>Only used when Grid Search is enabled.
 
-Number of cross-validation folds used to evaluate candidate hyperparameters. Lower values are faster. Recommended: 3 for most computers, 5 only for smaller datasets or more robust tuning.</string>
+Number of cross validation folds used to evaluate candidate hyperparameters. Lower values are faster. Recommended: 3 for most computers, 5 only for smaller datasets or more robust tuning.</string>
                     </property>
                     <property name="minimum">
                      <number>2</number>
@@ -1900,14 +1900,14 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                          <item row="8" column="0" colspan="2">
                           <widget class="QRadioButton" name="radRF_CV_LOOCV">
                            <property name="text">
-                            <string>Leave-One-Out (LOOCV)</string>
+                            <string>Leave One Out (LOOCV)</string>
                            </property>
                           </widget>
                          </item>
                          <item row="9" column="0">
                           <widget class="QRadioButton" name="radRF_CV_KFold">
                            <property name="text">
-                            <string>K-Fold</string>
+                            <string>K Fold</string>
                            </property>
                           </widget>
                          </item>
@@ -1933,7 +1933,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                          <item row="10" column="0" colspan="2">
                           <widget class="QPushButton" name="btnRFRunCV">
                            <property name="text">
-                            <string>Run Cross-Validation</string>
+                            <string>Run Cross Validation</string>
                            </property>
                           </widget>
                          </item>
@@ -2571,10 +2571,10 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                         <item row="4" column="2">
                          <widget class="QToolButton" name="btnInfoSVMSearchK">
                           <property name="toolTip">
-                           <string>Only used when Grid Search is enabled. Number of cross-validation folds used to compare candidate SVM hyperparameters. Lower values are faster; higher values are usually more robust but slower.</string>
+                           <string>Only used when Grid Search is enabled. Number of cross validation folds used to compare candidate SVM hyperparameters. Lower values are faster; higher values are usually more robust but slower.</string>
                           </property>
                           <property name="whatsThis">
-                           <string>Only used when Grid Search is enabled. Number of cross-validation folds used to compare candidate SVM hyperparameters. Lower values are faster; higher values are usually more robust but slower.</string>
+                           <string>Only used when Grid Search is enabled. Number of cross validation folds used to compare candidate SVM hyperparameters. Lower values are faster; higher values are usually more robust but slower.</string>
                           </property>
                           <property name="text">
                            <string/>
@@ -2803,7 +2803,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                   <item row="8" column="0">
                    <widget class="QRadioButton" name="radSVM_CV_KFold">
                     <property name="text">
-                     <string>K-Fold</string>
+                     <string>K Fold</string>
                     </property>
                    </widget>
                   </item>
@@ -2826,7 +2826,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                   <item row="9" column="0" colspan="2">
                    <widget class="QPushButton" name="btnSVMRunCV">
                     <property name="text">
-                     <string>Run cross-validation</string>
+                     <string>Run cross validation</string>
                     </property>
                    </widget>
                   </item>
@@ -3582,7 +3582,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                     <item row="9" column="0">
                      <widget class="QRadioButton" name="radRK_CV_KFold">
                       <property name="text">
-                       <string>K-Fold</string>
+                       <string>K Fold</string>
                       </property>
                      </widget>
                     </item>
@@ -3605,7 +3605,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                     <item row="10" column="0" colspan="2">
                      <widget class="QPushButton" name="btnRKRunCV">
                       <property name="text">
-                       <string>Run RK cross-validation</string>
+                       <string>Run RK cross validation</string>
                       </property>
                      </widget>
                     </item>
@@ -3781,7 +3781,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                <item row="4" column="0">
                 <widget class="QLabel" name="lblFrameworkPValueValue_title">
                  <property name="text">
-                  <string>p-value</string>
+                  <string>p value</string>
                  </property>
                 </widget>
                </item>
@@ -4252,7 +4252,7 @@ Maximum number of random-search iterations to try. Lower values are faster. Reco
                     </item>
                     <item>
                      <property name="text">
-                      <string>Z-score</string>
+                      <string>Z score</string>
                      </property>
                     </item>
                     <item>

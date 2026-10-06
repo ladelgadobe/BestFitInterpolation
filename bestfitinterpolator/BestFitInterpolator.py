@@ -1,25 +1,36 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 BestFitInterpolator.py
 Main plugin entry point and dialog orchestration.
 All code comments are in English. User-facing messages are in English.
 """
+from .theme import save_figure
+from .compat import enum_value, qt_exec
+from .theme import COLORS
 
+from .compat import QAction, is_alive, log_exception
+from .theme import apply_theme
 import os
 import uuid
 import tempfile
 import math
 import configparser
+import hashlib
+from .diagnostics_ui import feature_in_analysis
+from .compat import geometry_type, enum_value
 import numpy as np
 import random
+import textwrap
+from typing import Optional
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QVariant, Qt, QUrl
 from qgis.PyQt.QtGui import QDesktopServices, QIcon, QPixmap
 from qgis.PyQt.QtWidgets import (
-    QAction, QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget,
+    QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QTabWidget,
     QProgressDialog, QFileDialog, QMenu, QMessageBox,
-    QSizePolicy, QGroupBox, QLabel, QPushButton, QWidget
+    QSizePolicy, QGroupBox, QLabel, QPushButton, QWidget, QToolButton,
+    QComboBox, QButtonGroup
 )
 from qgis.core import (
     QgsProject,
@@ -34,8 +45,8 @@ from qgis.core import (
 
 from matplotlib.path import Path
 from matplotlib.patches import Polygon as MplPolygon
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from .mpl_compat import FigureCanvas
 
 from osgeo import gdal, osr
 
@@ -51,6 +62,19 @@ from .array_shape_utils import (
 )
 from .ml_bootstrap import _add_deps_to_sys_path
 from .notifications import PopupIfaceProxy
+from .spatial_diagnostics import compute_moran_index_knn
+from .performance_policy import (
+    DENSE_SAMPLE_THRESHOLD,
+    MASSIVE_SAMPLE_THRESHOLD,
+    PLOT_HEXBIN_GRIDSIZE,
+    dense_method_notice,
+    dataset_scale_label,
+    is_dense_dataset,
+    massive_data_capacity_note,
+    moran_permutation_count,
+    should_hexbin_plot,
+    should_rasterize_scatter,
+)
 from .validation_policy import AUTO_CV_HELP_TEXT, decide_automatic_cv
 
 
@@ -102,16 +126,17 @@ class BestFitInterpolatorDialog(QDialog):
         # --- ADD THIS BLOCK: show minimize / maximize / close buttons ---
         flags = self.windowFlags()
         # Make sure it behaves as a normal top-level window
-        flags |= Qt.Window
+        flags |= enum_value(Qt, "WindowType", "Window")
         # Add minimize and maximize buttons
-        flags |= Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint
+        flags |= enum_value(Qt, "WindowType", "WindowMinimizeButtonHint") | enum_value(Qt, "WindowType", "WindowMaximizeButtonHint")
         # Remove the "?" help button if it appears
-        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowFlag(enum_value(Qt, "WindowType", "WindowContextHelpButtonHint"), False)
         # Apply the updated flags
         self.setWindowFlags(flags)
         # ---------------------------------------------------------------
 
         self._add_about_tab(plugin_dir)
+        apply_theme(self)
 
     @staticmethod
     def _read_plugin_metadata(plugin_dir):
@@ -167,25 +192,29 @@ class BestFitInterpolatorDialog(QDialog):
         root_layout = QVBoxLayout(about_tab)
         root_layout.setContentsMargins(22, 18, 22, 18)
         root_layout.setSpacing(12)
-        root_layout.setAlignment(Qt.AlignTop)
+        root_layout.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignTop"))
 
         header_layout = QHBoxLayout()
         header_layout.setSpacing(14)
-        header_layout.setAlignment(Qt.AlignTop)
+        header_layout.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignTop"))
         icon_label = QLabel(about_tab)
-        icon_label.setFixedSize(64, 64)
-        icon_label.setAlignment(Qt.AlignCenter)
+        icon_label.setObjectName("lblAboutLogo")
+        icon_label.setAccessibleName("Best Fit Interpolator logo")
+        logo_size = 144
+        icon_label.setFixedSize(logo_size, logo_size)
+        icon_label.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignCenter"))
         icon_path = os.path.join(plugin_dir, "icon.png")
         icon_pixmap = QPixmap(icon_path)
         if not icon_pixmap.isNull():
-            icon_label.setPixmap(
-                icon_pixmap.scaled(
-                    64,
-                    64,
-                    Qt.KeepAspectRatio,
-                    Qt.SmoothTransformation,
-                )
+            pixel_ratio = icon_label.devicePixelRatioF()
+            logo_pixmap = icon_pixmap.scaled(
+                int(logo_size * pixel_ratio),
+                int(logo_size * pixel_ratio),
+                enum_value(Qt, "AspectRatioMode", "KeepAspectRatio"),
+                enum_value(Qt, "TransformationMode", "SmoothTransformation"),
             )
+            logo_pixmap.setDevicePixelRatio(pixel_ratio)
+            icon_label.setPixmap(logo_pixmap)
         header_layout.addWidget(icon_label)
 
         heading_layout = QVBoxLayout()
@@ -340,21 +369,24 @@ class BestFitInterpolatorDialog(QDialog):
             )
 
     def closeEvent(self, event):
-        """Ask for confirmation before closing the plugin dialog."""
+        """Confirm closure and mark the session for a clean next opening."""
         try:
             reply = QMessageBox.question(
                 self,
                 "Close Best Fit Interpolator",
                 "Are you sure you want to close Best Fit Interpolator? Any unsaved progress in the plugin window will be lost.",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
+                enum_value(QMessageBox, "StandardButton", "Yes") | enum_value(QMessageBox, "StandardButton", "No"),
+                enum_value(QMessageBox, "StandardButton", "No"),
             )
-            if reply == QMessageBox.Yes:
-                event.accept()
-            else:
+            if reply != enum_value(QMessageBox, "StandardButton", "Yes"):
                 event.ignore()
+                return
         except Exception:
-            event.accept()
+            pass
+        plugin = getattr(self, "_bfi_plugin", None)
+        if plugin is not None:
+            plugin._on_dialog_closed()
+        event.accept()
 
 
 # -------------------------------- Main plugin ---------------------------------
@@ -374,7 +406,7 @@ class BestFitInterpolator:
         self.iface = PopupIfaceProxy(iface)
         self.plugin_dir = os.path.dirname(__file__)
 
-        locale = QSettings().value('locale/userLocale')[0:2]
+        locale = str(QSettings().value('locale/userLocale', 'en'))[0:2]
         locale_path = os.path.join(self.plugin_dir, 'i18n', f'BestFitInterpolator_{locale}.qm')
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -413,6 +445,7 @@ class BestFitInterpolator:
         # by previews, validation and interpolation.
         self._incomplete_data_warning_keys = set()
         self._spatial_coverage_warning_keys = set()
+        self._moran_cache = {}
 
         # Output directory inside the QGIS project folder
         self.output_dir = None
@@ -477,9 +510,18 @@ class BestFitInterpolator:
         self.first_start = True
 
     def unload(self):
+        self._disconnect_input_layer()
+        self._disconnect_project_signals()
+        if self.ok_ctrl is not None:
+            self.ok_ctrl.dispose()
+        if is_alive(getattr(self,"dlg",None)):
+            self.dlg.hide()
+            self.dlg.deleteLater()
         for action in self.actions:
             self.iface.removePluginMenu(self.tr(u'&Best Fit Interpolator'), action)
             self.iface.removeToolBarIcon(action)
+            action.deleteLater()
+        self.actions = []
 
     # -------------------------- Project & paths helpers --------------------------
 
@@ -703,7 +745,9 @@ class BestFitInterpolator:
         except Exception:  # nosec B110
             pass
         try:
-            self._sync_framework_from_current_data()
+            current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
+            if self._is_framework_tab(current_label):
+                self._sync_framework_from_current_data()
         except Exception:  # nosec B110
             pass
 
@@ -823,26 +867,16 @@ class BestFitInterpolator:
         self._clear_all_validation_metric_labels()
 
     def _info_toolbutton(self, tooltip: str):
-        lbl = QLabel(self.dlg)
-        lbl.setObjectName(f"lblInfo_{uuid.uuid4().hex[:8]}")
-        lbl.setFocusPolicy(Qt.NoFocus)
-        lbl.setToolTip(tooltip)
-        lbl.setFixedSize(18, 18)
-        try:
-            icon_path = os.path.join(self.plugin_dir, "info.png")
-            if os.path.exists(icon_path):
-                lbl.setPixmap(QPixmap(icon_path))
-                lbl.setScaledContents(True)
-        except Exception:  # nosec B110
-            pass
-        return lbl
+        from .theme import InfoButton
+        button = InfoButton(tooltip, self.dlg)
+        button.setFocusPolicy(enum_value(Qt, "FocusPolicy", "NoFocus"))
+        button.setFixedSize(22, 22)
+        return button
 
     def _add_info_icon_next_to_widget(self, widget_name: str, tooltip: str) -> None:
         """Add the standard hover info icon beside an existing widget."""
-        if getattr(self, f"_info_added_{widget_name}", False):
-            return
         widget = getattr(self.dlg, widget_name, None)
-        if widget is None:
+        if widget is None or widget.property('bfiInfoAdded'):
             return
         try:
             parent = widget.parentWidget()
@@ -860,7 +894,7 @@ class BestFitInterpolator:
                 layout.addWidget(icon, row, col + max(1, colspan - 1), 1, 1)
             else:
                 layout.addWidget(icon, row, col + 1, 1, 1)
-            setattr(self, f"_info_added_{widget_name}", True)
+            widget.setProperty('bfiInfoAdded',True)
         except Exception:  # nosec B110
             pass
 
@@ -877,10 +911,107 @@ class BestFitInterpolator:
             if widget is not None and hasattr(widget, "setToolTip"):
                 widget.setToolTip(AUTO_CV_HELP_TEXT)
 
+    def _ensure_data_profile_info_button(self) -> None:
+        """Add a clickable Data-tab info icon for sample-count profile classes."""
+        if self.dlg.findChild(QWidget,'widgetDataProfileInfo') is not None:
+            return
+        grid = getattr(self.dlg, "gridLayout_data", None)
+        if grid is None:
+            return
+        container = QWidget(self.dlg)
+        container.setObjectName("widgetDataProfileInfo")
+        row_layout = QHBoxLayout(container)
+        row_layout.setContentsMargins(0, 0, 0, 0)
+        row_layout.setSpacing(6)
+        label = QLabel("Data profile classification", container)
+        label.setObjectName("lblDataProfileInfo")
+        label.setToolTip("Normal, dense, and massive profiles used by the plugin.")
+        row_layout.addWidget(label)
+        button = QToolButton(self.dlg)
+        button.setObjectName("btnDataProfileInfo")
+        button.setToolTip("Show the sample-count profile classes used by the plugin.")
+        button.setAutoRaise(True)
+        button.setFocusPolicy(enum_value(Qt, "FocusPolicy", "NoFocus"))
+        button.setFixedSize(22, 22)
+        try:
+            icon_path = os.path.join(self.plugin_dir, "info.png")
+            if os.path.exists(icon_path):
+                button.setIcon(QIcon(icon_path))
+                button.setIconSize(button.size())
+            else:
+                button.setText("i")
+        except Exception:
+            button.setText("i")
+        try:
+            button.clicked.connect(self._show_data_profile_info)
+        except Exception:  # nosec B110
+            pass
+        row_layout.addWidget(button)
+        row_layout.addStretch(1)
+        try:
+            grid.addWidget(container, 3, 0, 1, 6)
+        except Exception:
+            try:
+                grid.addWidget(container, 2, 6, 1, 1)
+            except Exception:  # nosec B110
+                return
+        self.lbl_data_profile_info = label
+        self.btn_data_profile_info = button
+        self._data_profile_info_added = True
+
+    def _current_valid_sample_count(self) -> int:
+        """Count finite values for the current Data-tab point layer and variable."""
+        try:
+            points_layer_name = self.dlg.Points.currentText().strip()
+            variable_name = self.dlg.Points_2.currentText().strip()
+        except Exception:
+            return 0
+        if not points_layer_name or not variable_name:
+            return 0
+        layers = QgsProject.instance().mapLayersByName(points_layer_name)
+        if not layers:
+            return 0
+        count = 0
+        for feature in layers[0].getFeatures():
+            geom = feature.geometry()
+            if geom is None or geom.isEmpty():
+                continue
+            try:
+                value = float(feature[variable_name])
+            except Exception:  # nosec B112
+                continue
+            if np.isfinite(value):
+                count += 1
+        return int(count)
+
+    def _show_data_profile_info(self) -> None:
+        """Show only the user-facing data classification, not method internals."""
+        sample_count = self._current_valid_sample_count()
+        current = "Current selection: no valid variable selected yet."
+        if sample_count > 0:
+            current = (
+                f"Current selection: {sample_count:,} valid samples "
+                f"→ {dataset_scale_label(sample_count)}."
+            )
+        QMessageBox.information(
+            self.dlg,
+            "Data profile classification",
+            (
+                "Best Fit Interpolator classifies the selected point dataset by "
+                "valid sample count:\n\n"
+                f"• Normal: up to {DENSE_SAMPLE_THRESHOLD:,} valid samples.\n"
+                f"• Dense: {DENSE_SAMPLE_THRESHOLD + 1:,} to "
+                f"{MASSIVE_SAMPLE_THRESHOLD:,} valid samples.\n"
+                f"• Massive: more than {MASSIVE_SAMPLE_THRESHOLD:,} valid samples.\n\n"
+                f"{massive_data_capacity_note(sample_count if sample_count > 0 else None)}\n\n"
+                f"{current}"
+            ),
+        )
+
     def _polish_deterministic_options_layout(self):
         """Group IDW and TPS controls separately and add hover help for IDW parameters."""
         group = getattr(self.dlg, "groupDetOptions", None)
-        if group is None or getattr(self, "_det_options_polished", False):
+        if group is None or group.property("bfiDetOptionsPolished"):
             return
 
         controls = [
@@ -920,6 +1051,7 @@ class BestFitInterpolator:
 
         idw_group = QGroupBox("IDW", group)
         idw_group.setObjectName("groupIDWOptions")
+        idw_group.setProperty("bfiSection", True)
         idw_layout = QGridLayout(idw_group)
         idw_layout.setContentsMargins(8, 8, 8, 8)
         idw_layout.setHorizontalSpacing(6)
@@ -927,6 +1059,7 @@ class BestFitInterpolator:
 
         tps_group = QGroupBox("TPS", group)
         tps_group.setObjectName("groupTPSOptions")
+        tps_group.setProperty("bfiSection", True)
         tps_layout = QHBoxLayout(tps_group)
         tps_layout.setContentsMargins(8, 8, 8, 8)
 
@@ -946,19 +1079,19 @@ class BestFitInterpolator:
                 widget.setToolTip(tip)
 
         if getattr(self.dlg, "radManualParams", None) is not None:
-            idw_layout.addWidget(self.dlg.radManualParams, 0, 0, 1, 1)
+            idw_layout.addWidget(self.dlg.radManualParams, 0, 0, 1, 3)
         if getattr(self.dlg, "lblNeighbors", None) is not None:
-            idw_layout.addWidget(self.dlg.lblNeighbors, 0, 1, 1, 1)
-        idw_layout.addWidget(self._info_toolbutton(neighbor_tip), 0, 2, 1, 1)
+            idw_layout.addWidget(self.dlg.lblNeighbors, 1, 0, 1, 1)
+        idw_layout.addWidget(self._info_toolbutton(neighbor_tip), 1, 1, 1, 1)
         if getattr(self.dlg, "spinNeighbors", None) is not None:
-            idw_layout.addWidget(self.dlg.spinNeighbors, 0, 3, 1, 1)
+            idw_layout.addWidget(self.dlg.spinNeighbors, 1, 2, 1, 1)
         if getattr(self.dlg, "lblPower", None) is not None:
-            idw_layout.addWidget(self.dlg.lblPower, 0, 4, 1, 1)
-        idw_layout.addWidget(self._info_toolbutton(power_tip), 0, 5, 1, 1)
+            idw_layout.addWidget(self.dlg.lblPower, 1, 3, 1, 1)
+        idw_layout.addWidget(self._info_toolbutton(power_tip), 1, 4, 1, 1)
         if getattr(self.dlg, "spinPower", None) is not None:
-            idw_layout.addWidget(self.dlg.spinPower, 0, 6, 1, 1)
+            idw_layout.addWidget(self.dlg.spinPower, 1, 5, 1, 1)
         if getattr(self.dlg, "chkOptimize", None) is not None:
-            idw_layout.addWidget(self.dlg.chkOptimize, 0, 7, 1, 1)
+            idw_layout.addWidget(self.dlg.chkOptimize, 0, 3, 1, 3)
 
         if getattr(self.dlg, "chkTPS", None) is not None:
             tps_layout.addWidget(self.dlg.chkTPS)
@@ -976,7 +1109,9 @@ class BestFitInterpolator:
         except Exception:  # nosec B110
             pass
 
-        self._det_options_polished = True
+        self.dlg.groupIDWOptions = idw_group
+        self.dlg.groupTPSOptions = tps_group
+        group.setProperty("bfiDetOptionsPolished", True)
 
     def _move_metric_pair(self, grid, row: int, label_name: str, value_name: str, label_text: str):
         label = getattr(self.dlg, label_name, None)
@@ -1092,8 +1227,8 @@ class BestFitInterpolator:
     def _stabilize_canvas_widget(self, canvas):
         """Keep Matplotlib canvases from resizing their parent after redraws."""
         try:
-            canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            canvas.setMinimumSize(1, 1)
+            canvas.setSizePolicy(enum_value(QSizePolicy, "Policy", "Expanding"), enum_value(QSizePolicy, "Policy", "Expanding"))
+            canvas.setMinimumSize(120, 160)
             canvas.updateGeometry()
         except Exception:  # nosec B110
             pass
@@ -1117,6 +1252,12 @@ class BestFitInterpolator:
             or getattr(self.dlg, 'chkTPS', None)
             or getattr(self.dlg, 'radTPS', None)
         )
+        self._det_mode_group=QButtonGroup(self.dlg)
+        self._det_mode_group.setExclusive(True)
+        for button in (self.btn_idw_opt,self.btn_idw_man,self.btn_tps):
+            if button is not None:
+                button.setAutoExclusive(False)
+                self._det_mode_group.addButton(button)
 
         if self.btn_idw_opt is not None:
             try:
@@ -1147,8 +1288,6 @@ class BestFitInterpolator:
 
     def _on_option_toggled(self, who: str, state: bool):
         if not state:
-            if not self._any_option_checked():
-                self._select_default_option()
             self._apply_mode_ui()
             return
         if who == 'opt':
@@ -1189,6 +1328,9 @@ class BestFitInterpolator:
 
     def _apply_mode_ui(self):
         is_manual = (self._current_mode == self.MODE_IDW_MAN)
+        for name in ('lblNeighbors','lblPower'):
+            label=getattr(self.dlg,name,None)
+            if label is not None: label.setEnabled(is_manual)
         if hasattr(self.dlg, 'manualNInput') and self.dlg.manualNInput is not None:
             try:
                 self.dlg.manualNInput.setEnabled(is_manual)
@@ -1247,8 +1389,8 @@ class BestFitInterpolator:
         on_changed()
 
     def _wire_ok_cv_controls(self):
-        """Wire CV widgets (Kriging) and enable the spin box only for K-fold."""
-        # Guardar referencias directas
+        """Wire CV widgets (Kriging) and enable the spin box only for K fold."""
+        # Store direct control references.
         self.rad_cv_ok_auto  = getattr(self.dlg, 'radCV_OK_Auto', None)
         self.rad_cv_ok_loocv = getattr(self.dlg, 'radCV_OK_LOOCV', None)
         self.rad_cv_ok_kfold = getattr(self.dlg, 'radCV_OK_Kfold', None)
@@ -1321,6 +1463,7 @@ class BestFitInterpolator:
         interp_container = getattr(self.dlg, "canvasDetInterpolation", None)
         self.det_interp_fig = Figure(figsize=(5, 4))
         self.det_interp_canvas = FigureCanvas(self.det_interp_fig)
+        self.det_interp_canvas._bfi_is_map = True
         self._stabilize_canvas_widget(self.det_interp_canvas)
         if interp_container is not None:
             ilayout = self._ensure_layout(interp_container)
@@ -1334,6 +1477,8 @@ class BestFitInterpolator:
         val_container = getattr(self.dlg, "canvasDetValidation", None)
         self.det_val_fig = Figure(figsize=(5, 4))
         self.det_val_canvas = FigureCanvas(self.det_val_fig)
+        from .map_controls import disable_display_settings
+        disable_display_settings(self.det_val_canvas)
         self._stabilize_canvas_widget(self.det_val_canvas)
         if val_container is not None:
             vlayout = self._ensure_layout(val_container)
@@ -1349,6 +1494,7 @@ class BestFitInterpolator:
         data_container = getattr(self.dlg, "canvasData", None)
         self.data_fig = Figure(figsize=(5, 4))
         self.data_canvas = FigureCanvas(self.data_fig)
+        self.data_canvas._bfi_is_map = True
         self._stabilize_canvas_widget(self.data_canvas)
         if data_container is not None:
             dlayout = self._ensure_layout(data_container)
@@ -1369,6 +1515,8 @@ class BestFitInterpolator:
         if self.ok_cv_fig is None:
             self.ok_cv_fig = Figure(figsize=(5, 4))
         self.ok_cv_canvas = FigureCanvas(self.ok_cv_fig)
+        from .map_controls import disable_display_settings
+        disable_display_settings(self.ok_cv_canvas)
         self._stabilize_canvas_widget(self.ok_cv_canvas)
         layout = self._ensure_layout(okcv_container)
         for i in reversed(range(layout.count())):
@@ -1381,7 +1529,7 @@ class BestFitInterpolator:
     # ----------------------------- Save PNG hooks -----------------------------
 
     def _install_save_png_handler(self, canvas, fig, default_prefix: str):
-        """Install a right-click context menu ('Save graph...') on a Matplotlib canvas."""
+        """Install a right-click context menu ('Save graph') on a Matplotlib canvas."""
         try:
             key = id(canvas)
             if key in self._save_handlers or canvas is None or fig is None:
@@ -1390,7 +1538,7 @@ class BestFitInterpolator:
             # Use Qt context menu for right-click
             try:
                 from qgis.PyQt.QtCore import Qt
-                canvas.setContextMenuPolicy(Qt.CustomContextMenu)
+                canvas.setContextMenuPolicy(enum_value(Qt, "ContextMenuPolicy", "CustomContextMenu"))
             except Exception:  # nosec B110
                 pass
 
@@ -1399,8 +1547,8 @@ class BestFitInterpolator:
                     menu = QMenu(self.dlg)
                     act_view = menu.addAction("View larger view")
                     act_copy = menu.addAction("Copy graph")
-                    act_save = menu.addAction("Save graph...")
-                    chosen = menu.exec_(canvas.mapToGlobal(pos))
+                    act_save = menu.addAction("Save graph")
+                    chosen = qt_exec(menu, canvas.mapToGlobal(pos))
                     if chosen == act_view:
                         self._show_larger_graph(fig, default_prefix)
                     elif chosen == act_copy:
@@ -1410,7 +1558,7 @@ class BestFitInterpolator:
                         suggested = os.path.join(suggested_dir, f"{default_prefix}.png")
                         path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
                         if path:
-                            fig.savefig(path, dpi=300, bbox_inches='tight')
+                            save_figure(fig, path, dpi=300, bbox_inches='tight')
                             try:
                                 self.iface.messageBar().pushMessage("Saved", f"PNG saved to: {path}", level=0)
                             except Exception:  # nosec B110
@@ -1441,7 +1589,7 @@ class BestFitInterpolator:
             from qgis.PyQt.QtGui import QPixmap
             from qgis.PyQt.QtWidgets import QApplication
             buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=300, bbox_inches="tight")
+            save_figure(fig, buf, format="png", dpi=300, bbox_inches="tight")
             pixmap = QPixmap()
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
@@ -1456,27 +1604,8 @@ class BestFitInterpolator:
                 pass
 
     def _show_larger_graph(self, source_fig, title_prefix: str):
-        try:
-            import io
-            import matplotlib.image as mpimg
-            dlg = QDialog(self.dlg)
-            dlg.setWindowTitle(f"{title_prefix} - larger view")
-            layout = QVBoxLayout(dlg)
-            fig = Figure(figsize=(9, 6.5))
-            canvas = FigureCanvas(fig)
-            layout.addWidget(canvas)
-            buf = io.BytesIO()
-            source_fig.savefig(buf, format="png", dpi=180, bbox_inches="tight")
-            buf.seek(0)
-            arr = mpimg.imread(buf)
-            ax = fig.add_subplot(111)
-            ax.imshow(arr)
-            ax.axis("off")
-            canvas.draw()
-            dlg.resize(980, 720)
-            dlg.exec_()
-        except Exception as exc:
-            QMessageBox.warning(self.dlg, "View larger view", f"Could not open larger view:\n{exc}")
+        from .larger_view import show_larger_view
+        return show_larger_view(source_fig,self.dlg,title_prefix + ' Larger view')
 
     def _ensure_canvases_attached(self):
         """Ensure all canvases exist before plotting."""
@@ -1486,6 +1615,7 @@ class BestFitInterpolator:
             except Exception:
                 self.det_interp_fig = FigureCanvas(Figure(figsize=(5, 4))).figure
                 self.det_interp_canvas = FigureCanvas(self.det_interp_fig)
+                self.det_interp_canvas._bfi_is_map = True
         if self.det_val_fig is None or self.det_val_canvas is None:
             try:
                 self._attach_canvases()
@@ -1498,27 +1628,50 @@ class BestFitInterpolator:
             except Exception:
                 self.data_fig = FigureCanvas(Figure(figsize=(5, 4))).figure
                 self.data_canvas = FigureCanvas(self.data_fig)
+                self.data_canvas._bfi_is_map = True
         if self.ok_cv_fig is None or self.ok_cv_canvas is None:
             try:
                 self._attach_ok_cv_canvas()
             except Exception:  # nosec B110
                 pass
 
-    def _build_rk_points_callback(self):
+    def _build_rk_points_callback(
+        self,
+        feature_names=None,
+        prompt_for_predictors=True,
+    ):
         if self.ml_ctrl is None:
             raise ValueError("Machine Learning controller is not initialized.")
-        return self.ml_ctrl._build_points_dataframe_for_rf()
+        return self.ml_ctrl._build_points_dataframe_for_rf(
+            feature_names=feature_names,
+            prompt_for_predictors=prompt_for_predictors,
+        )
 
     def _build_rk_grid_callback(self, covariate_names):
         if self.ml_ctrl is None:
             raise ValueError("Machine Learning controller is not initialized.")
-        return self.ml_ctrl._build_grid_dataframe_for_rf(covariate_names)
+        return self.ml_ctrl._build_grid_dataframe_for_rf(
+            covariate_names,
+            context_name="Regression Kriging",
+            progress_title="Regression Kriging",
+            progress_label="Building Regression Kriging interpolation grid",
+        )
 
     def _write_rk_raster_callback(self, grid_df, grid_meta, target_name, pred_column, layer_title):
         """Write RK final predictions to GeoTIFF and add them to QGIS without depending on the RF writer."""
         try:
             if grid_df is None or grid_meta is None or pred_column not in grid_df.columns:
                 return None
+
+            if self.ml_ctrl is not None and hasattr(self.ml_ctrl, "_write_prediction_raster_from_grid_df"):
+                return self.ml_ctrl._write_prediction_raster_from_grid_df(
+                    grid_df,
+                    grid_meta,
+                    target_name,
+                    "RK",
+                    "Regression Kriging",
+                    pred_column=pred_column,
+                )
 
             xmin = float(grid_meta["xmin"])
             ymax = float(grid_meta["ymax"])
@@ -1532,11 +1685,10 @@ class BestFitInterpolator:
             ys = grid_df["y"].to_numpy(dtype=float)
             vals = grid_df[pred_column].to_numpy(dtype=float)
 
-            for x, y, v in zip(xs, ys, vals):
-                col = int((x - xmin) / pixel_size)
-                row = int((ymax - y) / pixel_size)
-                if 0 <= col < n_cols and 0 <= row < n_rows:
-                    raster_array[row, col] = float(v)
+            cols = ((xs - xmin) / pixel_size).astype(int)
+            rows = ((ymax - ys) / pixel_size).astype(int)
+            valid = (cols >= 0) & (cols < n_cols) & (rows >= 0) & (rows < n_rows)
+            raster_array[rows[valid], cols[valid]] = vals[valid].astype(np.float32)
 
             out_dir = self._ensure_output_dir() if self._should_export_raster() else tempfile.gettempdir()
             safe_var = "".join(ch if ch.isalnum() else "_" for ch in str(target_name))
@@ -1554,6 +1706,12 @@ class BestFitInterpolator:
             srs = osr.SpatialReference()
             srs.ImportFromWkt(poly_layer.crs().toWkt())
             ds.SetProjection(srs.ExportToWkt())
+            sample_count = int(grid_meta.get("sample_count", 0) or 0)
+            if is_dense_dataset(sample_count):
+                ds.SetMetadataItem(
+                    "BESTFIT_DENSE_PROFILE",
+                    dense_method_notice(sample_count, "Regression Kriging"),
+                )
 
             nodata_value = -9999.0
             raster_array_to_write = np.where(np.isfinite(raster_array), raster_array, nodata_value)
@@ -1591,11 +1749,37 @@ class BestFitInterpolator:
             return
         self._ensure_output_dir()
 
+        if is_alive(getattr(self, "dlg", None)):
+            if not getattr(self,'_reset_on_reopen',False):
+                self._connect_project_signals()
+                self._refresh_layer_combos_preserving_selection()
+                self.dlg.show()
+                self.dlg.raise_()
+                self.dlg.activateWindow()
+                return
+            old=self.dlg
+            if self.ok_ctrl is not None: self.ok_ctrl.dispose()
+            old.deleteLater()
+            from qgis.PyQt.QtCore import QEvent
+            QCoreApplication.sendPostedEvents(old,enum_value(QEvent,'Type','DeferredDelete'))
+            self.dlg=None
+            self.ok_ctrl=None
+        self._reset_on_reopen=False
+        if self.ok_ctrl is not None:
+            self.ok_ctrl.dispose()
+        self.ok_ctrl = None
+        self.ml_ctrl = self.rk_ctrl = self.framework_ctrl = None
+        self._save_handlers.clear()
+        for name in ("det_interp_canvas", "det_val_canvas", "data_canvas", "ok_cv_canvas"):
+            setattr(self, name, None)
         self.dlg = BestFitInterpolatorDialog(plugin_dir=self.plugin_dir, parent=self.iface.mainWindow())
+        self.dlg._bfi_plugin = self
         self._bind_ui_aliases()
 
         self.reset_plugin_state()
         self.load_layers()
+        layers=QgsProject.instance().mapLayersByName(self.dlg.Points.currentText())
+        self._watch_input_layer(layers[0] if layers else None)
         try:
             self._last_data_selection = (
                 self.dlg.Points.currentText(),
@@ -1637,6 +1821,7 @@ class BestFitInterpolator:
         self._wire_cv_controls()
         self._wire_ok_cv_controls()
         self._add_validation_auto_info_icons()
+        self._ensure_data_profile_info_button()
         self._activate_data_tab()
         self._rename_interpolation_tab()
 
@@ -1668,14 +1853,11 @@ class BestFitInterpolator:
                 pass
 
         self._add_validation_auto_info_icons()
+        self._ensure_data_profile_info_button()
 
         try:
             if FrameworkTabController is not None:
                 self.framework_ctrl = FrameworkTabController(self.dlg, plugin=self)
-                try:
-                    self._sync_framework_from_current_data()
-                except Exception:  # nosec B110
-                    pass
             elif _FRAMEWORK_IMPORT_ERROR:
                 try:
                     self.iface.messageBar().pushWarning("Framework", f"Framework tab is not available: {_FRAMEWORK_IMPORT_ERROR}")
@@ -1702,15 +1884,41 @@ class BestFitInterpolator:
 
         self._connect_project_signals()
         self.dlg.finished.connect(self._disconnect_project_signals)
+        self.dlg.finished.connect(self._on_dialog_closed)
 
         # Kriging is handled on its tab by the dispatcher/controller. We still provide CV/export here.
         self.dlg.mainTabs.currentChanged.connect(self._on_main_tab_changed)
 
+        from .ui_refinement import refine_main_dialog,refresh_info_labels
+        refine_main_dialog(self.dlg)
+        refresh_info_labels(self.dlg)
         self.dlg.show()
+
+    def _on_dialog_closed(self,*args):
+        """Close session-owned windows and start from Data on the next opening."""
+        if getattr(self,'_reset_on_reopen',False): return
+        self._reset_on_reopen=True
+        self._disconnect_input_layer()
+        self._disconnect_project_signals()
+        if self.ok_ctrl is not None: self.ok_ctrl.dispose()
+        for owner in [self.dlg]+self.dlg.findChildren(QWidget):
+            for task in tuple(getattr(owner,'_bfi_jobs',())): task.cancel()
+        for child in self.dlg.findChildren(QDialog):
+            if is_alive(child): child.close()
+        for timer_name in ('_input_edit_timer',):
+            timer=getattr(self,timer_name,None)
+            if is_alive(timer): timer.stop()
 
     # ---------------------------- Deterministic part ---------------------------
 
     def reset_plugin_state(self):
+        self.diagnostics_states={}
+        self.diagnostics_dialog=None
+        self._last_interpolation_result=None
+        self._latest_produced_result=None
+        self._last_interpolation_figure=None
+        from .diagnostics_ui import install_diagnostics
+        install_diagnostics(self)
         self.dlg.Points.clear();    self.dlg.Points.addItem("")
         self.dlg.Points_2.clear();  self.dlg.Points_2.addItem("")
         self.dlg.poly.clear();      self.dlg.poly.addItem("")
@@ -1719,6 +1927,7 @@ class BestFitInterpolator:
         self._last_ok_interpolation = None
         self._incomplete_data_warning_keys = set()
         self._spatial_coverage_warning_keys = set()
+        self._moran_cache = {}
         if hasattr(self.dlg, 'manualNInput'):
             try:
                 self.dlg.manualNInput.setValue(12)
@@ -1746,10 +1955,10 @@ class BestFitInterpolator:
                 continue
             if isinstance(layer, QgsMapLayer):
                 gt = layer.geometryType()
-                if gt == QgsWkbTypes.PointGeometry or (QgsWkbTypes.isMultiType(layer.wkbType()) and gt == QgsWkbTypes.PointGeometry):
+                if gt == geometry_type("Point") or (QgsWkbTypes.isMultiType(layer.wkbType()) and gt == geometry_type("Point")):
                     if layer.name() not in added_points:
                         self.dlg.Points.addItem(layer.name()); added_points.add(layer.name())
-                elif gt == QgsWkbTypes.PolygonGeometry or (QgsWkbTypes.isMultiType(layer.wkbType()) and gt == QgsWkbTypes.PolygonGeometry):
+                elif gt == geometry_type("Polygon") or (QgsWkbTypes.isMultiType(layer.wkbType()) and gt == geometry_type("Polygon")):
                     if layer.name() not in added_polygons:
                         self.dlg.poly.addItem(layer.name()); added_polygons.add(layer.name())
 
@@ -1781,10 +1990,11 @@ class BestFitInterpolator:
         current_label = tab_widget.tabText(tab_widget.currentIndex())
         if self._is_geostatistics_tab(current_label):
             self._update_ok_context()
-        try:
-            self._sync_framework_from_current_data()
-        except Exception:  # nosec B110
-            pass
+        if self._is_framework_tab(current_label):
+            try:
+                self._sync_framework_from_current_data()
+            except Exception:  # nosec B110
+                pass
 
     @staticmethod
     def _is_geostatistics_tab(label: str) -> bool:
@@ -1835,6 +2045,16 @@ class BestFitInterpolator:
         layers = QgsProject.instance().mapLayersByName(points_layer_name)
         if not layers:
             return
+        self._watch_input_layer(layers[0])
+        try:
+            if layers[0].fields().indexOf(str(z_field)) < 0:
+                self.iface.messageBar().pushWarning(
+                    "Kriging",
+                    "The selected Data-tab variable is not available in the selected point layer. Reload the Data tab selection.",
+                )
+                return
+        except Exception:  # nosec B110
+            return
 
         if hasattr(self.ok_ctrl, 'run_ok_cv_function'):
             self.ok_ctrl.run_ok_cv_function = self.run_ok_cv
@@ -1848,6 +2068,12 @@ class BestFitInterpolator:
     def _sync_framework_from_current_data(self):
         """Push current Data-tab diagnostics into the Framework controller."""
         if self.framework_ctrl is None or not hasattr(self, 'dlg') or self.dlg is None:
+            return
+        try:
+            current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
+            if not self._is_framework_tab(current_label):
+                return
+        except Exception:
             return
 
         points_layer_name = self.dlg.Points.currentText().strip() if hasattr(self.dlg, 'Points') else ""
@@ -1866,6 +2092,8 @@ class BestFitInterpolator:
         points_coords = []
         variable_values = []
         for feature in point_layer.getFeatures():
+            if not feature_in_analysis(self, point_layer, feature):
+                continue
             geom = feature.geometry()
             if geom is None or geom.isEmpty():
                 continue
@@ -1988,7 +2216,7 @@ class BestFitInterpolator:
                 for lyr in QgsProject.instance().mapLayers().values():
                     if isinstance(lyr, QgsMapLayer):
                         gt = lyr.geometryType()
-                        if gt == QgsWkbTypes.PointGeometry or (QgsWkbTypes.isMultiType(lyr.wkbType()) and gt == QgsWkbTypes.PointGeometry):
+                        if gt == geometry_type("Point") or (QgsWkbTypes.isMultiType(lyr.wkbType()) and gt == geometry_type("Point")):
                             idx = self.dlg.Points.findText(lyr.name())
                             if idx >= 0:
                                 self.dlg.Points.setCurrentIndex(idx)
@@ -2066,10 +2294,10 @@ class BestFitInterpolator:
                 "Continue using only the first sample at each repeated coordinate?\n\n"
                 "The original layer will not be modified."
             ),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.Yes,
+            enum_value(QMessageBox, "StandardButton", "Yes") | enum_value(QMessageBox, "StandardButton", "No"),
+            enum_value(QMessageBox, "StandardButton", "Yes"),
         )
-        return reply == QMessageBox.Yes
+        return reply == enum_value(QMessageBox, "StandardButton", "Yes")
 
     def _prepare_tps_training_data(self, x, y, z, context_title="TPS"):
         x2, y2, z2, duplicate_rows, duplicate_groups = self._dedupe_training_by_xy_keep_first(x, y, z)
@@ -2117,6 +2345,8 @@ class BestFitInterpolator:
             },
             "params": dict(params),
         }
+        from .interpolation_result import publish_result
+        publish_result(self,method,self._last_det_interpolation,self.det_interp_fig)
 
     def _get_last_det_interpolation_for_validation(self):
         state = getattr(self, "_last_det_interpolation", None)
@@ -2196,20 +2426,67 @@ class BestFitInterpolator:
             self._clear_all_plots(reset_framework=False)
             self._clear_ok_validation_outputs()
             self._reset_ok_validation_canvas()
+            framework_active = False
             try:
                 current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
+                framework_active = self._is_framework_tab(current_label)
                 if self._is_geostatistics_tab(current_label):
                     self._update_ok_context()
             except Exception:  # nosec B110
                 pass
             try:
                 if self.framework_ctrl is not None and hasattr(self.framework_ctrl, "reset_for_data_change"):
-                    self.framework_ctrl.reset_for_data_change(keep_data_context=True)
-                else:
+                    self.framework_ctrl.reset_for_data_change(keep_data_context=framework_active)
+                elif framework_active:
                     self._sync_framework_from_current_data()
             except Exception:  # nosec B110
                 pass
         self._last_data_selection = current
+        layers=QgsProject.instance().mapLayersByName(current[0])
+        self._watch_input_layer(layers[0] if layers else None)
+
+    def _disconnect_input_layer(self):
+        for signal,slot in getattr(self,"_input_layer_connections",[]):
+            try: signal.disconnect(slot)
+            except (TypeError,RuntimeError): pass
+        self._input_layer_connections=[]; self._watched_input_layer=None
+
+    def _watch_input_layer(self,layer):
+        if layer is getattr(self,"_watched_input_layer",None): return
+        self._disconnect_input_layer()
+        if not is_alive(layer): return
+        self._watched_input_layer=layer
+        for name in ("dataChanged","attributeValueChanged","geometryChanged","featureAdded","featureDeleted","updatedFields","crsChanged"):
+            signal=getattr(layer,name,None)
+            if signal is not None:
+                signal.connect(self._on_input_layer_edited)
+                self._input_layer_connections.append((signal,self._on_input_layer_edited))
+
+    def _on_input_layer_edited(self,*unused):
+        if not is_alive(getattr(self,"dlg",None)): return
+        from qgis.PyQt.QtCore import QTimer
+        timer=getattr(self,"_input_edit_timer",None)
+        if not is_alive(timer):
+            timer=QTimer(self.dlg); timer.setSingleShot(True)
+            timer.timeout.connect(self._refresh_after_input_edit); self._input_edit_timer=timer
+        timer.start(200)
+
+    def _refresh_after_input_edit(self):
+        """Invalidate model snapshots when the same selected layer is edited."""
+        if not is_alive(getattr(self,"dlg",None)): return
+        try:
+            self._last_det_interpolation=self._last_ok_interpolation=None
+            self._moran_cache.clear(); self._clear_all_plots()
+            dialog=getattr(self,"diagnostics_dialog",None)
+            if is_alive(dialog): dialog.cancel_jobs(); dialog.close(); dialog.deleteLater()
+            from .diagnostics_ui import capture_data
+            capture_data(self)
+            active=getattr(self.ok_ctrl,"_active",None)
+            if active is not None:
+                active._baseline_initial=None; active._init_params=None
+                active._semivariogram_stale=True; active._schedule_rebin()
+        except Exception:
+            log_exception("Refreshing edited input data")
 
     # ---------------------------- Data tab plotting ----------------------------
     @staticmethod
@@ -2253,7 +2530,7 @@ class BestFitInterpolator:
         except Exception:
             desc = ""
         if authid and desc:
-            return f"{authid} - {desc}"
+            return f"{authid} {desc}"
         return authid or desc or "Unknown CRS"
 
     def _crs_uses_meter_units(self, crs) -> bool:
@@ -2301,8 +2578,65 @@ class BestFitInterpolator:
         except Exception:  # nosec B110
             pass
 
+    def _validate_point_polygon_crs(self, points_layer, polygon_layer, context="Data", critical=False):
+        """Warn/block when point and polygon layers do not share the same CRS."""
+        try:
+            point_crs = points_layer.crs()
+            polygon_crs = polygon_layer.crs()
+        except Exception:
+            return True
+
+        if point_crs is None or polygon_crs is None:
+            return True
+
+        point_valid = bool(point_crs.isValid()) if hasattr(point_crs, "isValid") else False
+        polygon_valid = bool(polygon_crs.isValid()) if hasattr(polygon_crs, "isValid") else False
+        if not point_valid or not polygon_valid:
+            message = (
+                "Both point and polygon layers need a valid CRS before spatial "
+                "diagnostics or interpolation can be trusted."
+            )
+            if critical:
+                QMessageBox.critical(self.dlg, f"{context} blocked", message)
+                return False
+            QMessageBox.warning(self.dlg, "CRS warning", message)
+            return False
+
+        if point_crs == polygon_crs:
+            return True
+
+        point_name = self._crs_display_name(point_crs)
+        polygon_name = self._crs_display_name(polygon_crs)
+        message = (
+            "The point and polygon layers use different coordinate reference systems.\n\n"
+            f"Point layer CRS: {point_name}\n"
+            f"Polygon layer CRS: {polygon_name}\n\n"
+            "Reproject one layer so both use the same projected CRS before running "
+            "Data diagnostics, Framework decisions, or interpolation."
+        )
+        if critical:
+            QMessageBox.critical(self.dlg, f"{context} blocked", message)
+            return False
+
+        try:
+            warning_key = (
+                "crs-mismatch",
+                points_layer.id(),
+                polygon_layer.id(),
+                point_crs.authid(),
+                polygon_crs.authid(),
+            )
+        except Exception:
+            warning_key = ("crs-mismatch", point_name, polygon_name)
+        shown = getattr(self, "_spatial_coverage_warning_keys", set())
+        if warning_key not in shown:
+            shown.add(warning_key)
+            self._spatial_coverage_warning_keys = shown
+            QMessageBox.warning(self.dlg, "CRS mismatch", message)
+        return False
+
     def _set_moran_index_label(self, moran_i, pattern=None, p_value=None):
-        """Update the Moran index label with value, p-value, and classification."""
+        """Update the Moran index label with value, p value, and classification."""
         try:
             if not hasattr(self.dlg, "lblMoranIndexValue") or self.dlg.lblMoranIndexValue is None:
                 return
@@ -2329,6 +2663,23 @@ class BestFitInterpolator:
         """Standard normal CDF without external dependencies."""
         return 0.5 * (1.0 + math.erf(float(z) / math.sqrt(2.0)))
 
+    @staticmethod
+    def _moran_cache_key(coords, values, k, n_permutations, random_seed):
+        """Build an exact cache key from coordinates, values, and Moran settings."""
+        coords_arr = np.ascontiguousarray(np.asarray(coords, dtype=np.float64))
+        values_arr = np.ascontiguousarray(np.asarray(values, dtype=np.float64).ravel())
+        digest = hashlib.blake2b(digest_size=20)
+        digest.update(coords_arr.view(np.uint8))
+        digest.update(values_arr.view(np.uint8))
+        return (
+            tuple(coords_arr.shape),
+            tuple(values_arr.shape),
+            int(k),
+            int(n_permutations),
+            int(random_seed),
+            digest.hexdigest(),
+        )
+
     def _compute_moran_index_knn(self, points_coords, variable_values, k=8, n_permutations=199, random_seed=20):
         """
         Compute global Moran's I using KNN weights and classify the pattern as
@@ -2338,73 +2689,35 @@ class BestFitInterpolator:
         -----
         - Neighbor structure: KNN with k=8
         - Weights: row-standardized binary weights
-        - Significance: permutation-based z-score and p-value
+        - Significance: permutation-based z-score and p value
         """
         coords = np.array([(pt.x(), pt.y()) for pt in points_coords], dtype=float)
-        values = np.asarray(variable_values, dtype=float)
-
-        mask = np.isfinite(coords).all(axis=1) & np.isfinite(values)
-        coords = coords[mask]
-        values = values[mask]
-
-        n = values.size
-        if n < 3:
-            return None
-
-        k = max(1, min(int(k), n - 1))
-
-        diff_x = coords[:, 0][:, None] - coords[:, 0][None, :]
-        diff_y = coords[:, 1][:, None] - coords[:, 1][None, :]
-        dist2 = diff_x * diff_x + diff_y * diff_y
-        np.fill_diagonal(dist2, np.inf)
-        neighbor_idx = np.argpartition(dist2, kth=k - 1, axis=1)[:, :k]
-
-        x_dev = values - float(np.mean(values))
-        den = float(np.sum(x_dev ** 2))
-        if den <= 0:
-            return {
-                "I": 0.0,
-                "z": 0.0,
-                "p": 1.0,
-                "pattern": "Random",
-                "k": k,
-                "n": n,
-            }
-
-        neighbor_mean = np.mean(x_dev[neighbor_idx], axis=1)
-        observed_i = float(np.sum(x_dev * neighbor_mean) / den)
-
-        rng = np.random.default_rng(random_seed)
-        sim_i = np.empty(int(max(19, n_permutations)), dtype=float)
-        for b in range(sim_i.size):
-            perm = rng.permutation(x_dev)
-            perm_neighbor_mean = np.mean(perm[neighbor_idx], axis=1)
-            sim_i[b] = float(np.sum(perm * perm_neighbor_mean) / den)
-
-        sim_mean = float(np.mean(sim_i))
-        sim_std = float(np.std(sim_i, ddof=1)) if sim_i.size > 1 else 0.0
-        if sim_std > 0:
-            z_score = float((observed_i - sim_mean) / sim_std)
-            p_value = float(2.0 * (1.0 - self._normal_cdf(abs(z_score))))
-        else:
-            z_score = 0.0
-            p_value = 1.0
-
-        if z_score > 1.96:
-            pattern = "Clustered"
-        elif z_score < -1.96:
-            pattern = "Dispersed"
-        else:
-            pattern = "Random"
-
-        return {
-            "I": observed_i,
-            "z": z_score,
-            "p": p_value,
-            "pattern": pattern,
-            "k": k,
-            "n": n,
-        }
+        values = np.asarray(variable_values, dtype=float).ravel()
+        n_permutations = moran_permutation_count(values.size, n_permutations)
+        cache_key = self._moran_cache_key(coords, values, k, n_permutations, random_seed)
+        cached = getattr(self, "_moran_cache", {}).get(cache_key)
+        if cached is not None:
+            result = dict(cached)
+            result["cached"] = True
+            return result
+        QCoreApplication.processEvents()
+        result = compute_moran_index_knn(
+            coords,
+            values,
+            k=k,
+            n_permutations=n_permutations,
+            random_seed=random_seed,
+        )
+        if result is not None:
+            cache = getattr(self, "_moran_cache", {})
+            cache[cache_key] = dict(result)
+            # Keep the cache small; it mainly prevents duplicate Data/Framework calls.
+            if len(cache) > 4:
+                for old_key in list(cache.keys())[:-4]:
+                    cache.pop(old_key, None)
+            self._moran_cache = cache
+        QCoreApplication.processEvents()
+        return result
 
     @staticmethod
     def _count_points_outside_polygon(point_geometries, polygon_geometry):
@@ -2466,16 +2779,21 @@ class BestFitInterpolator:
         polygon_crs = polygon_layer.crs()
         if not point_crs.isValid() or not polygon_crs.isValid():
             raise ValueError("Both layers need a valid CRS.")
-        transform = None
         if point_crs != polygon_crs:
-            transform = QgsCoordinateTransform(
-                point_crs,
-                polygon_crs,
-                QgsProject.instance(),
+            raise ValueError(
+                "Point and polygon layers use different CRS. Reproject one layer "
+                "so both use the same projected CRS."
             )
 
-        point_geometries = []
+        total = 0
+        outside = 0
+        try:
+            polygon_bbox = polygon_geometry.boundingBox()
+        except Exception:
+            polygon_bbox = None
         for feature in points_layer.getFeatures():
+            if not feature_in_analysis(self, points_layer, feature):
+                continue
             try:
                 value = float(feature[variable_name])
             # Non-numeric samples are intentionally skipped.
@@ -2487,19 +2805,25 @@ class BestFitInterpolator:
             if geometry is None or geometry.isEmpty():
                 continue
             geometry = QgsGeometry(geometry)
-            if transform is not None:
-                geometry.transform(transform)
             for vertex in geometry.vertices():
-                point_geometries.append(
-                    QgsGeometry.fromPointXY(
-                        QgsPointXY(vertex.x(), vertex.y())
+                point_xy = QgsPointXY(vertex.x(), vertex.y())
+                total += 1
+                try:
+                    if polygon_bbox is not None and not polygon_bbox.contains(point_xy):
+                        outside += 1
+                        continue
+                except Exception:  # nosec B110
+                    pass
+                try:
+                    inside_or_on_boundary = bool(
+                        polygon_geometry.intersects(QgsGeometry.fromPointXY(point_xy))
                     )
-                )
+                except Exception:
+                    inside_or_on_boundary = False
+                if not inside_or_on_boundary:
+                    outside += 1
 
-        return self._count_points_outside_polygon(
-            point_geometries,
-            polygon_geometry,
-        )
+        return total, outside
 
     def _warn_if_points_outside_polygon(
         self,
@@ -2586,28 +2910,34 @@ class BestFitInterpolator:
         context="Interpolation",
     ):
         """Block interpolation when no valid sample falls inside the polygon."""
-        try:
-            point_crs = points_layer.crs()
-            polygon_crs = polygon_layer.crs()
-        except Exception:
-            point_crs = None
-            polygon_crs = None
-        if (
-            point_crs is not None
-            and polygon_crs is not None
-            and point_crs.isValid()
-            and polygon_crs.isValid()
-            and point_crs != polygon_crs
-        ):
-            QMessageBox.critical(
-                self.dlg,
-                f"{context} blocked",
-                "The point and polygon layers use different coordinate reference "
-                "systems. Interpolation was stopped because their raw coordinates "
-                "cannot be combined safely.\n\nReproject one layer so both use the "
-                "same CRS, then reload them in the Data tab.",
-            )
-            return False
+        crs_validator = getattr(self, "_validate_point_polygon_crs", None)
+        if callable(crs_validator):
+            if not crs_validator(
+                points_layer,
+                polygon_layer,
+                context=context,
+                critical=True,
+            ):
+                return False
+        else:
+            try:
+                point_crs = points_layer.crs()
+                polygon_crs = polygon_layer.crs()
+                if (
+                    point_crs is not None
+                    and polygon_crs is not None
+                    and point_crs.isValid()
+                    and polygon_crs.isValid()
+                    and point_crs != polygon_crs
+                ):
+                    QMessageBox.critical(
+                        self.dlg,
+                        f"{context} blocked",
+                        "The point and polygon layers use different coordinate reference systems.",
+                    )
+                    return False
+            except Exception:
+                pass
 
         try:
             total, outside = self._point_polygon_coverage_counts(
@@ -2707,6 +3037,14 @@ class BestFitInterpolator:
         points_layer = points_matches[0]
         polygon_layer = polygon_matches[0]
         self._update_data_crs_label_and_warn(points_layer)
+        if not self._validate_point_polygon_crs(
+            points_layer,
+            polygon_layer,
+            context="Data diagnostics",
+            critical=False,
+        ):
+            self._reset_moran_index_label()
+            return
 
         polygon_coords = []
         for feature in polygon_layer.getFeatures():
@@ -2729,6 +3067,8 @@ class BestFitInterpolator:
 
         points_coords = []; variable_values = []
         for feature in points_layer.getFeatures():
+            if not feature_in_analysis(self, points_layer, feature):
+                continue
             geom = feature.geometry()
             if geom.isEmpty(): continue
             points_coords.append(geom.asPoint())
@@ -2769,10 +3109,49 @@ class BestFitInterpolator:
         x_poly, y_poly = zip(*polygon_coords)
         ax.plot(x_poly, y_poly, lw=1)
 
-        x_points, y_points = zip(*[(p.x(), p.y()) for p in points_coords])
-        sc = ax.scatter(x_points, y_points, c=variable_values, cmap='viridis', s=40, edgecolor='k', alpha=1)
+        x_points = np.asarray([p.x() for p in points_coords], dtype=float)
+        y_points = np.asarray([p.y() for p in points_coords], dtype=float)
+        z_points = np.asarray(variable_values, dtype=float)
+        if should_hexbin_plot(x_points.size):
+            sc = ax.hexbin(
+                x_points,
+                y_points,
+                C=z_points,
+                reduce_C_function=np.nanmean,
+                gridsize=PLOT_HEXBIN_GRIDSIZE,
+                cmap="viridis",
+                mincnt=1,
+            )
+            cbar_label = f"Mean '{variable_name}'"
+            ax.set_title(
+                f"Points & Polygon (Data tab) hexbin view of {x_points.size:,} points"
+            )
+        else:
+            if should_rasterize_scatter(x_points.size):
+                scatter_size = 4
+                scatter_edge = "none"
+                scatter_alpha = 0.68
+                ax.set_title(
+                    f"Points & Polygon (Data tab) rasterized view of {x_points.size:,} points"
+                )
+            else:
+                scatter_size = 40
+                scatter_edge = "k"
+                scatter_alpha = 1
+            sc = ax.scatter(
+                x_points,
+                y_points,
+                c=z_points,
+                cmap='viridis',
+                s=scatter_size,
+                edgecolors=scatter_edge,
+                linewidths=0.0 if scatter_edge == "none" else 0.4,
+                alpha=scatter_alpha,
+                rasterized=should_rasterize_scatter(x_points.size),
+            )
+            cbar_label = f"'{variable_name}'"
         cbar = self.data_fig.colorbar(sc, ax=ax, orientation='vertical')
-        cbar.set_label(f"'{variable_name}'")
+        cbar.set_label(cbar_label)
         self.data_canvas.draw()
 
     # ---------------------------- Validation helpers ---------------------------
@@ -2900,6 +3279,8 @@ class BestFitInterpolator:
             fig = self.det_val_fig
             canvas = self.det_val_canvas
 
+        from .map_controls import disable_display_settings
+        disable_display_settings(canvas)
         fig.clear()
         ax = fig.add_subplot(111)
         try:
@@ -3021,7 +3402,7 @@ class BestFitInterpolator:
     # ---------------------------- Cross-validation (Det) -----------------------
 
     def run_cross_validation(self):
-        """Run CV (LOOCV or K-fold) for the selected deterministic method."""
+        """Run CV (LOOCV or K fold) for the selected deterministic method."""
         self._clear_det_validation_outputs()
         self._ensure_canvases_attached()
 
@@ -3114,6 +3495,7 @@ class BestFitInterpolator:
                         test_xy[:, 0], test_xy[:, 1],
                         epsilon=epsilon_value,
                     )
+                    pi = self._clip_to_observed_range(pi, train_values)
                     preds[test_idx] = np.asarray(pi, dtype=float).ravel()
                 except Exception as e:
                     self.iface.messageBar().pushWarning("Validation", format_shape_error(e, train_xy, test_xy, train_values))
@@ -3163,7 +3545,7 @@ class BestFitInterpolator:
         return model, nugget, psill, var_range
 
     def run_ok_cv(self):
-        """Run LOOCV/K-Fold CV for Ordinary Kriging and plot into CV_Kriging_widget."""
+        """Run LOOCV/K Fold CV for Ordinary Kriging and plot into CV_Kriging_widget."""
         self._clear_ok_validation_outputs()
         self._reset_ok_validation_canvas()
         self._ensure_canvases_attached()
@@ -3188,7 +3570,7 @@ class BestFitInterpolator:
         z = sample_xyz[:, 2].copy()
         n = len(z)
 
-        # CV mode and folds (usar refs guardadas)
+        # CV mode and folds use the saved control references.
         mode = getattr(self, '_cv_mode_ok', self.CV_AUTO)
 
         # Lee K de spin_k_ok (si existe)
@@ -3220,8 +3602,8 @@ class BestFitInterpolator:
         var_range = float(ok_state["var_range"])
 
         # Progress dialog
-        progress = QProgressDialog("Running Kriging CV...", "Cancel", 0, len(folds), self.dlg)
-        progress.setWindowModality(True)
+        progress = QProgressDialog("Running Kriging CV", "Cancel", 0, len(folds), self.dlg)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
 
@@ -3367,6 +3749,8 @@ class BestFitInterpolator:
         points_layer = QgsProject.instance().mapLayersByName(points_layer_name)[0]
         pts_coords, vals = [], []
         for feat in points_layer.getFeatures():
+            if not feature_in_analysis(self, points_layer, feat):
+                continue
             if feat.geometry().isEmpty():
                 continue
             g = feat.geometry().asPoint()
@@ -3413,17 +3797,39 @@ class BestFitInterpolator:
                     self.iface.messageBar().pushMessage("Error", "Manual p or n value is invalid.", level=3)
                     return
             else:
+                tune_progress = QProgressDialog(
+                    "Optimizing IDW parameters", "Cancel", 0, 5, self.dlg
+                )
+                tune_progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
+                tune_progress.setMinimumDuration(0)
+
+                def _idw_tune_progress(done, total):
+                    if tune_progress.wasCanceled():
+                        raise KeyboardInterrupt("Canceled by user")
+                    tune_progress.setRange(0, int(total))
+                    tune_progress.setValue(int(done))
+                    QCoreApplication.processEvents()
+
                 try:
-                    best_p, best_n, best_isi, _ = optimize_idw(x, y, z)
+                    best_p, best_n, best_isi, _ = optimize_idw(
+                        x, y, z, progress_fn=_idw_tune_progress
+                    )
                     p_value, n_value = best_p, best_n
                     self.iface.messageBar().pushMessage(
                         "Optimization Complete",
                         f"Optimized parameters: p={best_p}, n={best_n}, ISI={best_isi:.5f}",
                         level=0
                     )
+                except KeyboardInterrupt:
+                    self.iface.messageBar().pushWarning(
+                        "IDW optimization", "Operation canceled by user."
+                    )
+                    return
                 except ValueError as e:
                     self.iface.messageBar().pushMessage("Error", str(e), level=3)
                     return
+                finally:
+                    tune_progress.close()
 
             self.create_and_display_raster(points_layer_name, variable_name, polygon_layer_name, pixel_size, p_value, n_value)
 
@@ -3436,7 +3842,7 @@ class BestFitInterpolator:
         return os.path.join(tempfile.gettempdir(), base_name)
 
     def _init_grid_and_mask(self, polygon_layer, pixel_size):
-        """Build grid coordinates and inside-polygon mask. Returns (xmin,xmax,ymin,ymax,n_cols,n_rows,grid_points,inside_idx)."""
+        """Build inside grid centers in blocks and retain their flat raster indices."""
         extent = polygon_layer.extent()
         xmin, ymin, xmax, ymax = extent.toRectF().getCoords()
         n_cols = int(np.ceil((xmax - xmin) / pixel_size))
@@ -3445,26 +3851,65 @@ class BestFitInterpolator:
             raise ValueError("Invalid pixel size or polygon extent is too small.")
         x_coords = xmin + pixel_size * (np.arange(n_cols) + 0.5)
         y_coords = ymax - pixel_size * (np.arange(n_rows) + 0.5)
-        grid_points = np.array([(x_coords[c], y_coords[r]) for r in range(n_rows) for c in range(n_cols)])
-
-        combined_mask = np.zeros(grid_points.shape[0], dtype=bool)
+        polygon_paths = []
         for feature in polygon_layer.getFeatures():
             geom = feature.geometry()
             if geom.isMultipart():
                 for part in geom.asMultiPolygon():
                     for ring in part:
                         ring_coords = [(pt.x(), pt.y()) for pt in ring]
-                        ring_path = Path(ring_coords)
-                        mask_i = ring_path.contains_points(grid_points)
-                        combined_mask = np.logical_or(combined_mask, mask_i)
+                        polygon_paths.append(Path(ring_coords))
             else:
                 for ring in geom.asPolygon():
                     ring_coords = [(pt.x(), pt.y()) for pt in ring]
-                    ring_path = Path(ring_coords)
-                    mask_i = ring_path.contains_points(grid_points)
-                    combined_mask = np.logical_or(combined_mask, mask_i)
-        inside_indices = np.where(combined_mask)[0]
-        return xmin, xmax, ymin, ymax, n_cols, n_rows, grid_points, inside_indices
+                    polygon_paths.append(Path(ring_coords))
+        if not polygon_paths:
+            raise ValueError("Polygon geometry could not be read.")
+
+        inside_points_parts = []
+        inside_index_parts = []
+        row_block = 128
+        for row_start in range(0, n_rows, row_block):
+            row_end = min(n_rows, row_start + row_block)
+            xx, yy = np.meshgrid(x_coords, y_coords[row_start:row_end])
+            block_points = np.column_stack((xx.ravel(), yy.ravel()))
+            block_mask = np.zeros(block_points.shape[0], dtype=bool)
+            for ring_path in polygon_paths:
+                block_mask |= ring_path.contains_points(block_points)
+            if np.any(block_mask):
+                local_flat = np.flatnonzero(block_mask)
+                inside_points_parts.append(block_points[local_flat])
+                inside_index_parts.append(local_flat + row_start * n_cols)
+            if row_start % max(row_block, row_block * 8) == 0:
+                QCoreApplication.processEvents()
+
+        if inside_points_parts:
+            inside_points = np.vstack(inside_points_parts)
+            inside_indices = np.concatenate(inside_index_parts).astype(np.int64, copy=False)
+        else:
+            inside_points = np.empty((0, 2), dtype=float)
+            inside_indices = np.array([], dtype=np.int64)
+        return xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices
+
+    def _notify_dense_profile(self, sample_count, method_name):
+        """Store the data-profile label without interrupting interpolation."""
+        self._active_dense_notice = ""
+        if is_dense_dataset(sample_count):
+            self._active_dense_notice = dense_method_notice(sample_count, method_name)
+
+    @staticmethod
+    def _clip_to_observed_range(values, observed_values):
+        """Clip unstable interpolation overshoot to the observed data range."""
+        values = np.asarray(values, dtype=float)
+        observed = np.asarray(observed_values, dtype=float)
+        observed = observed[np.isfinite(observed)]
+        if observed.size == 0:
+            return values
+        lower = float(np.nanmin(observed))
+        upper = float(np.nanmax(observed))
+        if not np.isfinite(lower) or not np.isfinite(upper) or upper < lower:
+            return values
+        return np.clip(values, lower, upper)
 
     def _write_raster_and_add(self, raster_array, polygon_layer, pixel_size, variable_name, method_tag, title_prefix):
         """Write GeoTIFF and add to QGIS."""
@@ -3483,6 +3928,9 @@ class BestFitInterpolator:
         dataset.SetGeoTransform(geotransform)
         srs = osr.SpatialReference(); srs.ImportFromWkt(wkt)
         dataset.SetProjection(srs.ExportToWkt())
+        dense_notice = str(getattr(self, "_active_dense_notice", "") or "")
+        if dense_notice:
+            dataset.SetMetadataItem("BESTFIT_DENSE_PROFILE", dense_notice)
 
         band = dataset.GetRasterBand(1)
         band.WriteArray(raster_array)
@@ -3539,6 +3987,8 @@ class BestFitInterpolator:
         points_layer = QgsProject.instance().mapLayersByName(points_layer_name)[0]
         pts_coords, vals = [], []
         for feat in points_layer.getFeatures():
+            if not feature_in_analysis(self, points_layer, feat):
+                continue
             if feat.geometry().isEmpty(): continue
             g = feat.geometry().asPoint()
             v = feat[variable_name]
@@ -3568,43 +4018,49 @@ class BestFitInterpolator:
         polygon_layer = QgsProject.instance().mapLayersByName(polygon_layer_name)[0]
 
         try:
-            xmin, xmax, ymin, ymax, n_cols, n_rows, grid_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
+            xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
         except ValueError as e:
             self.iface.messageBar().pushMessage("Error", str(e), level=3)
             return
 
         result_array = np.full((n_rows, n_cols), np.nan, dtype=np.float32)
 
-        # Progress dialog (chunked)
         total_inside = len(inside_indices)
-        progress = QProgressDialog("Interpolating (IDW)...", "Cancel", 0, total_inside, self.dlg)
-        progress.setWindowModality(True)
+        if total_inside == 0:
+            self.iface.messageBar().pushMessage("Warning", "No grid cells fall inside the polygon.", level=2)
+            return
+        self._notify_dense_profile(z_vals.size, "IDW")
+        progress = QProgressDialog("Interpolating (IDW)", "Cancel", 0, total_inside, self.dlg)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
 
-        # Chunk through inside points to show progress
-        chunk = max(1, total_inside // 50)  # ~50 updates
-        for start in range(0, total_inside, chunk):
+        def _idw_progress(done, total):
             if progress.wasCanceled():
-                self.iface.messageBar().pushWarning("Interpolation", "Operation canceled by user.")
-                return
-            end = min(total_inside, start + chunk)
-            inside_pts = ensure_xy_2d(grid_points[inside_indices[start:end]], "prediction coordinates")
-            try:
-                interpolated_vals = idw_interpolation(
-                    xy_pts[:, 0], xy_pts[:, 1], z_vals,
-                    inside_pts[:, 0], inside_pts[:, 1],
-                    p_value, max(1, min(int(n_value), len(z_vals)))
-                )
-            except Exception as exc:
-                QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(exc, xy_pts, inside_pts, z_vals))
-                return
-            # Write into raster array
-            for local_i, gi in enumerate(inside_indices[start:end]):
-                col_i = gi % n_cols
-                row_i = gi // n_cols
-                result_array[row_i, col_i] = float(interpolated_vals[local_i])
-            progress.setValue(end)
+                raise KeyboardInterrupt("Canceled by user")
+            progress.setValue(int(done))
+            QCoreApplication.processEvents()
+
+        inside_pts = ensure_xy_2d(inside_points, "prediction coordinates")
+        try:
+            interpolated_vals = idw_interpolation(
+                xy_pts[:, 0], xy_pts[:, 1], z_vals,
+                inside_pts[:, 0], inside_pts[:, 1],
+                p_value, max(1, min(int(n_value), len(z_vals))),
+                progress_fn=_idw_progress,
+            )
+        except KeyboardInterrupt:
+            progress.close()
+            self.iface.messageBar().pushWarning("Interpolation", "Operation canceled by user.")
+            return
+        except Exception as exc:
+            progress.close()
+            QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(exc, xy_pts, inside_pts, z_vals))
+            return
+        progress.close()
+        rows = inside_indices // n_cols
+        cols = inside_indices % n_cols
+        result_array[rows, cols] = np.asarray(interpolated_vals, dtype=np.float32)
 
         # Write GeoTIFF and add to QGIS
         raster_path = self._write_raster_and_add(result_array, polygon_layer, pixel_size, variable_name, "IDW", "Interpolated IDW")
@@ -3642,7 +4098,7 @@ class BestFitInterpolator:
             return
         polygon_layer = QgsProject.instance().mapLayersByName(polygon_layer_name)[0]
         try:
-            xmin, xmax, ymin, ymax, n_cols, n_rows, grid_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
+            xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
         except ValueError as e:
             self.iface.messageBar().pushMessage("Error", str(e), level=3)
             return
@@ -3654,28 +4110,38 @@ class BestFitInterpolator:
             self.iface.messageBar().pushMessage("Warning","No grid cells fall inside the polygon.", level=2)
             return
 
-        progress = QProgressDialog("Interpolating (TPS)...", "Cancel", 0, total_inside, self.dlg)
-        progress.setWindowModality(True)
+        progress = QProgressDialog("Interpolating (TPS)", "Cancel", 0, total_inside, self.dlg)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
+        self._notify_dense_profile(z.size, "Thin Plate Spline")
 
-        chunk = max(1, total_inside // 50)
-        for start in range(0, total_inside, chunk):
+        def _tps_progress(done, total):
             if progress.wasCanceled():
-                self.iface.messageBar().pushWarning("Interpolation", "Operation canceled by user.")
-                return
-            end = min(total_inside, start + chunk)
-            inside_pts = ensure_xy_2d(grid_points[inside_indices[start:end]], "prediction coordinates")
-            try:
-                tps_vals = tps_interpolation(x, y, z, inside_pts[:, 0], inside_pts[:, 1], epsilon=1e-4)
-            except Exception as e:
-                QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(e, np.column_stack([x, y]), inside_pts, z))
-                return
-            for local_i, gi in enumerate(inside_indices[start:end]):
-                col_i = gi % n_cols
-                row_i = gi // n_cols
-                result_array[row_i, col_i] = float(tps_vals[local_i])
-            progress.setValue(end)
+                raise KeyboardInterrupt("Canceled by user")
+            progress.setValue(int(done))
+            QCoreApplication.processEvents()
+
+        inside_pts = ensure_xy_2d(inside_points, "prediction coordinates")
+        try:
+            tps_vals = tps_interpolation(
+                x, y, z, inside_pts[:, 0], inside_pts[:, 1],
+                epsilon=1e-4,
+                progress_fn=_tps_progress,
+            )
+            tps_vals = self._clip_to_observed_range(tps_vals, z)
+        except KeyboardInterrupt:
+            progress.close()
+            self.iface.messageBar().pushWarning("Interpolation", "Operation canceled by user.")
+            return
+        except Exception as e:
+            progress.close()
+            QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(e, np.column_stack([x, y]), inside_pts, z))
+            return
+        progress.close()
+        rows = inside_indices // n_cols
+        cols = inside_indices % n_cols
+        result_array[rows, cols] = np.asarray(tps_vals, dtype=np.float32)
 
         raster_path = self._write_raster_and_add(result_array, polygon_layer, pixel_size, variable_name, "TPS", "Interpolated TPS")
         self._record_det_interpolation(
@@ -3719,6 +4185,8 @@ class BestFitInterpolator:
         layer = layers[0]
         coords, vals = [], []
         for feat in layer.getFeatures():
+            if not feature_in_analysis(self, layer, feat):
+                continue
             g = feat.geometry()
             if g.isEmpty(): continue
             pt = g.asPoint()
@@ -3740,7 +4208,7 @@ class BestFitInterpolator:
 
         polygon_layer = QgsProject.instance().mapLayersByName(polygon_layer_name)[0]
         try:
-            xmin, xmax, ymin, ymax, n_cols, n_rows, grid_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
+            xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
         except ValueError as e:
             self.iface.messageBar().pushMessage("Error", str(e), level=3)
             return
@@ -3752,35 +4220,37 @@ class BestFitInterpolator:
             self.iface.messageBar().pushMessage("Warning","No grid cells fall inside the polygon.", level=2)
             return
 
-        progress = QProgressDialog("Interpolating (Ordinary Kriging)...", "Cancel", 0, total_inside, self.dlg)
-        progress.setWindowModality(True)
+        progress = QProgressDialog("Interpolating (Ordinary Kriging)", "Cancel", 0, total_inside, self.dlg)
+        progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
+        self._notify_dense_profile(z.size, "Ordinary Kriging")
 
-        # Chunk the OK predictions for progress and memory friendliness
-        chunk = max(1, total_inside // 50)
-        for start in range(0, total_inside, chunk):
+        def _ok_progress(done, total):
             if progress.wasCanceled():
-                self.iface.messageBar().pushWarning("Kriging", "Operation canceled by user.")
-                return
-            end = min(total_inside, start + chunk)
-            inside_pts = grid_points[inside_indices[start:end]]
-            try:
-                preds = ordinary_kriging_interpolation(
-                    x, y, z,
-                    inside_pts[:, 0], inside_pts[:, 1],
-                    nugget=nugget, psill=psill, var_range=var_range, model=model
-                )
-            except Exception as e:
-                self.iface.messageBar().pushMessage("Error", f"Kriging failed: {e}", level=3)
-                return
+                raise KeyboardInterrupt("Canceled by user")
+            progress.setValue(int(done))
+            QCoreApplication.processEvents()
 
-            for local_i, gi in enumerate(inside_indices[start:end]):
-                col_i = gi % n_cols
-                row_i = gi // n_cols
-                result_array[row_i, col_i] = float(preds[local_i])
-
-            progress.setValue(end)
+        try:
+            preds = ordinary_kriging_interpolation(
+                x, y, z,
+                inside_points[:, 0], inside_points[:, 1],
+                nugget=nugget, psill=psill, var_range=var_range, model=model,
+                progress_fn=_ok_progress,
+            )
+        except KeyboardInterrupt:
+            progress.close()
+            self.iface.messageBar().pushWarning("Kriging", "Operation canceled by user.")
+            return
+        except Exception as e:
+            progress.close()
+            self.iface.messageBar().pushMessage("Error", f"Kriging failed: {e}", level=3)
+            return
+        progress.close()
+        rows = inside_indices // n_cols
+        cols = inside_indices % n_cols
+        result_array[rows, cols] = np.asarray(preds, dtype=np.float32)
 
         # Write GeoTIFF, add to QGIS, and draw preview
         raster_path = self._write_raster_and_add(result_array, polygon_layer, pixel_size, variable_name, "OK", "Interpolated OK")
@@ -3803,6 +4273,8 @@ class BestFitInterpolator:
         # Use the deterministic canvas to keep the preview visually consistent.
         self._draw_interpolation_preview(result_array, polygon_layer, variable_name,
                                          f"OK Interpolation \n{model} nug={nugget}, psill={psill}, range={var_range}")
+        from .interpolation_result import publish_result
+        publish_result(self,'OK',self._last_ok_interpolation,self.det_interp_fig,raster_path=raster_path)
 
         self.iface.messageBar().pushMessage("Kriging", "Interpolation Complete", level=0)
 
@@ -3823,6 +4295,8 @@ class BestFitInterpolator:
         layer = QgsProject.instance().mapLayersByName(points_layer_name)[0]
         coords, vals = [], []
         for feat in layer.getFeatures():
+            if not feature_in_analysis(self, layer, feat):
+                continue
             g = feat.geometry()
             if g.isEmpty():
                 continue
@@ -3838,6 +4312,9 @@ class BestFitInterpolator:
         coords, vals = self.filter_incomplete_data(coords, vals)
         if len(coords) < 5:
             self.iface.messageBar().pushMessage("Error", "At least 5 valid data points are required for interpolation.", level=3)
+            return
+        if is_dense_dataset(len(coords)):
+            self.run_ok_interpolation()
             return
 
         sample_xyz = np.column_stack((
@@ -3856,10 +4333,10 @@ class BestFitInterpolator:
             return
 
         polygon_layer = QgsProject.instance().mapLayersByName(polygon_layer_name)[0]
-        xmin, xmax, ymin, ymax, n_cols, n_rows, grid_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
+        xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
         result_array = np.full((n_rows, n_cols), np.nan, dtype=np.float32)
 
-        inside_pts = grid_points[inside_indices]
+        inside_pts = inside_points
         try:
             preds, _ = predict_ok_reml_interface(reml_fit, sample_xyz, inside_pts)
         except Exception as e:
@@ -3870,10 +4347,9 @@ class BestFitInterpolator:
             )
             return
 
-        for local_i, gi in enumerate(inside_indices):
-            col_i = gi % n_cols
-            row_i = gi // n_cols
-            result_array[row_i, col_i] = float(preds[local_i])
+        rows = inside_indices // n_cols
+        cols = inside_indices % n_cols
+        result_array[rows, cols] = np.asarray(preds, dtype=np.float32)
 
         raster_path = self._write_raster_and_add(
             result_array,
@@ -3899,6 +4375,10 @@ class BestFitInterpolator:
             reml_fit=reml_fit,
         )
         self._draw_interpolation_preview(result_array, polygon_layer, variable_name, f"OK REML Interpolation \u2014 {model}")
+        from .interpolation_result import publish_result
+        executed=dict(self._last_ok_interpolation)
+        executed.update(model=reml_fit['model'],nugget=reml_fit['nugget'],psill=reml_fit['psill'],var_range=reml_fit['range'])
+        publish_result(self,'OK',executed,self.det_interp_fig,raster_path=raster_path)
         self.iface.messageBar().pushMessage("Kriging REML", "Interpolation Complete", level=0)
 
 

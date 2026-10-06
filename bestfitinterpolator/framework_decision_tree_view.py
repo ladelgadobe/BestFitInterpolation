@@ -11,6 +11,7 @@ source of truth for final method highlighting.
 """
 
 from __future__ import annotations
+from .compat import enum_value, qt_exec
 
 import math
 import os
@@ -102,14 +103,14 @@ class FlowchartNodeItem(QGraphicsItem):
 
     def paint(self, painter: QPainter, option, widget=None) -> None:
         painter.save()
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.setRenderHint(QPainter.TextAntialiasing, True)
+        painter.setRenderHint(enum_value(QPainter, "RenderHint", "Antialiasing"), True)
+        painter.setRenderHint(enum_value(QPainter, "RenderHint", "TextAntialiasing"), True)
 
         fill_hex, border_hex, active_fill_hex = self.COLORS.get(self.node_type, self.COLORS["process"])
         fill = QColor(active_fill_hex if self.active else fill_hex)
         border = QColor("#16a34a" if self.active else border_hex)
         pen = QPen(border, 3.0 if self.active else 1.25)
-        pen.setJoinStyle(Qt.RoundJoin)
+        pen.setJoinStyle(enum_value(Qt, "PenJoinStyle", "RoundJoin"))
         painter.setPen(pen)
         painter.setBrush(QBrush(fill))
 
@@ -145,7 +146,7 @@ class FlowchartNodeItem(QGraphicsItem):
         painter.setFont(font)
         painter.setPen(QColor("#1f2937"))
         painter.setClipPath(shape_path)
-        painter.drawText(text_rect, Qt.AlignCenter | Qt.TextWordWrap, self.label)
+        painter.drawText(text_rect, enum_value(Qt, "AlignmentFlag", "AlignCenter") | enum_value(Qt, "TextFlag", "TextWordWrap"), self.label)
         painter.restore()
 
 
@@ -163,14 +164,14 @@ class SummaryStripItem(QGraphicsItem):
 
     def paint(self, painter: QPainter, option, widget=None) -> None:
         painter.save()
-        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setRenderHint(enum_value(QPainter, "RenderHint", "Antialiasing"), True)
         painter.setBrush(QBrush(QColor("#f8fafc")))
         painter.setPen(QPen(QColor("#cbd5e1"), 1.1))
         painter.drawRoundedRect(self.rect, 8, 8)
         font = QFont("Segoe UI", 12)
         painter.setFont(font)
         painter.setPen(QColor("#334155"))
-        painter.drawText(self.rect.adjusted(14, 6, -14, -6), Qt.AlignCenter | Qt.TextWordWrap, self.text)
+        painter.drawText(self.rect.adjusted(14, 6, -14, -6), enum_value(Qt, "AlignmentFlag", "AlignCenter") | enum_value(Qt, "TextFlag", "TextWordWrap"), self.text)
         painter.restore()
 
 
@@ -194,14 +195,14 @@ class FrameworkDecisionTreeView(QGraphicsView):
         super().__init__(parent)
         self._scene = QGraphicsScene(self)
         self.setScene(self._scene)
-        self.setRenderHint(QPainter.Antialiasing, True)
-        self.setRenderHint(QPainter.TextAntialiasing, True)
-        self.setDragMode(QGraphicsView.ScrollHandDrag)
-        self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
-        self.setResizeAnchor(QGraphicsView.AnchorViewCenter)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setRenderHint(enum_value(QPainter, "RenderHint", "Antialiasing"), True)
+        self.setRenderHint(enum_value(QPainter, "RenderHint", "TextAntialiasing"), True)
+        self.setDragMode(enum_value(QGraphicsView, "DragMode", "ScrollHandDrag"))
+        self.setTransformationAnchor(enum_value(QGraphicsView, "ViewportAnchor", "AnchorUnderMouse"))
+        self.setResizeAnchor(enum_value(QGraphicsView, "ViewportAnchor", "AnchorViewCenter"))
+        self.setHorizontalScrollBarPolicy(enum_value(Qt, "ScrollBarPolicy", "ScrollBarAsNeeded"))
+        self.setVerticalScrollBarPolicy(enum_value(Qt, "ScrollBarPolicy", "ScrollBarAsNeeded"))
+        self.setContextMenuPolicy(enum_value(Qt, "ContextMenuPolicy", "CustomContextMenu"))
         self.setToolTip("Use the mouse wheel to zoom. Drag to pan. Right-click for zoom, export, and larger view.")
         self.customContextMenuRequested.connect(self._show_context_menu)
 
@@ -536,10 +537,10 @@ class FrameworkDecisionTreeView(QGraphicsView):
         if not active:
             edge_color.setAlpha(150)
         pen = QPen(edge_color, 3.0 if active else 0.9)
-        pen.setCapStyle(Qt.RoundCap)
-        pen.setJoinStyle(Qt.RoundJoin)
+        pen.setCapStyle(enum_value(Qt, "PenCapStyle", "RoundCap"))
+        pen.setJoinStyle(enum_value(Qt, "PenJoinStyle", "RoundJoin"))
         if not active:
-            pen.setStyle(Qt.DashLine)
+            pen.setStyle(enum_value(Qt, "PenStyle", "DashLine"))
 
         item = QGraphicsPathItem(path)
         item.setPen(pen)
@@ -582,12 +583,12 @@ class FrameworkDecisionTreeView(QGraphicsView):
         image = QImage(
             max(1, int(rect.width() * scale)),
             max(1, int(rect.height() * scale)),
-            QImage.Format_ARGB32,
+            enum_value(QImage, "Format", "Format_ARGB32"),
         )
         image.fill(QColor("white"))
         painter = QPainter(image)
-        painter.setRenderHint(QPainter.Antialiasing, True)
-        painter.setRenderHint(QPainter.TextAntialiasing, True)
+        painter.setRenderHint(enum_value(QPainter, "RenderHint", "Antialiasing"), True)
+        painter.setRenderHint(enum_value(QPainter, "RenderHint", "TextAntialiasing"), True)
         self._scene.render(painter, QRectF(image.rect()), rect)
         painter.end()
         return image
@@ -917,7 +918,7 @@ class FrameworkDecisionTreeView(QGraphicsView):
         if rect.isEmpty() or self.viewport().width() <= 0:
             return
         self.resetTransform()
-        self.fitInView(rect, Qt.KeepAspectRatio)
+        self.fitInView(rect, enum_value(Qt, "AspectRatioMode", "KeepAspectRatio"))
 
     def _zoom_by(self, factor: float) -> None:
         self.scale(float(factor), float(factor))
@@ -938,7 +939,7 @@ class FrameworkDecisionTreeView(QGraphicsView):
         act_zoom = menu.addAction("Open larger view")
         act_copy = menu.addAction("Copy graph")
         act_export = menu.addAction("Save graph")
-        chosen = menu.exec_(self.mapToGlobal(pos))
+        chosen = qt_exec(menu, self.mapToGlobal(pos))
         if chosen == act_zoom_in:
             self.zoom_in()
         elif chosen == act_zoom_out:
@@ -958,13 +959,13 @@ class FrameworkDecisionTreeView(QGraphicsView):
 
     def _open_larger_view(self) -> None:
         dlg = QDialog(self)
-        dlg.setWindowTitle("Framework Decision - larger view")
+        dlg.setWindowTitle("Framework Decision larger view")
         layout = QVBoxLayout(dlg)
         view = FrameworkDecisionTreeView(dlg)
         layout.addWidget(view)
         view.update_tree(self._framework_type, self._data_characteristics)
         dlg.resize(1250, 780)
-        dlg.exec_()
+        qt_exec(dlg)
 
     # ------------------------------------------------------------------
     # Data helpers

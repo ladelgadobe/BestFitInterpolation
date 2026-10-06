@@ -10,11 +10,11 @@ Best Fit Interpolator helps users compare deterministic, geostatistical, machine
 
 [![QGIS](https://img.shields.io/badge/QGIS-3.14%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
-[![Version](https://img.shields.io/badge/version-1.1-1565C0?style=for-the-badge)](https://github.com/ladelgadobe/BestFitInterpolation/releases/tag/v1.1)
+[![Version](https://img.shields.io/badge/version-2.0-1565C0?style=for-the-badge)](https://github.com/ladelgadobe/BestFitInterpolation/releases/tag/v2.0)
 [![Article](https://img.shields.io/badge/Reference%20Article-Precision%20Agriculture-1B5E20?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
 
 [Reference article](https://doi.org/10.1007/s11119-025-10311-8) |
-[Tutorial PDF](BestFitInterpolation_PluginV1.0.2.pdf) |
+[User manual PDF](BestFitInterpolator_User_Manual.pdf) |
 [Issues](https://github.com/ladelgadobe/BestFitInterpolation/issues) |
 [Contact](mailto:ladelgadobe@unal.edu.co)
 
@@ -86,7 +86,7 @@ Use this workflow when auxiliary raster layers or environmental covariates are a
 | Variable selection | RMSE, RMSE %, MAE, Pearson r, R², LCCC | PDF report export |
 | Polygon boundary support | Observed-vs-predicted plots | Article citation included |
 | Pixel size control | Interpolation raster generation | Visual framework figures |
-| Moran's I support | Semivariogram preview | Method-selection summary |
+| Global Moran and Outlier diagnostic | Semivariogram preview and aligned map comparison | Temporary interactive HTML summary |
 
 ---
 
@@ -104,7 +104,20 @@ Use this workflow when auxiliary raster layers or environmental covariates are a
 
 ---
 
-## Version 1.1
+## Version 2.0
+
+- Adds Outlier diagnostic with statistical thresholds, Global Moran, Local Moran/LISA and explicit Keep/Exclude decisions.
+- Starts a clean session on reopening and keeps IDW/TPS controls separate, Regression Kriging panels side by side and map settings synchronized with Larger View.
+- Restores the MoM/REML display distinction and exposes three-model validation in the advanced semivariogram dialogs.
+- Lets Framework prepare and evaluate RF, SVM and RK directly; separates the selected next method from the successfully executed interpolation.
+- Compares aligned maps and opens temporary, navigable HTML reports with collapsible sections.
+- Supports normal, dense and massive processing profiles with bounded tuning, local spatial prediction and recorded validation strategies.
+- Fixes Qt5/Qt6 and Matplotlib compatibility, native NumPy indices on 32-bit QGIS, and Python/platform isolation for machine-learning dependencies.
+- Updates the English manual with current Paulínia screenshots, detailed outlier controls and complete comparison/report/large-data workflows.
+
+[Full release notes](docs/releases/2.0.md).
+
+### Previous version 1.1
 
 - Keeps the Framework semivariogram preview synchronized with the active Geostatistics model.
 - Prevents interpolation when the point and polygon layers have incompatible CRS or no usable spatial overlap.
@@ -171,7 +184,9 @@ If you use this plugin in academic work, please cite both the software and the r
 
 ### Cite the software
 
-Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator* (Version 1.1) [QGIS plugin]. Zenodo. https://doi.org/10.5281/zenodo.21891225
+Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator* (Version 2.0) [QGIS plugin]. GitHub. https://github.com/ladelgadobe/BestFitInterpolation/releases/tag/v2.0
+
+Archived version: Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator* (Version 1.1) [QGIS plugin]. Zenodo. https://doi.org/10.5281/zenodo.21891225
 
 ---
 
@@ -217,7 +232,7 @@ DELGADO BEJARANO, Laura; LOUREIRO GONÇALVES OLIVEIRA, Agda; FIOLO POZZUTO, Joã
 
 ### Download citation files
 
-[Download BibTeX (.bib)](CITATION.bib) | [Download RefMan / RIS (.ris)](CITATION.ris) | [Open the software DOI](https://doi.org/10.5281/zenodo.21891225) | [Open the article DOI](https://doi.org/10.1007/s11119-025-10311-8)
+[Download BibTeX (.bib)](CITATION.bib) | [Download RefMan / RIS (.ris)](CITATION.ris) | [Open the archived 1.1 software DOI](https://doi.org/10.5281/zenodo.21891225) | [Open the article DOI](https://doi.org/10.1007/s11119-025-10311-8)
 
 GitHub also provides its native **Cite this repository** option from [`CITATION.cff`](CITATION.cff).
 
@@ -229,3 +244,7 @@ GitHub also provides its native **Cite this repository** option from [`CITATION.
 Spatial interpolation support for digital soil mapping and precision agriculture.
 
 </div>
+## Compatibility verification
+
+Compatibility was exercised on every stable QGIS 3 minor from 3.14 through 3.44 and on QGIS 4.0/4.2. Native Windows checks also cover QGIS 3.14.0 in 32-bit Python, QGIS 3.44.8 and QGIS 4.2.3. Automated checks use official Docker images, preserved numerical fixtures and the read-only QGIS 4 checker. See the [measured compatibility report](docs/qgis_compatibility_report.md), [integer/ABI correction](docs/integer_compatibility_20261006.md) and [methodology](docs/qgis_compatibility.md) for exact environments and limits. Main requires the compatibility gate; metadata eligibility does not certify every distribution or future version. Full scheduled and release checks discover new stable QGIS 4 minors and their intermediate versions.
+

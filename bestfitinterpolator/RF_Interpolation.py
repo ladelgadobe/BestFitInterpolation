@@ -23,6 +23,25 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+try:
+    from .performance_policy import (
+        MASSIVE_RF_MAX_TREES,
+        MASSIVE_RF_MIN_LEAF,
+        is_massive_dataset,
+        dense_search_limits,
+        predict_in_chunks,
+        tuning_subset,
+    )
+except Exception:  # pragma: no cover
+    from performance_policy import (  # type: ignore
+        MASSIVE_RF_MAX_TREES,
+        MASSIVE_RF_MIN_LEAF,
+        is_massive_dataset,
+        dense_search_limits,
+        predict_in_chunks,
+        tuning_subset,
+    )
+
 
 def _build_param_distributions(
     use_grid_search: bool,
@@ -100,7 +119,8 @@ def _tune_random_forest(
     """
     try:
         from sklearn.ensemble import RandomForestRegressor
-        from sklearn.model_selection import KFold, RandomizedSearchCV
+        from sklearn.metrics import mean_absolute_error
+        from sklearn.model_selection import KFold, ParameterSampler
     except Exception as e:
         raise ImportError(
             "Random Forest requires scikit-learn, but it could not be imported."
@@ -114,6 +134,13 @@ def _tune_random_forest(
     param_dist, is_search = _build_param_distributions(
         use_grid_search, manual_params, grid_params, n_covariates
     )
+    if is_massive_dataset(len(y)):
+        param_dist["n_estimators"] = sorted(
+            {max(1, min(int(v), MASSIVE_RF_MAX_TREES)) for v in param_dist["n_estimators"]}
+        )
+        param_dist["min_samples_leaf"] = sorted(
+            {max(MASSIVE_RF_MIN_LEAF, int(v)) for v in param_dist["min_samples_leaf"]}
+        )
 
     if not use_grid_search or not is_search:
         if progress_fn is not None:
@@ -138,13 +165,12 @@ def _tune_random_forest(
         }
         return best_model, best_params
 
-    base_model = RandomForestRegressor(
-        n_estimators=200,
-        n_jobs=1,
-        random_state=random_state,
+    cv_folds, max_iterations, _ = dense_search_limits(
+        len(y), cv_folds, max_iterations
     )
-
-    cv_folds = max(2, int(cv_folds))
+    X_search, y_search, subset_used = tuning_subset(
+        X, y, random_state=random_state
+    )
     cv = KFold(n_splits=cv_folds, shuffle=True, random_state=random_state)
 
     total_combos = (
@@ -155,40 +181,69 @@ def _tune_random_forest(
     max_iterations = max(1, int(max_iterations))
     n_iter = min(max_iterations, total_combos) if total_combos > 0 else 1
 
+    candidates = list(ParameterSampler(param_dist, n_iter=n_iter, random_state=random_state))
+    splits = list(cv.split(X_search))
+    total_steps = max(1, len(candidates) * len(splits) + 1)
+    completed = 0
+    best_score = float("inf")
+    best_raw = candidates[0]
     if progress_fn is not None:
+        subset_text = (
+            f" on {len(y_search)} representative rows; final fit uses all {len(y)} rows"
+            if subset_used else ""
+        )
         progress_fn(
-            20,
-            100,
-            f"Running Random Search ({n_iter} iterations, {cv_folds}-fold CV)…",
+            completed,
+            total_steps,
+            f"Running Random Search ({n_iter} settings, {cv_folds}-fold CV){subset_text}…",
         )
 
-    search = RandomizedSearchCV(
-        estimator=base_model,
-        param_distributions=param_dist,
-        n_iter=n_iter,
-        scoring="neg_mean_absolute_error",
-        cv=cv,
+    for candidate_no, params in enumerate(candidates, start=1):
+        fold_scores = []
+        for fold_no, (train_idx, test_idx) in enumerate(splits, start=1):
+            candidate_model = RandomForestRegressor(
+                n_estimators=int(params["n_estimators"]),
+                max_features=int(params["max_features"]),
+                min_samples_leaf=int(params["min_samples_leaf"]),
+                n_jobs=1,
+                random_state=random_state,
+            )
+            candidate_model.fit(X_search[train_idx], y_search[train_idx])
+            fold_pred = candidate_model.predict(X_search[test_idx])
+            fold_scores.append(float(mean_absolute_error(y_search[test_idx], fold_pred)))
+            completed += 1
+            if progress_fn is not None:
+                progress_fn(
+                    completed,
+                    total_steps,
+                    f"Random Forest setting {candidate_no}/{len(candidates)}, fold {fold_no}/{len(splits)}…",
+                )
+        score = float(np.mean(fold_scores)) if fold_scores else float("inf")
+        if score < best_score:
+            best_score = score
+            best_raw = params
+
+    best_model = RandomForestRegressor(
+        n_estimators=int(best_raw["n_estimators"]),
+        max_features=int(best_raw["max_features"]),
+        min_samples_leaf=int(best_raw["min_samples_leaf"]),
         n_jobs=1,
-        pre_dispatch=1,
         random_state=random_state,
-        refit=True,
-        verbose=0,
     )
-
-    search.fit(X, y)
-
-    if progress_fn is not None:
-        progress_fn(90, 100, "Finalizing Random Forest model…")
-
-    best_model = search.best_estimator_
+    best_model.fit(X, y)
     best_params = {
         "ntree": int(best_model.n_estimators),
         "mtry": int(best_model.max_features),
         "nodesize": int(best_model.min_samples_leaf),
+        "cv_mae": float(best_score),
+        "cv_folds": int(cv_folds),
+        "search_n": int(len(candidates)),
+        "search_subset_n": int(len(y_search)),
+        "search_full_n": int(len(y)),
     }
 
     if progress_fn is not None:
-        progress_fn(100, 100, "Random Forest search completed.")
+        progress_fn(total_steps, total_steps, "Random Forest search completed.")
 
     return best_model, best_params
 
@@ -254,11 +309,17 @@ def rf_interpolation(
     if progress_fn is not None:
         progress_fn(92, 100, "Computing training metrics…")
 
-    y_pred_train = model.predict(X)
+    y_pred_train = predict_in_chunks(
+        model, X, progress_fn=progress_fn, label="Evaluating Random Forest training fit…"
+    )
     train_mae = float(mean_absolute_error(y, y_pred_train))
     train_rmse = float(np.sqrt(np.mean((y - y_pred_train) ** 2)))
 
-    grid_cols = list(dict.fromkeys([x_col, y_col] + feature_columns))
+    grid_extra_cols = [
+        col for col in ("__flat_index", "__grid_row", "__grid_col")
+        if col in grid_df.columns
+    ]
+    grid_cols = list(dict.fromkeys([x_col, y_col] + grid_extra_cols + feature_columns))
     grid_clean = grid_df[grid_cols].dropna().copy()
 
     if grid_clean.empty:
@@ -269,16 +330,29 @@ def rf_interpolation(
     if progress_fn is not None:
         progress_fn(96, 100, "Predicting Random Forest values on the interpolation grid…")
 
-    grid_pred = model.predict(X_grid)
+    grid_pred = predict_in_chunks(
+        model,
+        X_grid,
+        progress_fn=progress_fn,
+        label="Predicting Random Forest values on the interpolation grid…",
+    )
     grid_clean[target_column + "_pred"] = grid_pred
 
     merged = grid_df.copy()
-    merged = pd.merge(
-        merged,
-        grid_clean[[x_col, y_col, target_column + "_pred"]],
-        on=[x_col, y_col],
-        how="left",
-    )
+    if "__flat_index" in merged.columns and "__flat_index" in grid_clean.columns:
+        merged = pd.merge(
+            merged,
+            grid_clean[["__flat_index", target_column + "_pred"]],
+            on="__flat_index",
+            how="left",
+        )
+    else:
+        merged = pd.merge(
+            merged,
+            grid_clean[[x_col, y_col, target_column + "_pred"]],
+            on=[x_col, y_col],
+            how="left",
+        )
 
     feature_names = feature_columns
     importances = model.feature_importances_

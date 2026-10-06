@@ -21,8 +21,8 @@ def test_auto_cv_boundary_and_help_text_are_consistent():
 
     assert policy.decide_automatic_cv(100) == ("loocv", None)
     assert policy.decide_automatic_cv(101) == ("kfold", 10)
-    assert policy.decide_automatic_cv(1000) == ("kfold", 10)
-    assert policy.decide_automatic_cv(1001) == ("kfold", 5)
+    assert policy.decide_automatic_cv(500) == ("kfold", 10)
+    assert policy.decide_automatic_cv(501) == ("kfold", 5)
     assert "100 samples" in policy.AUTO_CV_HELP_TEXT
     assert "101 samples" in policy.AUTO_CV_HELP_TEXT
     assert "10 folds" in policy.AUTO_CV_HELP_TEXT

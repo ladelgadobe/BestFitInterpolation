@@ -67,7 +67,7 @@ def load_notifications():
     sys.modules["qgis.PyQt.QtWidgets"] = widgets
 
     path = ROOT / "notifications.py"
-    spec = importlib.util.spec_from_file_location("popup_notifications", path)
+    spec = importlib.util.spec_from_file_location("bestfitinterpolator.popup_notifications", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -153,8 +153,9 @@ def test_plugin_wraps_iface_and_all_message_bar_calls_use_it():
                 continue
             if node.func.attr not in {"pushMessage", "pushWarning", "pushCritical", "pushSuccess"}:
                 continue
-            receiver = ast.unparse(node.func.value)
-            if receiver != "self.iface.messageBar()":
+            receiver = ast.dump(node.func.value)
+            expected = ast.dump(ast.parse("self.iface.messageBar()", mode="eval").body)
+            if receiver != expected:
                 offenders.append(f"{path.name}:{node.lineno}: {receiver}")
 
     assert not offenders, "Unrouted message-bar calls found:\n" + "\n".join(offenders)

@@ -49,7 +49,7 @@ def test_about_tab_is_built_from_plugin_metadata():
     assert '"article_title"' in method_source
     assert '"article_citation"' in method_source
     assert 'tabs.addTab(about_tab, "About")' in method_source
-    assert "root_layout.setAlignment(Qt.AlignTop)" in method_source
+    assert 'root_layout.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignTop"))' in method_source
     assert "heading_layout.addStretch()" not in method_source
     assert (
         "If you use this plugin in academic work, please cite the "
@@ -72,7 +72,7 @@ def test_about_links_open_externally_and_manual_is_configured():
 
     assert general["manual"] == (
         "https://github.com/ladelgadobe/BestFitInterpolation/"
-        "blob/main/BestFitInterpolation_PluginV1.0.2.pdf"
+        "blob/main/BestFitInterpolator_User_Manual.pdf"
     )
     assert general["repository"].startswith("https://github.com/")
     assert general["tracker"].endswith("/issues")

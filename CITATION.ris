@@ -22,10 +22,9 @@ TI  - Best Fit Interpolator
 AU  - Delgado Bejarano, Laura
 AU  - Rios do Amaral, Lucas
 PY  - 2026
-DA  - 2026/08/11
-PB  - Zenodo
-ET  - Version 1.1
-DO  - 10.5281/zenodo.21891225
-UR  - https://doi.org/10.5281/zenodo.21891225
+DA  - 2026/10/06
+PB  - GitHub
+ET  - Version 2.0
+UR  - https://github.com/ladelgadobe/BestFitInterpolation/releases/tag/v2.0
 N1  - QGIS plugin for selecting, validating, and applying spatial interpolation methods based on data characteristics.
 ER  -

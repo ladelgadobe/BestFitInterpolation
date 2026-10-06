@@ -1,0 +1,264 @@
+{
+  "qgis": "3.44.8-Solothurn",
+  "qt": "5.15.13",
+  "python": "3.12.13",
+  "rtol": 1e-05,
+  "atol": 1e-07,
+  "results": {
+    "idw": [
+      1.2899055015722145,
+      1.3956979397011269,
+      1.3922114712863314,
+      0.6545193255359112,
+      0.8610260313785848
+    ],
+    "tps": [
+      1.322316679505252,
+      1.5891469092710935,
+      1.3229276718485279,
+      0.8693552569714103,
+      0.783825855983219
+    ],
+    "lags": [
+      2.2394057759173234,
+      3.937550176367387,
+      5.232669673427092,
+      6.860893669791111
+    ],
+    "semivariance": [
+      0.2344197778222462,
+      0.5642181817286928,
+      0.6067042745898802,
+      0.9390731355567532
+    ],
+    "metrics": [
+      0.3500000000000001,
+      10.769230769230772,
+      0.32500000000000007,
+      0.9667796610169491,
+      0.9850192912279306,
+      0.9821428571428573
+    ],
+    "fit_spherical": [
+      0.2344197778222462,
+      0.5061797217955247,
+      8.0
+    ],
+    "model_spherical": [
+      0.44140745567065454,
+      0.5779500494888073,
+      0.6602225733096391,
+      0.7259363751718464
+    ],
+    "kriging_spherical": [
+      1.255869209690946,
+      1.53883974566424,
+      1.2711187205439187,
+      0.7497804164582642,
+      0.652590508366572
+    ],
+    "cv_spherical": [
+      0.3569218998385839,
+      0.27695415715824334,
+      0.7666129986184054,
+      0.830550790142867
+    ],
+    "fit_exponential": [
+      0.2344197778222462,
+      0.8705763658823433,
+      8.0
+    ],
+    "model_exponential": [
+      0.44697980634596324,
+      0.572826823495786,
+      0.6523676111540693,
+      0.7357203500694642
+    ],
+    "kriging_exponential": [
+      1.2715663807843818,
+      1.527035263709624,
+      1.2879606114588378,
+      0.7261169108446762,
+      0.6830461348476485
+    ],
+    "cv_exponential": [
+      0.38351529003446166,
+      0.314863704372387,
+      0.7305391729733313,
+      0.8020400363112046
+    ],
+    "fit_gaussian": [
+      0.2344197778222462,
+      1.2668839053595724,
+      8.0
+    ],
+    "model_gaussian": [
+      0.32990105562872535,
+      0.5069819422309856,
+      0.675390181965887,
+      0.8941282879145017
+    ],
+    "kriging_gaussian": [
+      1.2979382039283172,
+      1.6239619821997437,
+      1.3095655781992512,
+      0.7834863658701001,
+      0.6635981816355385
+    ],
+    "cv_gaussian": [
+      0.3111007438099927,
+      0.26559937626865915,
+      0.8226903506100458,
+      0.8845926826092141
+    ],
+    "moran": [
+      0.539225806217463,
+      0.01
+    ],
+    "local_moran": [
+      0.01768105102561978,
+      0.7426358676289345,
+      1.961128157731414,
+      1.2962243586355806,
+      0.2879030457312016,
+      -0.04003424530083312,
+      0.5491104044782448,
+      1.2519854864653814,
+      0.5355438271439615,
+      -0.015600773375149332,
+      0.2952272369005904,
+      -0.002027351429032874,
+      0.10818746297308397,
+      -0.014868753189821967,
+      0.5949275659418879,
+      1.0927592918719327,
+      0.3695257790018316,
+      0.12377596698159865,
+      0.6666186204698745,
+      0.9638131246629597
+    ],
+    "lisa": [
+      "HH",
+      "NS",
+      "HH",
+      "HH",
+      "HH",
+      "NS",
+      "NS",
+      "HH",
+      "NS",
+      "NS",
+      "NS",
+      "NS",
+      "NS",
+      "NS",
+      "NS",
+      "NS",
+      "NS",
+      "NS",
+      "LL",
+      "LL"
+    ],
+    "statistical_votes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "rk_residuals": [
+      -0.1993070490530453,
+      0.6700346141078872,
+      0.9145269593306322,
+      0.6647831767451429,
+      0.025877950877565503,
+      -0.32312422420180487,
+      0.4834857193287352,
+      0.6916796254095157,
+      0.4211159846339678,
+      -0.28907419421813874,
+      -0.6266250240050568,
+      0.27177649068145904,
+      0.4993479303949565,
+      0.24093129253023615,
+      -0.3751639307592391,
+      -1.0850505210683137,
+      -0.3086996246786804,
+      -0.11882763106048799,
+      -0.34367240498420565,
+      -1.0841216309772177
+    ],
+    "rk_final": [
+      1.2717535875123698,
+      1.521405100277068,
+      1.3546621329723159,
+      0.8343407879450482,
+      0.7516391032456525
+    ]
+  },
+  "source_sha256": {
+    "array_shape_utils.py": "0118a1d2cc8b13d7bab15d1380ccdb0fc7d0856f9b544d3817fd8a32c7e1ccb3",
+    "async_jobs.py": "3ba59212d01b2f861da12d4f86bace1634cc2db5158d66de6ed9fcd8d89f6db3",
+    "BestFitInterpolator.py": "fceb1403ee349fdf4492642ccc79ebb79e091fdad5ef2a6a37af3ecc4b0e1298",
+    "compat.py": "5b4c85dae4f869e528fb44fe9d494eafb324363f6e0ae7513c46cc4e174c3c57",
+    "diagnostics_engine.py": "234b93374813c1e633bc6394ab937065217c6dc9dbac01e518eb63d39fce2c70",
+    "diagnostics_plot.py": "798d777afd1011f22187d11d94105f9e72d11c4f720518893b1717ac19aa303c",
+    "diagnostics_table.py": "62e7a6531160a115b83e00dec427bf3d44a04b567883645835827e0c6c2bbf10",
+    "diagnostics_ui.py": "f432c13d76246ae74d6d5dd7e9138a0b947a488d3b6f833d1427b7f2575c32e0",
+    "framework_decision_tree_view.py": "1938f9acea589fead12d9d70fc7c3b06e5615ef3944a06f238431a096a4ca4e8",
+    "framework_sdi_dialog.py": "929b73ec87672db5500a5be26193bfad616b7684a333a1b057d7eeaabaa1867b",
+    "framework_tab.py": "4d1c5b36916aa5a49d88c11c43c247654f437de203289ecfb58a2326636b1196",
+    "grid_utils.py": "7ab4b2a53424f23b535ebf01075d4c37059c0234b45fd98537c06d1cbea8bb30",
+    "IDW_optimized.py": "64f9690b9e8fa93fc2ef49e17d944613f5e26ad9aed6124e9e2ebc78bffc1032",
+    "interpolation_result.py": "65ecc1ccfeaf83990ab2f64f1eaaa7b7860b4405e96ea820886787c86309d227",
+    "kriging_ordinary.py": "ef9a75db777b08443fbf43578c60184d991f9b769403f7709c602205b79bb98f",
+    "kriging_reml.py": "a5ea5a61098e88017fb81e422a79ef85aee34c162dce89d7a8cf1815a2097f30",
+    "larger_view.py": "7f1e06850f38d5c03e7674d29b5ac5977a20f55297bbdff853b4af45028a8cf4",
+    "machine_learning_tab.py": "a3124e91fcb5f2a9a1e82edb5d6fafa47b4e4e6378947fc01da3b14092bc7c51",
+    "map_comparison.py": "ccdde6df04c905fdba5a796842c8cc6555fc1b9f91d8c24552958dcf8a594a74",
+    "map_comparison_ui.py": "9fb18241664b0629a5809064d2b7b40e462393430405f86bef09ed27804b63e7",
+    "map_controls.py": "33f3038e39bb8ca98b2f8db11afbf2cf4960d1cb97224877e77215fb214d1f92",
+    "ml_bootstrap.py": "7537e064b34ccdb5270f2f2f888bea605d1fc197a8a2c0e03f747e000396a8c5",
+    "mpl_compat.py": "671f21949fe4d2ede3c6afebd639622a08ba884e8499bf6e3cb2e90d94147e48",
+    "notifications.py": "281d9f0df6740745f2c46524a8ab0677453dd4ba07a1dcac7989cbc4ef84a5b0",
+    "ok_base_utils.py": "161c2953b3323d6fea6d0c8a0a1bb3f33ee1ee7baaedf730166b840136a565c5",
+    "ok_dispatcher.py": "94eecc4f60403cd4ec54200255cbe394aa0675d42b1fffcefb57518f5c36893b",
+    "ok_mom_integration.py": "88e29d4b6e1e475be6bb044c4f2797f5315e39f134855432be2d5b809fd58497",
+    "ok_reml_integration.py": "fdb5dece217ced2c0e07b2d62aca91afdad8d6f96d586c2ac7946ed3669b3f08",
+    "ok_r_integration_MoM.py": "68022a9a20f53a9746062440d916023902150daae18dafcb54488694383138fd",
+    "ok_r_integration_reml.py": "ea0dd105fa559b9a5c362a6b40c94b0f5571faa336457913ee5a42ab45a149a5",
+    "performance_policy.py": "2af2a28e50699a00bef1e18084a3baa21c7062508972c2e90eec660b4cf4ff73",
+    "plugin_upload.py": "96ae8409733ae2dc916b45cefb42b5375e8dedd1de8fbe003b9d8e49020009d3",
+    "reml_bridge.py": "71e964bd12e46241ec2d3ff446f36e3b9a55356bf97c83f462331e2fe0ab7550",
+    "report_builder.py": "2294ee435a9f365d52eecdd06b28395f2b137d9e1ac648ce61ced345bf852198",
+    "report_model.py": "567bb71d5922ba15e6076f02dcdde0281507f09149054fd94b461cbe6fe35432",
+    "resources.py": "c28ecf2d6df48c495f3da8724ba3840e50d147a3367bb2e5ef2b803ecd3dbbfb",
+    "RF_Interpolation.py": "d93e0a28c888a1fbfdbed3d9cc198ba1e88e5f4e631726df2b7cf6e9d4c5cde4",
+    "RF_RegressionKriging.py": "b398f4af0b1e95ccbacb86e177a24a72ad6b9b6a4fca894d19a0f86962c598e7",
+    "semivariogram_dialog.py": "561d5158a60ac942b874330f87fb2dcb7ac6671ccd4ddf7901ff33fcb5414837",
+    "semivariogram_engine.py": "432055de204843f97ab8dbd3c58dc4fc3cf8d90ee703ab7e299b33fa86b31f44",
+    "spatial_diagnostics.py": "350a8977cb434508a2e52b8f96f8e53e1daaae103be7e78c060dc1330535751b",
+    "SVM_Interpolation.py": "24a3c1e53383380b998877fdec47434f81e2c5f20c6a6a5095c4ac15451589cc",
+    "theme.py": "c943dd31c3cc690d17a7ce7ae3c4ddd2d63b49500079a6a357cc07fca912bfe6",
+    "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
+    "ui_refinement.py": "4379bc04c9429fd9c61f0054165883301bbab4b30606495870d14065842cb732",
+    "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
+    "variogram_utils.py": "ef2d5772c83e7692c8a73e86adf38c63350226b4fad1ccd9daba1b753086bbb0",
+    "__init__.py": "bb1c44ba0a3f523be92100adadb446ba79758c8c19d435b6e00c03c43c4c8741"
+  }
+}

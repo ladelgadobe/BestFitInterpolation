@@ -6,6 +6,7 @@ All code comments are in English.
 
 from __future__ import annotations
 
+from .compat import log_exception
 from typing import Optional
 
 from .ok_base_utils import OKStrategySelector, count_valid_samples
@@ -78,8 +79,8 @@ class OKDispatcherController:
             return
         try:
             self.set_points_layer_and_field(self._layer, self._field_name)
-        except Exception:  # nosec B110
-            pass
+        except Exception:
+            log_exception("Geostatistics fitting-method change failed")
 
     def _warn_if_reml_not_possible(self, decision):
         requested = self._selected_fit_method().strip().upper()
@@ -99,6 +100,9 @@ class OKDispatcherController:
 
     def _ensure_controller(self, layer, field_name: str):
         n = count_valid_samples(layer, field_name)
+        state = getattr(self.plugin, "diagnostics_states", {}).get((layer.id(), field_name)) if layer is not None else None
+        if state is not None:
+            n = int(state.analysis_mask.sum())
         decision = self.selector.choose(n, self._selected_fit_method())
         self._warn_if_reml_not_possible(decision)
 
@@ -118,15 +122,15 @@ class OKDispatcherController:
         if must_rebuild:
             if self._active is not None and hasattr(self._active, "set_dispatcher_active"):
                 try:
-                    self._active.set_dispatcher_active(False)
+                    self._active.dispose()
                 except Exception:  # nosec B110
-                    pass
+                    log_exception("Could not dispose the previous Geostatistics controller")
             self._active = self._build_controller(target_mode)
             if hasattr(self._active, "set_dispatcher_active"):
                 try:
                     self._active.set_dispatcher_active(True)
                 except Exception:  # nosec B110
-                    pass
+                    log_exception("Could not activate the new Geostatistics controller")
             self._active_mode = target_mode
             self._layer_id = target_layer_id
             self._field_name = field_name
@@ -135,13 +139,24 @@ class OKDispatcherController:
                 try:
                     self._active.set_dispatcher_active(True)
                 except Exception:  # nosec B110
-                    pass
+                    log_exception("Could not reactivate the Geostatistics controller")
         return self._active
 
     def set_points_layer_and_field(self, layer, field_name: str):
         self._layer = layer
         ctrl = self._ensure_controller(layer, field_name)
         ctrl.set_points_layer_and_field(layer, field_name)
+
+    def dispose(self):
+        if self._active is not None:
+            self._active.dispose()
+        combo = getattr(self.dlg, "cmbOKFitMethod", None)
+        if combo is not None:
+            try:
+                combo.currentIndexChanged.disconnect(self._on_fit_method_changed)
+            except (RuntimeError, TypeError):
+                pass
+        self._active = None
 
     def clear_plots(self):
         if self._active is not None and hasattr(self._active, 'clear_plots'):

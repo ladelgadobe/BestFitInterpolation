@@ -26,5 +26,5 @@ def test_visible_sources_have_no_mojibake_markers():
 def test_tps_title_and_graph_menu_are_encoding_safe():
     source = (ROOT / "BestFitInterpolator.py").read_text(encoding="utf-8-sig")
 
-    assert 'menu.addAction("Save graph...")' in source
+    assert 'menu.addAction("Save graph")' in source
     assert 'r"$\\epsilon=0.0001$"' in source

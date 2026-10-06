@@ -11,8 +11,21 @@
 # - We factorize the (n+1)x(n+1) system ONCE (LU), then reuse for every prediction.
 
 import numpy as np
+from collections import OrderedDict
+from scipy.spatial import cKDTree
 from scipy.spatial.distance import cdist
 from scipy.linalg import lu_factor, lu_solve
+
+try:
+    from .performance_policy import (
+        DENSE_KRIGING_NMAX,
+        DENSE_KRIGING_NMIN,
+        DENSE_SAMPLE_THRESHOLD,
+    )
+except Exception:  # pragma: no cover - direct module loading in diagnostics
+    DENSE_KRIGING_NMAX = 64
+    DENSE_KRIGING_NMIN = 16
+    DENSE_SAMPLE_THRESHOLD = 500
 
 def _spherical_core(h, a, c):
     a = max(float(a), 1e-12)
@@ -79,7 +92,10 @@ def _build_system(x, y, nugget, psill, var_range, model_key):
 def ordinary_kriging_interpolation(
     x, y, z, x_pred, y_pred,
     nugget, psill, var_range, model,
-    progress_fn=None
+    progress_fn=None,
+    nmax=None,
+    nmin=DENSE_KRIGING_NMIN,
+    dense_threshold=DENSE_SAMPLE_THRESHOLD,
 ):
     """
     Ordinary Kriging predictions at (x_pred, y_pred).
@@ -90,6 +106,9 @@ def ordinary_kriging_interpolation(
     x_pred, y_pred : 1D arrays
     nugget (c0), psill (c), var_range (a), model : as in UI
     progress_fn : optional callable(int_done, int_total) to report progress
+    nmax : int or None
+        Moving-neighborhood size. None preserves global kriging up to 500
+        samples and automatically uses 64 neighbors above that threshold.
 
     Returns
     -------
@@ -108,34 +127,84 @@ def ordinary_kriging_interpolation(
     model_key = _normalize_model(model)
     a = float(var_range); c0 = float(nugget); c = float(psill)
 
-    # Factorize system once
-    lu, piv = _build_system(x, y, c0, c, a, model_key)
-
     preds = np.empty(xp.size, dtype=float)
     total = xp.size
-    # Compute distances to all data for all predictions in chunks to save memory
-    chunk = 5000 if total > 20000 else 2000
-    done = 0
-    for start in range(0, total, chunk):
-        end = min(total, start + chunk)
-        Xblk = xp[start:end]; Yblk = yp[start:end]
-        # vectorized distance block (data vs. block)
-        D0 = np.hypot(x[None, :] - Xblk[:, None], y[None, :] - Yblk[:, None])  # (m, n)
-        G0 = _variogram(D0, a, c0, c, model_key)                                # (m, n)
-        # Solve for each row in the block
-        rhs = np.empty((G0.shape[0], G0.shape[1] + 1), dtype=float)
-        rhs[:, :-1] = G0
-        rhs[:, -1]  = 1.0
-        # lu_solve solves A x = b for each column of b; transpose to use rows
-        sol = lu_solve((lu, piv), rhs.T, check_finite=False).T
-        w = sol[:, :-1]
-        preds[start:end] = (w @ z)
+    requested_nmax = None if nmax is None else int(nmax)
+    if requested_nmax is None:
+        requested_nmax = DENSE_KRIGING_NMAX if x.size > int(dense_threshold) else x.size
+    local_k = max(2, min(x.size, max(int(nmin), requested_nmax)))
+    use_local = local_k < x.size
 
-        done = end
+    if not use_local:
+        # Legacy global solve: one factorization reused for every prediction.
+        lu, piv = _build_system(x, y, c0, c, a, model_key)
+        bytes_per_query = max(x.size * 40, 1)
+        chunk = max(1, min(total, (64 * 1024 * 1024) // bytes_per_query))
+        for start in range(0, total, chunk):
+            end = min(total, start + chunk)
+            Xblk = xp[start:end]
+            Yblk = yp[start:end]
+            D0 = np.hypot(x[None, :] - Xblk[:, None], y[None, :] - Yblk[:, None])
+            G0 = _variogram(D0, a, c0, c, model_key)
+            rhs = np.empty((G0.shape[0], G0.shape[1] + 1), dtype=float)
+            rhs[:, :-1] = G0
+            rhs[:, -1] = 1.0
+            sol = lu_solve((lu, piv), rhs.T, check_finite=False).T
+            preds[start:end] = sol[:, :-1] @ z
+            if progress_fn is not None:
+                progress_fn(end, total)
+        return preds
+
+    # Dense path: exact k-nearest moving neighborhoods, grouped and cached so
+    # adjacent raster cells sharing a neighborhood reuse the same factorization.
+    train_xy = np.column_stack((x, y))
+    tree = cKDTree(train_xy)
+    cache = OrderedDict()
+    max_cached_systems = 256
+    query_chunk = 2048
+    for start in range(0, total, query_chunk):
+        end = min(total, start + query_chunk)
+        query_xy = np.column_stack((xp[start:end], yp[start:end]))
+        try:
+            _, neighbors = tree.query(query_xy, k=local_k, workers=1)
+        except TypeError:  # older QGIS SciPy
+            _, neighbors = tree.query(query_xy, k=local_k)
+        neighbors = np.asarray(neighbors, dtype=np.int64)
+        if neighbors.ndim == 1:
+            neighbors = neighbors[:, None]
+        # Sorting only canonicalizes the set; the kriging equations are order invariant.
+        canonical = np.sort(neighbors, axis=1)
+        unique_sets, inverse = np.unique(canonical, axis=0, return_inverse=True)
+        block_pred = np.empty(end - start, dtype=float)
+
+        for group_id, subset in enumerate(unique_sets):
+            rows = np.flatnonzero(inverse == group_id)
+            key = tuple(int(v) for v in subset)
+            cached = cache.get(key)
+            if cached is None:
+                sx = x[subset]
+                sy = y[subset]
+                sz = z[subset]
+                lu, piv = _build_system(sx, sy, c0, c, a, model_key)
+                cached = (lu, piv, sx, sy, sz)
+                cache[key] = cached
+                if len(cache) > max_cached_systems:
+                    cache.popitem(last=False)
+            else:
+                cache.move_to_end(key)
+            lu, piv, sx, sy, sz = cached
+            qx = query_xy[rows, 0]
+            qy = query_xy[rows, 1]
+            distances = np.hypot(sx[None, :] - qx[:, None], sy[None, :] - qy[:, None])
+            gamma0 = _variogram(distances, a, c0, c, model_key)
+            rhs = np.empty((rows.size, local_k + 1), dtype=float)
+            rhs[:, :-1] = gamma0
+            rhs[:, -1] = 1.0
+            sol = lu_solve((lu, piv), rhs.T, check_finite=False).T
+            block_pred[rows] = sol[:, :-1] @ sz
+
+        preds[start:end] = block_pred
         if progress_fn is not None:
-            try:
-                progress_fn(done, total)
-            except Exception:  # nosec B110
-                pass
+            progress_fn(end, total)
 
     return preds

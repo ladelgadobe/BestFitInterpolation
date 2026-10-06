@@ -3,12 +3,15 @@
 Automatic dependency bootstrap for machine learning modules.
 All code comments are in English.
 """
+from .compat import enum_value, qt_exec, ml_dependency_requirements
 
 import os
 import sys
 import site
 import subprocess  # nosec B404
 import importlib
+from pathlib import Path
+import sysconfig
 
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMessageBox, QApplication
@@ -16,6 +19,27 @@ from qgis.core import QgsApplication
 
 
 PLUGIN_PACKAGE_NAME = "bestfitinterpolator"
+
+
+def dependency_directory(root, version=None, platform_tag=None):
+    """Reuse legacy wheels only for their interpreter; isolate other binary ABIs."""
+    root = Path(root)
+    version = sys.version_info[:2] if version is None else version
+    python_tag = 'cp{}{}'.format(*version[:2])
+    platform_tag = (sysconfig.get_platform() if platform_tag is None else platform_tag).replace('-', '_').replace('.', '_')
+    scoped = root / (python_tag + '_' + platform_tag)
+    if scoped.is_dir():
+        return str(scoped)
+    wheels = list(root.glob('*.dist-info/WHEEL'))
+    compatible = bool(wheels)
+    for wheel in wheels:
+        tags = [line[5:].strip().split('-') for line in wheel.read_text(encoding='utf-8').splitlines() if line.startswith('Tag: ')]
+        accepted = any(len(tag) == 3 and ((tag[1:] == ['none', 'any'] and any(p in ('py3', python_tag) for p in tag[0].split('.')))
+                       or (tag[0] == python_tag and tag[2] == platform_tag)) for tag in tags)
+        if not accepted:
+            compatible = False
+            break
+    return str(root if compatible else scoped)
 
 
 def _deps_dir():
@@ -30,6 +54,7 @@ def _deps_dir():
         PLUGIN_PACKAGE_NAME,
         "_deps"
     )
+    deps_dir = dependency_directory(deps_dir)
     os.makedirs(deps_dir, exist_ok=True)
     return deps_dir
 
@@ -76,6 +101,10 @@ def _candidate_python_paths():
             os.path.join(app_root, "Python311", "python.exe"),
             os.path.join(app_root, "Python310", "python.exe"),
         ])
+        # Include the interpreter layout shipped by older supported QGIS builds.
+        for python_tag in ("Python37","Python38","Python39"):
+            candidates.append(os.path.join(install_root,"apps",python_tag,"python.exe"))
+            candidates.append(os.path.join(app_root,python_tag,"python.exe"))
 
     exe_dir = os.path.dirname(sys.executable) if sys.executable else ""
     if exe_dir:
@@ -127,7 +156,7 @@ def _run_subprocess(command, parent=None):
 
     try:
         if app is not None:
-            app.setOverrideCursor(Qt.WaitCursor)
+            app.setOverrideCursor(enum_value(Qt, "CursorShape", "WaitCursor"))
             cursor_set = True
 
         process = subprocess.run(  # nosec B603
@@ -180,6 +209,10 @@ def install_ml_dependencies(parent=None):
     """
     Install machine learning dependencies into the plugin dependency folder.
     """
+    # Prefer QGIS's own working scientific stack before adding local wheels.
+    ok, _ = _is_sklearn_available()
+    if ok:
+        return True, ""
     _add_deps_to_sys_path()
 
     ok, _ = _is_sklearn_available()
@@ -199,12 +232,7 @@ def install_ml_dependencies(parent=None):
 
     deps_dir = _deps_dir()
 
-    packages = [
-        "joblib>=1.3",
-        "threadpoolctl>=3.1",
-        "scipy>=1.11",
-        "scikit-learn>=1.4"
-    ]
+    packages = ml_dependency_requirements(sys.version_info)
 
     command = [
         python_exe,
@@ -245,6 +273,9 @@ def ensure_ml_ready(parent=None, method_name="Machine Learning"):
     """
     Ensure ML dependencies are ready. Ask the user once and install automatically.
     """
+    ok, _ = _is_sklearn_available()
+    if ok:
+        return True
     _add_deps_to_sys_path()
 
     ok, _ = _is_sklearn_available()
@@ -258,11 +289,11 @@ def ensure_ml_ready(parent=None, method_name="Machine Learning"):
             f"{method_name} needs additional Python packages the first time it runs.\n\n"
             "Do you want the plugin to install them automatically now?"
         ),
-        QMessageBox.Yes | QMessageBox.No,
-        QMessageBox.Yes
+        enum_value(QMessageBox, "StandardButton", "Yes") | enum_value(QMessageBox, "StandardButton", "No"),
+        enum_value(QMessageBox, "StandardButton", "Yes")
     )
 
-    if reply != QMessageBox.Yes:
+    if reply != enum_value(QMessageBox, "StandardButton", "Yes"):
         return False
 
     ok, msg = install_ml_dependencies(parent=parent)
