@@ -169,8 +169,8 @@ class SpatialDiagnosticsDialog(QDialog):
             dialog.setWindowTitle('Outlier diagnostic information')
             layout=QVBoxLayout(dialog)
             text=QTextBrowser(dialog)
-            text.setHtml(
-                '<h2 style="color:{}">Outlier diagnostic</h2>'.format(COLORS['primary'])+
+            header_html = '<h2 style="color:{}">Outlier diagnostic</h2>'.format(COLORS['primary'])
+            help_html = (
                 '<h3>How it works</h3><p><b>IQR</b> checks quartile limits; <b>MAD</b> checks '
                 'distance from the median; optional <b>Z</b> uses the mean and standard deviation. '
                 '<b>Local Moran / LISA</b> compares each value with its neighbors and tests '
@@ -201,6 +201,7 @@ class SpatialDiagnosticsDialog(QDialog):
                 '<b>Reset</b> clears the decision. The original layer stays unchanged. '
                 'See the manual for detailed methods and interpretation.</p>'
             )
+            text.setHtml(header_html + help_html)
             layout.addWidget(text)
             close=QPushButton('Close',dialog); close.clicked.connect(dialog.close)
             layout.addWidget(close)
