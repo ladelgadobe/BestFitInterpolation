@@ -23,8 +23,12 @@ with the manual.
 
 `figure_provenance.json` records the environment, input hashes and figure
 hashes. The original Quick Start Workflow, research-framework diagrams and
-logos remain unchanged. The dense/massive workflow is a new explanatory
-figure. Old interface and
+logos remain unchanged. The dense/massive workflow follows the original Quick
+Start style: Arial, thin outlined cards, blue and green branches, circular step
+numbers and yellow notes. Its editable SVG and Pillow renderer are in
+`diagrams/`. Run `python diagrams/render_dense_massive_workflow.py` with Pillow
+and Arial available to regenerate the SVG and referenced high-resolution PNG.
+Old interface and
 installation images are no longer referenced by the document.
 
 When updating the manual, refresh the affected interface screenshots from a

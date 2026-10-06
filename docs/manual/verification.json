@@ -1,13 +1,13 @@
 {
   "review_date": "2026-10-06",
   "pdf": "BestFitInterpolator_User_Manual.pdf",
-  "pdf_sha256": "cb547946e850c73f3107c5a65785ce7c55ef8e68c50514b3a8f8a6391b250ce0",
+  "pdf_sha256": "beee6a4f807d6d465515074e0801cd81745bb8a350a180314f89ecf3dfcf6350",
   "source_sha256": "5b93466ff332b43ccd7f72afc21796792ca4b0bd1cc14a7e71517097e5b02645",
   "pages": 48,
   "compiler": "This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) kpathsea version 6.4.1",
   "compile_environment": "Overleaf, pdfLaTeX, TeX Live 2025",
   "overleaf_project": "https://www.overleaf.com/project/6a3d70b58524f4f5b382db3e",
-  "overleaf_build": "1a1126a7756-ffba662b5bb4f4c1",
+  "overleaf_build": "1a112782f98-6346a882869a3524",
   "compile_errors": 0,
   "compile_warnings": 0,
   "compile_information_messages": 0,
@@ -40,5 +40,17 @@
     "Permutations",
     "Seed",
     "Done"
-  ]
+  ],
+  "diagram_style_reference": "quick_start_workflow.png",
+  "diagram_restyle_review": {
+    "previous_pdf_sha256": "cb547946e850c73f3107c5a65785ce7c55ef8e68c50514b3a8f8a6391b250ce0",
+    "raster_comparison_dpi": 110,
+    "changed_pages_visually_reviewed": [
+      46,
+      47
+    ],
+    "remaining_pages_pixel_identical_to_reviewed_previous_pdf": 46,
+    "current_diagram_pixels_match_embedded_pdf_image": true,
+    "original_workflow_retained_exactly": true
+  }
 }

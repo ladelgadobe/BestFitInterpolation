@@ -58,7 +58,7 @@
     "about.png": "413de041fad10c017f84fb88719f351f088ca5d7bba44a8088e9563e0fe5435d",
     "covariates.png": "b0138686651de907849a83b9795b6a9f5129e8034c92289bfa35f58e82354c24",
     "data.png": "fe9b9ad9ea76b0a26fa649470a976d31dc9247f1cfa604ccd5df983bc617a883",
-    "dense_massive_workflow.png": "a8a276f1ac3681c16602c03982a1643a7303909fa7941111540da47544765d2c",
+    "dense_massive_workflow.png": "fa0e508b82a32b4170d869e988bbc7135a2ccf761163f266a75ad8e635978fa0",
     "deterministics.png": "d594529075b3302b2c32c94df175f2499e398a9edcc8406665a45952ca485a08",
     "framework_decision.png": "cf324db707348a2222d0c0534231fef7851f81751f5cc445ecf3b9145b5838a8",
     "framework_interpolation.png": "791f4501df459266e00dcfca6c34c28d0e385deb5cf04f271b9d05fa4f934db8",
@@ -103,5 +103,9 @@
     "Elevacao_Paulinia.tif": "3848da23901285f52e52272529e536f552b02098fc0f3d4f4bac440a99602757",
     "NDCI_Paulinia.tif": "ebf68fd6e467628ce08e41f5acec22b236a87cc0f05c6b17ac39b573a6cf9baf"
   },
-  "source_sha256": "5b93466ff332b43ccd7f72afc21796792ca4b0bd1cc14a7e71517097e5b02645"
+  "source_sha256": "5b93466ff332b43ccd7f72afc21796792ca4b0bd1cc14a7e71517097e5b02645",
+  "diagram_sources_sha256": {
+    "dense_massive_workflow.svg": "f13ad5b24c10d3d71d6a942331fb845a6c10f9660f37578d0716ef8cfe6a4e00",
+    "render_dense_massive_workflow.py": "a742fc8a84b73d8327d84d948de56cd9f8918f37a7e2796c5dcc19d23bfa115e"
+  }
 }

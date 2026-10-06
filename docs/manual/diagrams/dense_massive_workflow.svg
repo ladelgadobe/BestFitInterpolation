@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1022" viewBox="0 0 1440 1022">
+<rect width="1440" height="1022" fill="white"/>
+<text x="720" y="46" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="bold" fill="#1c3c88" dominant-baseline="text-before-edge" text-anchor="middle">Best Fit Interpolator: Dense and Massive Data</text>
+<text x="720" y="91" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">Keep parameter search, validation and final fitting distinct</text>
+<rect x="201" y="141" width="276" height="103" rx="6" fill="white" stroke="#1c3c88" stroke-width="2"/>
+<text x="339.0" y="160" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1c3c88" dominant-baseline="text-before-edge" text-anchor="middle">Normal</text>
+<text x="339.0" y="194" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">n ≤ 500</text>
+<rect x="533" y="141" width="374" height="103" rx="6" fill="white" stroke="#1c3c88" stroke-width="2"/>
+<text x="720.0" y="160" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1c3c88" dominant-baseline="text-before-edge" text-anchor="middle">Dense</text>
+<text x="720.0" y="194" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">500 &lt; n ≤ 10,000</text>
+<rect x="963" y="141" width="276" height="103" rx="6" fill="#fff8e1" stroke="#a66b00" stroke-width="2"/>
+<text x="1101.0" y="160" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#a66b00" dominant-baseline="text-before-edge" text-anchor="middle">Massive</text>
+<text x="1101.0" y="194" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">n &gt; 10,000</text>
+<polyline points="339,244 339,273" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<polyline points="720,244 720,273" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<polyline points="1101,244 1101,273" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<polyline points="339,273 1101,273" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<polyline points="720,273 720,302" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<text x="720" y="287" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="normal" fill="#8a929d" dominant-baseline="text-before-edge" text-anchor="middle">↓</text>
+<rect x="201" y="322" width="1038" height="79" rx="6" fill="white" stroke="#1c3c88" stroke-width="2"/>
+<text x="720" y="337" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1c3c88" dominant-baseline="text-before-edge" text-anchor="middle">Prepare and review the full valid population</text>
+<text x="720" y="368" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">Check CRS, predictor coverage, duplicates and explicit exclusions</text>
+<polyline points="720,401 720,421 381,421 381,440" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<polyline points="720,421 1060,421 1060,440" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<rect x="64" y="440" width="634" height="333" rx="0" fill="#fafbfc" stroke="none" stroke-width="1"/>
+<rect x="64" y="440" width="634" height="5" rx="0" fill="#1c3c88" stroke="none" stroke-width="1"/>
+<text x="381" y="461" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="#1c3c88" dominant-baseline="text-before-edge" text-anchor="middle">Model Search</text>
+<text x="381" y="495" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">Bound tuning and review the resolved parameters.</text>
+<rect x="742" y="440" width="634" height="333" rx="0" fill="#fafbfc" stroke="none" stroke-width="1"/>
+<rect x="742" y="440" width="634" height="5" rx="0" fill="#00682e" stroke="none" stroke-width="1"/>
+<text x="1059" y="461" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="#00682e" dominant-baseline="text-before-edge" text-anchor="middle">Validation</text>
+<text x="1059" y="495" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">Read the actual strategy and test population.</text>
+<rect x="86" y="526" width="590" height="61" rx="6" fill="white" stroke="#9fb2df" stroke-width="1"/>
+<circle cx="118" cy="554" r="15" fill="#1c3c88"/>
+<text x="118" y="546" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="white" dominant-baseline="text-before-edge" text-anchor="middle">1</text>
+<text x="145" y="547" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#20242b" dominant-baseline="text-before-edge" text-anchor="start">Configure a bounded model search</text>
+<text x="381" y="590" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="normal" fill="#8a929d" dominant-baseline="text-before-edge" text-anchor="middle">↓</text>
+<rect x="86" y="611" width="590" height="61" rx="6" fill="#fff8e1" stroke="#d7b96f" stroke-width="1"/>
+<circle cx="118" cy="639" r="15" fill="#1c3c88"/>
+<text x="118" y="631" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="white" dominant-baseline="text-before-edge" text-anchor="middle">2</text>
+<text x="145" y="624" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#20242b" dominant-baseline="text-before-edge" text-anchor="start">Use up to 2,000 valid rows for tuning</text>
+<text x="145" y="647" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#a66b00" dominant-baseline="text-before-edge" text-anchor="start">A tuning subset supports the parameter search</text>
+<text x="381" y="675" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="normal" fill="#8a929d" dominant-baseline="text-before-edge" text-anchor="middle">↓</text>
+<rect x="86" y="696" width="590" height="61" rx="6" fill="white" stroke="#9fb2df" stroke-width="1"/>
+<circle cx="118" cy="724" r="15" fill="#1c3c88"/>
+<text x="118" y="716" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="white" dominant-baseline="text-before-edge" text-anchor="middle">3</text>
+<text x="145" y="717" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#20242b" dominant-baseline="text-before-edge" text-anchor="start">Review the resolved model parameters</text>
+<rect x="764" y="526" width="590" height="61" rx="6" fill="white" stroke="#9bc4ab" stroke-width="1"/>
+<circle cx="796" cy="554" r="15" fill="#00682e"/>
+<text x="796" y="546" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="white" dominant-baseline="text-before-edge" text-anchor="middle">1</text>
+<text x="823" y="547" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#20242b" dominant-baseline="text-before-edge" text-anchor="start">Read the validation strategy and sample count</text>
+<text x="1059" y="590" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="normal" fill="#8a929d" dominant-baseline="text-before-edge" text-anchor="middle">↓</text>
+<rect x="764" y="611" width="590" height="61" rx="6" fill="#fff8e1" stroke="#d7b96f" stroke-width="1"/>
+<circle cx="796" cy="639" r="15" fill="#00682e"/>
+<text x="796" y="631" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="white" dominant-baseline="text-before-edge" text-anchor="middle">2</text>
+<text x="823" y="624" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#20242b" dominant-baseline="text-before-edge" text-anchor="start">Massive data: hold out about 20%</text>
+<text x="823" y="647" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold" fill="#a66b00" dominant-baseline="text-before-edge" text-anchor="start">Up to 10,000 test observations</text>
+<text x="1059" y="675" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="normal" fill="#8a929d" dominant-baseline="text-before-edge" text-anchor="middle">↓</text>
+<rect x="764" y="696" width="590" height="61" rx="6" fill="white" stroke="#9bc4ab" stroke-width="1"/>
+<circle cx="796" cy="724" r="15" fill="#00682e"/>
+<text x="796" y="716" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="bold" fill="white" dominant-baseline="text-before-edge" text-anchor="middle">3</text>
+<text x="823" y="717" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#20242b" dominant-baseline="text-before-edge" text-anchor="start">Review validation before accepting the result</text>
+<polyline points="381,773 381,798 1059,798 1059,773" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<polyline points="720,798 720,820" fill="none" stroke="#cfd5dc" stroke-width="2"/>
+<text x="720" y="811" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="normal" fill="#8a929d" dominant-baseline="text-before-edge" text-anchor="middle">↓</text>
+<rect x="201" y="847" width="1038" height="79" rx="6" fill="white" stroke="#1c3c88" stroke-width="2"/>
+<text x="720" y="863" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="bold" fill="#1c3c88" dominant-baseline="text-before-edge" text-anchor="middle">Final fit uses the model&#x27;s full valid population</text>
+<text x="720" y="894" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#68707c" dominant-baseline="text-before-edge" text-anchor="middle">Predict in blocks → compare aligned maps → export</text>
+<rect x="64" y="942" width="1312" height="38" rx="0" fill="#fff8e1" stroke="none" stroke-width="1"/>
+<rect x="64" y="942" width="5" height="38" rx="0" fill="#a66b00" stroke="none" stroke-width="1"/>
+<text x="720" y="954" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="normal" fill="#20242b" dominant-baseline="text-before-edge" text-anchor="middle">Important: A preview sample does not define the fitting population.</text>
+</svg>
