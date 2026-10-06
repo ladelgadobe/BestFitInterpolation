@@ -99,6 +99,11 @@ class RuntimeCases:
         events()
 
     def main_window(self):
+        from bestfitinterpolator.test.test_ml_dependency_abi import (
+            test_dependency_directories_preserve_matching_legacy_wheels_and_isolate_other_abis,
+            test_working_qgis_sklearn_is_used_before_adding_local_dependencies)
+        test_dependency_directories_preserve_matching_legacy_wheels_and_isolate_other_abis()
+        test_working_qgis_sklearn_is_used_before_adding_local_dependencies()
         from bestfitinterpolator.test.test_native_variogram_indices import (
             test_exact_variogram_accepts_32bit_native_indices,
             test_sampled_variogram_accepts_32bit_native_indices_without_numerical_change,

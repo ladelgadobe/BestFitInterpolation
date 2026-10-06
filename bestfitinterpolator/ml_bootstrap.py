@@ -10,6 +10,8 @@ import sys
 import site
 import subprocess  # nosec B404
 import importlib
+from pathlib import Path
+import sysconfig
 
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMessageBox, QApplication
@@ -17,6 +19,27 @@ from qgis.core import QgsApplication
 
 
 PLUGIN_PACKAGE_NAME = "bestfitinterpolator"
+
+
+def dependency_directory(root, version=None, platform_tag=None):
+    """Reuse legacy wheels only for their interpreter; isolate other binary ABIs."""
+    root = Path(root)
+    version = sys.version_info[:2] if version is None else version
+    python_tag = 'cp{}{}'.format(*version[:2])
+    platform_tag = (sysconfig.get_platform() if platform_tag is None else platform_tag).replace('-', '_').replace('.', '_')
+    scoped = root / (python_tag + '_' + platform_tag)
+    if scoped.is_dir():
+        return str(scoped)
+    wheels = list(root.glob('*.dist-info/WHEEL'))
+    compatible = bool(wheels)
+    for wheel in wheels:
+        tags = [line[5:].strip().split('-') for line in wheel.read_text(encoding='utf-8').splitlines() if line.startswith('Tag: ')]
+        accepted = any(len(tag) == 3 and ((tag[1:] == ['none', 'any'] and any(p in ('py3', python_tag) for p in tag[0].split('.')))
+                       or (tag[0] == python_tag and tag[2] == platform_tag)) for tag in tags)
+        if not accepted:
+            compatible = False
+            break
+    return str(root if compatible else scoped)
 
 
 def _deps_dir():
@@ -31,6 +54,7 @@ def _deps_dir():
         PLUGIN_PACKAGE_NAME,
         "_deps"
     )
+    deps_dir = dependency_directory(deps_dir)
     os.makedirs(deps_dir, exist_ok=True)
     return deps_dir
 
@@ -185,6 +209,10 @@ def install_ml_dependencies(parent=None):
     """
     Install machine learning dependencies into the plugin dependency folder.
     """
+    # Prefer QGIS's own working scientific stack before adding local wheels.
+    ok, _ = _is_sklearn_available()
+    if ok:
+        return True, ""
     _add_deps_to_sys_path()
 
     ok, _ = _is_sklearn_available()
@@ -245,6 +273,9 @@ def ensure_ml_ready(parent=None, method_name="Machine Learning"):
     """
     Ensure ML dependencies are ready. Ask the user once and install automatically.
     """
+    ok, _ = _is_sklearn_available()
+    if ok:
+        return True
     _add_deps_to_sys_path()
 
     ok, _ = _is_sklearn_available()
