@@ -649,6 +649,8 @@ class OKTabController(ControllerConnections):
                         return
             for i in range(cmb.count()):
                 itxt = cmb.itemText(i)
+                if str(itxt).strip().lower().startswith("auto"):
+                    continue
                 if self._normalize_model_token(itxt) == token:
                     cmb.setCurrentIndex(i)
                     return
@@ -869,7 +871,9 @@ class OKTabController(ControllerConnections):
             self._krig_vario_fig = Figure(figsize=(5, 4), tight_layout=True)
             self._krig_vario_canvas = FigureCanvas(self._krig_vario_fig)
             self._stabilize_canvas_widget(self._krig_vario_canvas)
-            layout = container_v.layout() or QVBoxLayout(container_v)
+            layout = container_v.layout()
+            if layout is None:
+                layout = QVBoxLayout(container_v)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:
@@ -886,7 +890,9 @@ class OKTabController(ControllerConnections):
             self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
             self._krig_map_canvas._bfi_is_map = True
             self._stabilize_canvas_widget(self._krig_map_canvas)
-            layout = container_m.layout() or QVBoxLayout(container_m)
+            layout = container_m.layout()
+            if layout is None:
+                layout = QVBoxLayout(container_m)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:
@@ -1062,9 +1068,14 @@ class OKTabController(ControllerConnections):
         self._cutoff = cutoff
         self._lag_width = lagw
 
-        display_lags, display_gamma = self._bin_variogram(x, y, z, cutoff, lagw)
-        self._exp_lags = np.insert(display_lags, 0, 0.)
-        self._exp_gamma = np.insert(display_gamma, 0, 0.)
+        # Published 1.1 fits REML from the observations. Bins are internal seeds,
+        # never an experimental series displayed alongside the REML curve.
+        self._use_reml = bool(_HAS_REML and (self._n < REML_SAMPLE_LIMIT))
+        self._exp_lags = self._exp_gamma = None
+        if not self._use_reml:
+            display_lags, display_gamma = self._bin_variogram(x, y, z, cutoff, lagw)
+            self._exp_lags = np.insert(display_lags, 0, 0.)
+            self._exp_gamma = np.insert(display_gamma, 0, 0.)
         self._semivariogram_stale = False
 
         # Rebinning changes the experimental display, not a manually chosen fit.
@@ -1075,7 +1086,6 @@ class OKTabController(ControllerConnections):
             return
 
         # Decide REML usage and, if enabled, fit immediately and draw theoretical-only curve
-        self._use_reml = bool(_HAS_REML and (self._n < REML_SAMPLE_LIMIT))
         if self._is_auto_model_selection():
             try:
                 self._choose_best_model_by_validation(x, y, z, cutoff, lagw)
@@ -1304,7 +1314,7 @@ class OKTabController(ControllerConnections):
         ax.clear()
         lags_plot = None
         gamma_plot = None
-        if (self._exp_lags is not None) and (self._exp_gamma is not None):
+        if (self._exp_lags is not None) and (self._exp_gamma is not None) and not self._use_reml:
             lags_plot = self._exp_lags[1:] if getattr(self._exp_lags, 'size', 0) > 1 else self._exp_lags
             gamma_plot = self._exp_gamma[1:] if getattr(self._exp_gamma, 'size', 0) > 1 else self._exp_gamma
             ax.plot(lags_plot, gamma_plot, 'o', label="Experimental", color=EXP_COLOR)
@@ -1319,7 +1329,7 @@ class OKTabController(ControllerConnections):
         th = self._model_func(h_line, model, nugget, psill, rng)
         ax.plot(h_line, th, '-', label=f"Theoretical ({model.capitalize()})", color=TH_COLOR, linewidth=2)
 
-        ax.set_title("Semivariogram", fontsize=10)
+        ax.set_title("Semivariogram (REML model)" if self._use_reml else "Semivariogram", fontsize=10)
         ax.set_xlabel("Lag distance (h)", fontsize=9)
         ax.set_ylabel("Semivariance γ(h)", fontsize=9)
         ax.set_xlim(left=0.0, right=xmax); ax.set_ylim(bottom=0.0)
@@ -1330,8 +1340,7 @@ class OKTabController(ControllerConnections):
         ax.tick_params(axis='x', rotation=0)
         ax.tick_params(axis='both', labelsize=8)
         ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.6)
-        if (self._exp_lags is not None) and (self._exp_gamma is not None):
-            ax.legend(fontsize=9, frameon=False)
+        ax.legend(fontsize=9, frameon=False)
         self._krig_vario_canvas.draw()
 
     # ---------------------------- Interpolation map ---------------------------
@@ -1699,7 +1708,9 @@ class OKTabController(ControllerConnections):
             self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
             self._krig_map_canvas._bfi_is_map = True
             self._stabilize_canvas_widget(self._krig_map_canvas)
-            layout = container_m.layout() or QVBoxLayout(container_m)
+            layout = container_m.layout()
+            if layout is None:
+                layout = QVBoxLayout(container_m)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:

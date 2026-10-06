@@ -182,6 +182,9 @@ class RuntimeCases:
         events()
         assert controller._krig_map_fig.axes and self.plugin.ok_cv_fig.axes
         assert controller._krig_vario_canvas.figure.axes[0].lines, 'Semivariogram model was not drawn'
+        from semivariogram_checks import check_method_sections,check_strategy_switches
+        check_method_sections(self.plugin,self.output,events)
+        check_strategy_switches(self.plugin,self.output,events,wait_jobs)
 
     def diagnostics(self):
         from bestfitinterpolator.diagnostics_engine import DiagnosticsEngine, classify
@@ -211,6 +214,8 @@ class RuntimeCases:
         assert rk._last_rk_cv_result is not None
 
     def framework(self):
+        from semivariogram_checks import check_framework_validation
+        check_framework_validation(self.plugin,self.output,events,wait_jobs)
         f = self.plugin.framework_ctrl
         f.load_from_data_tab(f._collect_current_plugin_data())
         for method, name in f.METHOD_CHECKBOXES.items():
@@ -316,7 +321,7 @@ class RuntimeCases:
         p = self.plugin
         controller = p.ok_ctrl._active
         for iteration in range(3):
-            dialog = SemivariogramSettingsDialog(controller, p.dlg)
+            dialog = SemivariogramSettingsDialog(controller)
             dialog.show(); events(); dialog.close(); dialog.deleteLater(); events()
         for iteration in range(3):
             previous = p.dlg
@@ -326,6 +331,8 @@ class RuntimeCases:
             assert p.dlg.findChild(QWidget,'btnDataProfileInfo').isVisible()
             assert p.dlg.radCVAuto.property('bfiInfoAdded')
             assert p.framework_ctrl is not None and not p.framework_ctrl.interpolation_fig.axes
+            from semivariogram_checks import check_method_sections
+            check_method_sections(p,self.output,events)
 
     def cleanup(self):
         if self.plugin is not None: self.plugin.unload()

@@ -117,6 +117,7 @@ def refresh_controls(widget):
         button.setText(clean_display_name(button.text()))
     for group in widget.findChildren(QGroupBox):
         group.setTitle(clean_display_name(group.title()))
+        group.style().unpolish(group); group.style().polish(group)
     for tabs in widget.findChildren(QTabWidget):
         for index in range(tabs.count()):
             tabs.setTabText(index,clean_display_name(tabs.tabText(index)))

@@ -18,6 +18,12 @@ The corrected Windows 4.2.3 and 3.44.8 distributions each passed 107 checks, all
 
 The original Linux table and measurements below remain a historical record. Current expanded CI results are published as workflow artifacts and linked from draft PR #3. Offscreen tests use real QGIS/Qt widgets with synthetic data and a small iface double; they do not certify every desktop, monitor scale or large dataset.
 
+## Semivariogram followup 2026-10-05
+
+The current followup restores the published v1.1 distinction: REML displays its theoretical curve only; MoM displays the experimental observations and fitted model. Empty existing layouts are reused when changing controllers, so the embedded curve remains visible after successive fitting-method changes. Advanced validation uses the active fitting mode and optimized REML parameters. IDW/TPS replacement groups are bordered on every reopening and fit in two readable rows.
+
+Framework semivariogram settings now validate Spherical, Exponential and Gaussian using the current data, cutoff, lag and fit. Metrics, the existing R²/RMSE ranking, and manual application are visible. Changed data/settings invalidate the results. Windows QGIS 3.44.8 and 4.2.3 each pass 109 checks and all 13 expanded functional blocks, including real pixels after six strategy switches and reopened method groups. Nine numerical comparisons with published v1.1 are exact. See [the semivariogram correction](semivariogram_revision_20261005.md) and the updated Windows JSON evidence. The earlier measurements below remain historical.
+
 ## Interface delivered
 
 - View HTML opens an automatically generated temporary file in the browser without asking for a save path. Each preview is immutable; temporary files are removed with the owning report UI. Images are embedded.

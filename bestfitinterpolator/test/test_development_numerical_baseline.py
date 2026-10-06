@@ -1,6 +1,7 @@
 """Direct comparisons with mathematical policies extracted from original 1.2."""
 import ast
 import os
+import typing
 from pathlib import Path
 import numpy as np
 from qgis.PyQt.QtCore import QCoreApplication
@@ -15,6 +16,7 @@ def legacy_policy(file,cls,names):
     body=[n for n in node.body if isinstance(n,ast.FunctionDef) and n.name in names]
     module=ast.Module(body=[ast.ClassDef(name="Legacy",bases=[],keywords=[],body=body,decorator_list=[])],type_ignores=[])
     namespace=dict(vars(engine));namespace["QCoreApplication"]=QCoreApplication
+    namespace.update({name:getattr(typing,name) for name in ("Optional","Dict","Any","List")})
     exec(compile(ast.fix_missing_locations(module),"legacy_math","exec"),namespace)
     obj=namespace["Legacy"]();obj._use_reml=False
     obj._bin_variogram=lambda x,y,z,cutoff,lag:engine.bin_experimental_variogram(x,y,z,cutoff,lag)

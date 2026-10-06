@@ -1011,7 +1011,7 @@ class BestFitInterpolator:
     def _polish_deterministic_options_layout(self):
         """Group IDW and TPS controls separately and add hover help for IDW parameters."""
         group = getattr(self.dlg, "groupDetOptions", None)
-        if group is None or getattr(self, "_det_options_polished", False):
+        if group is None or group.property("bfiDetOptionsPolished"):
             return
 
         controls = [
@@ -1051,6 +1051,7 @@ class BestFitInterpolator:
 
         idw_group = QGroupBox("IDW", group)
         idw_group.setObjectName("groupIDWOptions")
+        idw_group.setProperty("bfiSection", True)
         idw_layout = QGridLayout(idw_group)
         idw_layout.setContentsMargins(8, 8, 8, 8)
         idw_layout.setHorizontalSpacing(6)
@@ -1058,6 +1059,7 @@ class BestFitInterpolator:
 
         tps_group = QGroupBox("TPS", group)
         tps_group.setObjectName("groupTPSOptions")
+        tps_group.setProperty("bfiSection", True)
         tps_layout = QHBoxLayout(tps_group)
         tps_layout.setContentsMargins(8, 8, 8, 8)
 
@@ -1077,19 +1079,19 @@ class BestFitInterpolator:
                 widget.setToolTip(tip)
 
         if getattr(self.dlg, "radManualParams", None) is not None:
-            idw_layout.addWidget(self.dlg.radManualParams, 0, 0, 1, 1)
+            idw_layout.addWidget(self.dlg.radManualParams, 0, 0, 1, 3)
         if getattr(self.dlg, "lblNeighbors", None) is not None:
-            idw_layout.addWidget(self.dlg.lblNeighbors, 0, 1, 1, 1)
-        idw_layout.addWidget(self._info_toolbutton(neighbor_tip), 0, 2, 1, 1)
+            idw_layout.addWidget(self.dlg.lblNeighbors, 1, 0, 1, 1)
+        idw_layout.addWidget(self._info_toolbutton(neighbor_tip), 1, 1, 1, 1)
         if getattr(self.dlg, "spinNeighbors", None) is not None:
-            idw_layout.addWidget(self.dlg.spinNeighbors, 0, 3, 1, 1)
+            idw_layout.addWidget(self.dlg.spinNeighbors, 1, 2, 1, 1)
         if getattr(self.dlg, "lblPower", None) is not None:
-            idw_layout.addWidget(self.dlg.lblPower, 0, 4, 1, 1)
-        idw_layout.addWidget(self._info_toolbutton(power_tip), 0, 5, 1, 1)
+            idw_layout.addWidget(self.dlg.lblPower, 1, 3, 1, 1)
+        idw_layout.addWidget(self._info_toolbutton(power_tip), 1, 4, 1, 1)
         if getattr(self.dlg, "spinPower", None) is not None:
-            idw_layout.addWidget(self.dlg.spinPower, 0, 6, 1, 1)
+            idw_layout.addWidget(self.dlg.spinPower, 1, 5, 1, 1)
         if getattr(self.dlg, "chkOptimize", None) is not None:
-            idw_layout.addWidget(self.dlg.chkOptimize, 0, 7, 1, 1)
+            idw_layout.addWidget(self.dlg.chkOptimize, 0, 3, 1, 3)
 
         if getattr(self.dlg, "chkTPS", None) is not None:
             tps_layout.addWidget(self.dlg.chkTPS)
@@ -1107,7 +1109,9 @@ class BestFitInterpolator:
         except Exception:  # nosec B110
             pass
 
-        self._det_options_polished = True
+        self.dlg.groupIDWOptions = idw_group
+        self.dlg.groupTPSOptions = tps_group
+        group.setProperty("bfiDetOptionsPolished", True)
 
     def _move_metric_pair(self, grid, row: int, label_name: str, value_name: str, label_text: str):
         label = getattr(self.dlg, label_name, None)

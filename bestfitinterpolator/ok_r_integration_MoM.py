@@ -674,6 +674,8 @@ class OKTabController(ControllerConnections):
                         return
             for i in range(cmb.count()):
                 itxt = cmb.itemText(i)
+                if str(itxt).strip().lower().startswith("auto"):
+                    continue
                 if self._normalize_model_token(itxt) == token:
                     cmb.setCurrentIndex(i)
                     return
@@ -895,7 +897,9 @@ class OKTabController(ControllerConnections):
             self._krig_vario_fig = Figure(figsize=(5, 4), tight_layout=True)
             self._krig_vario_canvas = FigureCanvas(self._krig_vario_fig)
             self._stabilize_canvas_widget(self._krig_vario_canvas)
-            layout = container_v.layout() or QVBoxLayout(container_v)
+            layout = container_v.layout()
+            if layout is None:
+                layout = QVBoxLayout(container_v)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:
@@ -912,7 +916,9 @@ class OKTabController(ControllerConnections):
             self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
             self._krig_map_canvas._bfi_is_map = True
             self._stabilize_canvas_widget(self._krig_map_canvas)
-            layout = container_m.layout() or QVBoxLayout(container_m)
+            layout = container_m.layout()
+            if layout is None:
+                layout = QVBoxLayout(container_m)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:
@@ -1897,7 +1903,9 @@ class OKTabController(ControllerConnections):
             self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
             self._krig_map_canvas._bfi_is_map = True
             self._stabilize_canvas_widget(self._krig_map_canvas)
-            layout = container_m.layout() or QVBoxLayout(container_m)
+            layout = container_m.layout()
+            if layout is None:
+                layout = QVBoxLayout(container_m)
             for i in reversed(range(layout.count())):
                 w = layout.itemAt(i).widget()
                 if w is not None:

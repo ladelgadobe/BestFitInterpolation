@@ -16,11 +16,13 @@ class SemivariogramSettingsDialog(QDialog):
     def __init__(self, controller, residual=False):
         super().__init__(controller.dlg)
         self.controller,self.residual=controller,residual
-        self.engine=SemivariogramEngine("residual" if residual else ("ok_reml" if controller.__class__.__module__.endswith("_reml") else "ok_mom"))
+        self.use_reml=bool(not residual and getattr(controller,"_use_reml",False))
+        self.engine=SemivariogramEngine("residual" if residual else ("ok_reml" if self.use_reml else "ok_mom"))
         self.setWindowTitle("Residual semivariogram settings" if residual else "Semivariogram model validation")
         self.resize(840,680)
         root=QVBoxLayout(self); layout=QGridLayout(); root.addLayout(layout)
-        root.insertWidget(0,QLabel("Residuals of the fitted regression model" if residual else "Selected target variable ordinary kriging"))
+        root.insertWidget(0,QLabel("Residuals of the fitted regression model" if residual else
+            "Selected target variable ordinary kriging | Fit: " + ("REML" if self.use_reml else "MoM")))
         prefix="RK" if residual else "OK"
         self.cutoff=QDoubleSpinBox(); self.lag=QDoubleSpinBox()
         for spin in (self.cutoff,self.lag): spin.setDecimals(6); spin.setRange(.000001,1.e12)
@@ -106,13 +108,19 @@ class SemivariogramSettingsDialog(QDialog):
         from .variogram_utils import bin_experimental_variogram
         def work(cancel):
             lags,gamma=bin_experimental_variogram(x,y,z,cutoff,lag)
-            if not len(lags): raise ValueError("No positive-distance pairs within the selected maximum distance.")
+            if not len(lags) and not self.use_reml: raise ValueError("No positive-distance pairs within the selected maximum distance.")
             rows=engine.validate(x,y,z,cutoff,lag,candidates,cancel) if validation else []
             if self.residual:
                 fits=engine._fit_variogram_candidates(lags,gamma,cutoff)
                 fit=next((f for f in fits if f.model==candidates[0]),fits[0])
                 params=(fit.nugget,fit.psill,fit.range_)
-            else: params=engine._guess_initial_params(lags,gamma,cutoff,candidates[0])
+            else:
+                params=engine._guess_initial_params(lags,gamma,cutoff,candidates[0])
+                if self.use_reml and not validation:
+                    from .reml_bridge import fit_ok_reml_interface
+                    fit=fit_ok_reml_interface(np.column_stack((x,y,z)),engine._model_text_from_token(candidates[0]),
+                        init_from_mom=dict(zip(("nugget","psill","range"),params)),random_state=123)
+                    params=tuple(float(fit[key]) for key in ("nugget","psill","range"))
             return lags,gamma,rows,params,candidates[0],cutoff,lag,candidates
         def completed(error,result):
             for b in (self.preview,self.validate,self.apply): b.setEnabled(True)
@@ -124,20 +132,29 @@ class SemivariogramSettingsDialog(QDialog):
             self._validated_fingerprint=fingerprint
             self.payload=result; lags,gamma,rows,params,token,cutoff,lag,candidates=result
             self.rows=rows
+            if rows and all(row.get("error") for row in rows):
+                self.apply.setEnabled(False)
+                self.fig.clear(); self.canvas.draw_idle()
+                self.status.setText("No model passed validation. " + "; ".join(row["model"]+": "+row["error"] for row in rows))
+                return
             if rows and "error" not in rows[0]:
                 best=rows[0]; token=best["model_key"]
-                params=(best["fit"].nugget,best["fit"].psill,best["fit"].range_) if self.residual else (best["nugget"],best["psill"],best["range"])
+                params=(best["fit"].nugget,best["fit"].psill,best["fit"].range_) if self.residual else best.get("fitted_params",(best["nugget"],best["psill"],best["range"]))
             self.fig.clear(); ax=self.fig.add_subplot(111)
-            ax.plot(lags,gamma,"o",color=COLORS["primary"],label="Experimental")
+            if not self.use_reml:
+                ax.plot(lags,gamma,"o",color=COLORS["primary"],label="Experimental")
             h=np.linspace(0,cutoff,200); ax.plot(h,self.engine._model_func(h,token,*params),color=COLORS["primary_dark"],label=token.capitalize())
-            ax.set(xlabel="Lag distance (layer CRS units)",ylabel="Semivariance",title="Residual semivariogram" if self.residual else "Semivariogram")
+            ax.set(xlabel="Lag distance (layer CRS units)",ylabel="Semivariance",title="Residual semivariogram" if self.residual else
+                ("Semivariogram (REML model)" if self.use_reml else "Semivariogram"))
             ax.legend(); self.fig.tight_layout(); self.canvas.draw_idle()
             self.table.setRowCount(len(rows))
             for i,row in enumerate(rows):
                 for j,key in enumerate(("model","rmse","rmse_pct","mae","r2","pearson","lccc")):
                     value=row.get(key,"—"); self.table.setItem(i,j,QTableWidgetItem(str(value) if isinstance(value,str) else "{:.5g}".format(value)))
             self.table.resizeColumnsToContents()
-            self.status.setText("Selected: " + token.capitalize() + "; select a validation row for a manual model, then Apply.")
+            self.status.setText("Selected: " + token.capitalize() + (". Lowest RMSE; SSE breaks ties." if self.residual else
+                ". Highest LCCC; lower RMSE, then higher R² break ties.") + " Select a validation row to apply a different model." if rows else
+                "Preview updated. Validate models to compare their cross validation metrics.")
             failures=[row["model"]+": "+row["error"] for row in rows if row.get("error")]
             if failures: self.status.setText(self.status.text()+" | "+"; ".join(failures))
         submit(self,"Semivariogram model validation" if validation else "Semivariogram preview",work,completed)
@@ -178,8 +195,9 @@ class SemivariogramSettingsDialog(QDialog):
                 c._programmatic_variogram_update=True
                 try:
                     c._set_model_combo_by_token(row["model_key"])
-                    for name,key in (("Nugget","nugget"),("Psill","psill"),("Range","range")):
-                        getattr(c.dlg,"spinOK"+name).setValue(row[key])
+                    params=row.get("fitted_params",(row["nugget"],row["psill"],row["range"]))
+                    for name,value in zip(("Nugget","Psill","Range"),params):
+                        getattr(c.dlg,"spinOK"+name).setValue(value)
                 finally: c._programmatic_variogram_update=False
                 c._user_variogram_overrides=True
                 if c._use_reml: c._reml_fitted=True

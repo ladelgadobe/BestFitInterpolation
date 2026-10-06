@@ -214,15 +214,18 @@ def test_framework_massive_validation_uses_holdout_without_replacing_data():
     assert "validation_n" not in table
 
 
-def test_framework_sdi_dialog_does_not_show_model_validation_button():
+def test_framework_sdi_dialog_validates_current_popup_settings():
     sdi = ROOT / "framework_sdi_dialog.py"
     source = sdi.read_text(encoding="utf-8-sig")
     build_ui = function_source(sdi, "_build_ui")
 
-    assert "self.btn_model_validation = None" in build_ui
-    assert "View validation" not in build_ui
-    assert "model_layout.addWidget(self.btn_model_validation)" not in build_ui
-    assert "self.btn_model_validation.clicked.connect" not in source
+    assert "View validation" in build_ui
+    assert "model_layout.addWidget(self.btn_model_validation)" in build_ui
+    assert "self.btn_model_validation.clicked.connect" in source
+    validate=function_source(sdi,"_on_model_validation_clicked")
+    assert "validate_framework" in validate
+    assert "_show_ok_model_validation_dialog" not in validate
+    assert "_validation_signature" in validate
 
 
 def test_framework_sdi_dialog_uses_framework_state_dataset():

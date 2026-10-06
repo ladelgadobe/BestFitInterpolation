@@ -315,6 +315,7 @@ class _REMLPolicy(_OrdinaryPolicy):
             preds = np.asarray(pred, dtype=float)
             obs = np.asarray(obs, dtype=float)
             selection = "reml_cv"
+            fitted_params = tuple(float(fit[key]) for key in ("nugget", "psill", "range"))
         else:
             preds = np.full(z.size, np.nan, dtype=float)
             if is_dense_dataset(z.size):
@@ -346,6 +347,7 @@ class _REMLPolicy(_OrdinaryPolicy):
                 )
                 preds[test_idx] = np.asarray(fold_pred, dtype=float).ravel()
             obs = z
+            fitted_params = (float(nugget), float(psill), float(rng))
         metrics = self._validation_metrics(obs, preds)
         metrics.update({
             "model": self._model_text_from_token(model_key),
@@ -355,6 +357,7 @@ class _REMLPolicy(_OrdinaryPolicy):
             "range": float(rng),
             "selection": selection,
             "validation_n": int(np.count_nonzero(np.isfinite(preds))),
+            "fitted_params": fitted_params,
         })
         return metrics
 
@@ -527,6 +530,54 @@ class SemivariogramEngine:
 
     def __getattr__(self, name):
         return getattr(self.policy,name)
+
+    def validate_framework(self, x, y, z, cutoff, lag, fit_method, folds, cancelled=lambda:False):
+        """Validate the popup's settings using Framework's existing CV and ranking.
+
+        Framework ranks the rounded R² first, then rounded RMSE. Its REML path
+        uses LOOCV; its MoM path uses the existing automatic Framework folds.
+        """
+        lags,gamma=bin_experimental_variogram(x,y,z,cutoff,lag)
+        rows=[]
+        for token in ("spherical","exponential","gaussian"):
+            if cancelled(): raise InterruptedError("Model validation cancelled")
+            row=dict(model=token.capitalize(),model_key=token,fit_method=fit_method,
+                maximum_distance=float(cutoff),lag=float(lag))
+            try:
+                params=self._guess_initial_params(lags,gamma,cutoff,token)
+                if fit_method=="REML":
+                    fit=fit_ok_reml_interface(np.column_stack((x,y,z)),
+                        {"spherical":"Sph","exponential":"Exp","gaussian":"Gau"}[token],
+                        init_from_mom=dict(zip(("nugget","psill","range"),params)),random_state=123)
+                    cv=cv_ok_reml_interface(np.column_stack((x,y,z)),fit,k=0)
+                    pred=cv.get("y_pred",cv.get("pred"))
+                    if pred is None: raise ValueError("REML CV did not return predictions")
+                    preds=np.asarray(pred,float)
+                    params=tuple(float(fit[key]) for key in ("nugget","psill","range"))
+                    row["reml_meta"]={key:fit.get(key) for key in ("converged","niter","reml_value")}
+                else:
+                    preds=np.full(z.size,np.nan,float)
+                    for test_idx in folds:
+                        if cancelled(): raise InterruptedError("Model validation cancelled")
+                        train=np.ones(z.size,bool); train[test_idx]=False
+                        preds[test_idx]=ordinary_kriging_interpolation(x[train],y[train],z[train],x[test_idx],y[test_idx],
+                            nugget=params[0],psill=params[1],var_range=params[2],model=token)
+                metrics=self._validation_metrics(z,preds)
+                if np.count_nonzero(np.isfinite(preds))<2:
+                    raise ValueError("Validation did not return enough finite predictions")
+                row.update({key:round(float(metrics[key]),2 if key=="rmse_pct" else 3)
+                    for key in ("rmse","rmse_pct","mae","r2","pearson","lccc")})
+                row["fitted_params"]=params
+                row["validation_n"]=int(np.count_nonzero(np.isfinite(preds)))
+            except InterruptedError:
+                raise
+            except Exception as exc:
+                row["error"]=str(exc)
+                row.update({key:float("nan") for key in ("rmse","rmse_pct","mae","r2","pearson","lccc")})
+            rows.append(row)
+        rows.sort(key=lambda r:(bool(r.get("error")),-(r["r2"] if np.isfinite(r["r2"]) else -1e300),
+            r["rmse"] if np.isfinite(r["rmse"]) else 1e300))
+        return rows
 
     def validate(self, x, y, z, cutoff, lag, candidates, cancelled=lambda:False):
         rows=[]

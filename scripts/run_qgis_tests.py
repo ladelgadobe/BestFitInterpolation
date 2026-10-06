@@ -87,6 +87,11 @@ def main():
         with tempfile.TemporaryDirectory(prefix='bfi-qgis-profile-') as profile:
             app = QgsApplication([], False, profile)
             app.initQgis()
+            if os.name=='nt':
+                from qgis.PyQt.QtGui import QFontDatabase,QFont
+                for font in ('arial.ttf','arialbd.ttf','ariali.ttf'):
+                    QFontDatabase.addApplicationFont(str(Path(r'C:\Windows\Fonts')/font))
+                app.setFont(QFont('Arial',9))
             from runtime_cases import RuntimeCases
             import bestfitinterpolator
             if Path(bestfitinterpolator.__file__).resolve().parent!=plugin_root:

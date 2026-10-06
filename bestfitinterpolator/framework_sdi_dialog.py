@@ -11,7 +11,7 @@ All code comments are in English.
 
 from __future__ import annotations
 from .theme import save_figure
-from .compat import enum_value, qt_exec
+from .compat import enum_value, qt_exec, is_alive
 from .semivariogram_engine import SemivariogramEngine
 from .theme import COLORS
 
@@ -169,11 +169,12 @@ class FrameworkSDIDialog(QDialog):
 
         self.cmb_model = QComboBox()
         self.cmb_model.addItems(["Automatic", "Spherical", "Exponential", "Gaussian"])
-        self.btn_model_validation = None
+        self.btn_model_validation = QPushButton("View validation")
         model_row = QWidget()
         model_layout = QHBoxLayout(model_row)
         model_layout.setContentsMargins(0, 0, 0, 0)
         model_layout.addWidget(self.cmb_model)
+        model_layout.addWidget(self.btn_model_validation)
 
         self.spin_nugget = self._make_double_spin(0.0, 1e12, 6)
         self.spin_psill = self._make_double_spin(0.0, 1e12, 6)
@@ -227,6 +228,7 @@ class FrameworkSDIDialog(QDialog):
         self.btn_autofill.clicked.connect(self._autofill_from_plugin)
         self.btn_recompute.clicked.connect(self._reset_to_automatic_fit)
         self.btn_apply_sdi.clicked.connect(self._apply_to_framework)
+        self.btn_model_validation.clicked.connect(self._on_model_validation_clicked)
         self.button_box.rejected.connect(self.reject)
 
         self.cmb_model.currentIndexChanged.connect(self._on_model_changed)
@@ -642,15 +644,108 @@ class FrameworkSDIDialog(QDialog):
         self._sync_framework_preview()
 
     def _on_model_validation_clicked(self) -> None:
-        framework_ctrl = self._framework_controller()
-        if framework_ctrl is not None and hasattr(framework_ctrl, "_show_ok_model_validation_dialog"):
-            framework_ctrl._show_ok_model_validation_dialog()
-            return
-        QMessageBox.information(
-            self,
-            "Framework kriging model validation",
-            "Run Framework diagnostics or validation first.",
-        )
+        """Compute all three models for this popup, without using cached metrics."""
+        from qgis.PyQt.QtWidgets import QTableWidget,QTableWidgetItem,QAbstractItemView,QHeaderView
+        from .theme import apply_theme
+        from .async_jobs import submit
+        previous=getattr(self,"_model_validation_dialog",None)
+        if is_alive(previous):
+            for task in tuple(getattr(previous,"_bfi_jobs",())): task.cancel()
+            previous.close()
+        window=QDialog(self)
+        window.setAttribute(enum_value(Qt,"WidgetAttribute","WA_DeleteOnClose"),True)
+        window.setWindowTitle("Framework semivariogram validation")
+        layout=QVBoxLayout(window)
+        status=QLabel("Calculating cross validation for Spherical, Exponential and Gaussian")
+        status.setWordWrap(True); layout.addWidget(status)
+        table=QTableWidget(0,7,window)
+        table.setHorizontalHeaderLabels(("Model","RMSE","RMSE%","MAE","R²","Pearson","LCCC"))
+        table.setSelectionBehavior(enum_value(QAbstractItemView,"SelectionBehavior","SelectRows"))
+        table.setSelectionMode(enum_value(QAbstractItemView,"SelectionMode","SingleSelection"))
+        table.setEditTriggers(enum_value(QAbstractItemView,"EditTrigger","NoEditTriggers"))
+        table.horizontalHeader().setSectionResizeMode(enum_value(QHeaderView,"ResizeMode","Stretch"))
+        layout.addWidget(table,1)
+        actions=QHBoxLayout(); layout.addLayout(actions)
+        apply=QPushButton("Apply selected model"); apply.setEnabled(False); actions.addWidget(apply)
+        close=QPushButton("Close"); close.clicked.connect(window.reject); actions.addWidget(close)
+        window.status,window.table,window.apply,window.rows=status,table,apply,[]
+        window.rejected.connect(lambda:[task.cancel() for task in tuple(getattr(window,"_bfi_jobs",()))])
+        self._model_validation_dialog=window
+        apply_theme(window); window.resize(850,360); window.show()
+        if self._inputs is None:
+            status.setText("Load the point dataset in Data first."); return
+        x,y,z=(np.asarray(a,float).copy() for a in (self._inputs.x,self._inputs.y,self._inputs.z))
+        cutoff,lag=self.spin_max_distance.value(),self.spin_lag_width.value()
+        fit_method=self._fit_method
+        signature=self._validation_signature()
+        framework_ctrl=self._framework_controller()
+        if framework_ctrl is None:
+            status.setText("Framework is not available."); return
+        if self.plugin is not None:
+            data=framework_ctrl._collect_current_plugin_data() or {}
+            if any(not np.array_equal(a,np.asarray(data.get(key,[]),float)) for a,key in ((x,"x"),(y,"y"),(z,"z"))):
+                status.setText("The point dataset changed. Reload Framework data and reopen semivariogram settings before validating."); return
+        folds=framework_ctrl._automatic_fold_indices(len(z),x,y)
+        engine=SemivariogramEngine("framework_sdi")
+        def work(cancel):
+            return engine.validate_framework(x,y,z,cutoff,lag,fit_method,folds,cancel)
+        def current():
+            return self._validation_signature()==signature
+        def completed(error,rows):
+            if error: status.setText(str(error)); return
+            if not current():
+                status.setText("Data or settings changed. Open validation again for the current settings."); return
+            window.rows=rows; table.setRowCount(len(rows))
+            for i,row in enumerate(rows):
+                for j,key in enumerate(("model","rmse","rmse_pct","mae","r2","pearson","lccc")):
+                    value=row[key]
+                    item=QTableWidgetItem(str(value) if isinstance(value,str) else
+                        ("{:.3f}".format(value) if np.isfinite(value) else "Unavailable"))
+                    if row.get("error"): item.setToolTip(row["error"])
+                    table.setItem(i,j,item)
+            valid=[row for row in rows if not row.get("error")]
+            if not valid:
+                status.setText("No model passed validation. " + "; ".join(row["model"]+": "+row["error"] for row in rows)); return
+            best=valid[0]
+            status.setText("Fit: {} | Maximum distance: {:.6g} | Lag: {:.6g} | Samples: {}. "
+                "Recommended: {} (R² {:.3f}, RMSE {:.3f}). Framework selects the highest R²; "
+                "lower RMSE breaks ties. Metrics use the existing three decimal precision. "
+                "Select a row and Apply to change the current model.".format(
+                    fit_method,cutoff,lag,len(z),best["model"],best["r2"],best["rmse"]))
+            failures=[row["model"]+": "+row["error"] for row in rows if row.get("error")]
+            if failures: status.setText(status.text()+" "+"; ".join(failures))
+            table.selectRow(rows.index(best)); apply.setEnabled(True)
+        def apply_selected():
+            if not current():
+                window.rows=[]; table.setRowCount(0); apply.setEnabled(False)
+                status.setText("Data or settings changed. Open validation again before applying a model."); return
+            if table.currentRow()<0: return
+            row=window.rows[table.currentRow()]
+            if row.get("error"):
+                status.setText("This model failed validation: "+row["error"]); return
+            self._updating=True
+            try:
+                self.cmb_model.setCurrentText(row["model"])
+                self._set_param_values(*row["fitted_params"])
+                self._reml_meta=dict(row.get("reml_meta",{}))
+            finally: self._updating=False
+            self._set_experimental_from_current_structure("reml" if fit_method=="REML" else "mom")
+            self._update_result_labels(); self._draw_variogram(); self._sync_framework_preview()
+            status.setText(row["model"]+" applied. Its validated parameters are now shown in the semivariogram settings.")
+        apply.clicked.connect(apply_selected)
+        submit(window,"Framework semivariogram validation",work,completed)
+
+    def _validation_signature(self):
+        """Reject results from another dataset, fitting method or bin structure."""
+        import hashlib
+        digest=hashlib.sha256()
+        arrays=(self._inputs.x,self._inputs.y,self._inputs.z) if self._inputs is not None else ()
+        for array in arrays: digest.update(np.ascontiguousarray(array,dtype=float).tobytes())
+        framework_ctrl=self._framework_controller()
+        if self.plugin is not None and framework_ctrl is not None:
+            data=framework_ctrl._collect_current_plugin_data() or {}
+            for key in ("x","y","z"): digest.update(np.ascontiguousarray(data.get(key,[]),dtype=float).tobytes())
+        return digest.hexdigest(),self.spin_max_distance.value(),self.spin_lag_width.value(),self._fit_method
 
     def _on_manual_params_changed(self, *args) -> None:
         if self._updating:
