@@ -1,4 +1,5 @@
 import ast
+import logging
 from pathlib import Path
 import textwrap
 
@@ -12,7 +13,8 @@ def function_source(path, name):
 
 
 def standalone_method(path, name, namespace=None):
-    scope = dict(namespace or {})
+    scope = {"LOG": logging.getLogger("BestFitInterpolator")}
+    scope.update(namespace or {})
     exec(
         compile(textwrap.dedent(function_source(path, name)), str(path), "exec"),
         scope,

@@ -15,16 +15,62 @@ from qgis.PyQt.QtWidgets import QSizePolicy
 from .compat import enum_value
 
 
-def clone_figure(figure):
-    """Clone our own figure graph on Matplotlib versions that forbid transform copies."""
+def _clone_with_legacy_transforms(figure, memo):
+    """Copy legacy transform state with a shared memo, preserving graph cycles."""
     import copy
+    from types import FunctionType, MethodType, ModuleType
+    from matplotlib.transforms import TransformNode
+
+    transforms = []
+    visited = {id(figure)}
+    # Figure state omits its Qt canvas and renderer, which must not be copied.
+    figure_state = figure.__getstate__()
+    pending = [figure_state]
+    while pending:
+        value = pending.pop()
+        if id(value) in visited:
+            continue
+        visited.add(id(value))
+        if isinstance(value, TransformNode):
+            memo[id(value)] = type(value).__new__(type(value))
+            state = value.__getstate__()
+            transforms.append((value, state))
+            pending.append(state)
+        elif isinstance(value, dict):
+            pending.extend(value.keys())
+            pending.extend(value.values())
+        elif isinstance(value, (list, tuple, set, frozenset)):
+            pending.extend(value)
+        elif not isinstance(value, (type, FunctionType, MethodType, ModuleType)):
+            pending.append(getattr(value, '__dict__', None))
+    # Seed every transform before copying state so shared nodes stay shared.
+    for value, state in transforms:
+        memo[id(value)].__setstate__(copy.deepcopy(state, memo))
+    return copy.deepcopy(figure, memo)
+
+
+def clone_figure(figure):
+    """Clone an independent figure, including historical Matplotlib transforms."""
+    import copy
+    from types import BuiltinMethodType
+    from matplotlib.artist import Artist
+    memo = {}
     try:
-        cloned = copy.deepcopy(figure)
+        cloned = copy.deepcopy(figure, memo)
     except NotImplementedError:
-        # These bytes originate only from the in-memory figure, never from external files.
-        import pickle
-        cloned = pickle.loads(pickle.dumps(figure,protocol=4))
-    # Matplotlib 3.1 removes this required attribute from its serialized state.
+        # Matplotlib 3.1 TransformNode explicitly refuses deepcopy.
+        memo = {}
+        cloned = _clone_with_legacy_transforms(figure, memo)
+    # deepcopy retains built-in callbacks such as the original artist list.remove.
+    for artist in memo.values():
+        if not isinstance(artist, Artist):
+            continue
+        remove_method = getattr(artist, '_remove_method', None)
+        if isinstance(remove_method, BuiltinMethodType):
+            owner = memo.get(id(remove_method.__self__))
+            if owner is not None:
+                artist._remove_method = getattr(owner, remove_method.__name__)
+    # Matplotlib 3.1 omits this required renderer cache from Figure state.
     if hasattr(figure, '_cachedRenderer') and not hasattr(cloned, '_cachedRenderer'):
         cloned._cachedRenderer = None
     return cloned

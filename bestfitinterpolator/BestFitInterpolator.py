@@ -8,7 +8,7 @@ from .theme import save_figure
 from .compat import enum_value, qt_exec
 from .theme import COLORS
 
-from .compat import QAction, is_alive, log_exception
+from .compat import QAction, is_alive, log_exception, LOG
 from .theme import apply_theme
 import os
 import uuid
@@ -381,8 +381,8 @@ class BestFitInterpolatorDialog(QDialog):
             if reply != enum_value(QMessageBox, "StandardButton", "Yes"):
                 event.ignore()
                 return
-        except Exception:
-            pass
+        except (AttributeError, TypeError, RuntimeError) as exc:
+            LOG.debug("Close confirmation unavailable; completing dialog closure: %s", exc)
         plugin = getattr(self, "_bfi_plugin", None)
         if plugin is not None:
             plugin._on_dialog_closed()
@@ -2936,8 +2936,8 @@ class BestFitInterpolator:
                         "The point and polygon layers use different coordinate reference systems.",
                     )
                     return False
-            except Exception:
-                pass
+            except (AttributeError, TypeError, RuntimeError) as exc:
+                LOG.debug("Layer CRS precheck unavailable; continuing with coverage check: %s", exc)
 
         try:
             total, outside = self._point_polygon_coverage_counts(

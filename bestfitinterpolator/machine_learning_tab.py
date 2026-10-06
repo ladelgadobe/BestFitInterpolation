@@ -17,7 +17,7 @@ Logic for the Machine Learning → Covariables tab.
 All code comments are in English. User-facing messages are in English.
 """
 from .theme import save_figure
-from .compat import enum_value, qt_exec
+from .compat import enum_value, qt_exec, LOG
 from .theme import COLORS,clean_display_name
 
 import os
@@ -813,8 +813,8 @@ class MachineLearningTabController:
                 vmax = float(limits[1])
                 if np.isfinite(vmin) and np.isfinite(vmax) and vmin < vmax:
                     return vmin, vmax
-            except Exception:
-                pass
+            except (TypeError, ValueError, OverflowError) as exc:
+                LOG.debug("Grid color limits invalid; using finite fallback values: %s", exc)
         vals = np.asarray(fallback_values, dtype=float)
         vals = vals[np.isfinite(vals)]
         if vals.size == 0:
