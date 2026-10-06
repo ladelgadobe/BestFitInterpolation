@@ -4882,7 +4882,7 @@
       }
     },
     "unit_checks": {
-      "executed_at_utc": "2026-10-06T00:43:01.987983+00:00",
+      "executed_at_utc": "2026-10-06T01:00:00.798100+00:00",
       "passed": 109,
       "failed": 0,
       "qgis": "4.2.3-Belém do Pará",
@@ -4943,13 +4943,13 @@
         "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
         "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
         "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
-        "ui_refinement.py": "4379bc04c9429fd9c61f0054165883301bbab4b30606495870d14065842cb732",
+        "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
         "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
         "variogram_utils.py": "ef2d5772c83e7692c8a73e86adf38c63350226b4fad1ccd9daba1b753086bbb0"
       }
     },
     "session": {
-      "executed_at_utc": "2026-10-06T00:45:25.921406+00:00",
+      "executed_at_utc": "2026-10-06T01:01:00.227516+00:00",
       "qgis": "4.2.3-Belém do Pará",
       "mode": "Real QGIS / Qt offscreen, isolated profile, synthetic datasets",
       "window_sizes": [
@@ -5087,7 +5087,7 @@
         "Thin_plate_spline.py": "e961ad0f1e4e253c504aa1a7a02ce50654de69814a4985b91e78419ded001c41",
         "ui_arrow_down.svg": "9d58d12cd002d12909196cfae600d2d559404eea6c55ed8536491b06a3a12299",
         "ui_arrow_up.svg": "b8d5624279a7d8a9cae51da2f35724bff2031b30f231cfaa70ccf5c217f2f8df",
-        "ui_refinement.py": "4379bc04c9429fd9c61f0054165883301bbab4b30606495870d14065842cb732",
+        "ui_refinement.py": "333cd943414398380f8e94f222a48d4844c9fde6615b6e8596da59b1afebf04a",
         "validation_policy.py": "8fd925ce93880060d1e4a288d70cd74b129b83e58f380db215959db895abdff3",
         "variogram_utils.py": "ef2d5772c83e7692c8a73e86adf38c63350226b4fad1ccd9daba1b753086bbb0"
       }

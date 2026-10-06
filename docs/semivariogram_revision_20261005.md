@@ -8,7 +8,7 @@ Framework SDI settings now include **View validation**. This background calculat
 
 The existing Framework semivariogram computation and automatic method thresholds are preserved. Ordinary Geostatistics retains its current LCCC/RMSE/R² selection policy. Fitting, prediction and CV formulas are unchanged; the UI now uses the actual fitted REML parameters for the curve and application.
 
-IDW and TPS use separate rounded borders. The replacement group boxes receive their properties and are styled for every new dialog. IDW options use two readable rows at 800×600 and 1000×700.
+IDW and TPS use separate rounded borders. The replacement group boxes receive their properties and are styled for every new dialog. IDW options use two readable rows at 800×600 and 1000×700. With larger system fonts the method boxes stack vertically instead of clipping option text. This addresses the narrowed controls found by the first expanded Linux QGIS 3.14/3.44 CI run; a separate local test uses 13 point Arial at both window sizes.
 
 Validation uses real QGIS/Qt in isolated offscreen profiles. The runtime suite checks six successive MoM/REML/Automatic changes, theoretical curve changes, returning to tabs, model validation/application in each mode, actual border pixels after reopening, Framework ranking, current cutoff/lag, and rejection of stale data/settings. Numerical baselines remain read-only. Windows QGIS 3.44.8 and 4.2.3 each pass 109 unit/contract checks; runtime evidence and exact scientific dependencies are recorded in [the Windows report](windows_qgis_4_2_report.json).
 

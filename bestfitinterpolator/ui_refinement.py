@@ -1,6 +1,6 @@
 """Adapt existing Designer widgets without changing their controller bindings."""
-from qgis.PyQt.QtCore import QSize, Qt
-from qgis.PyQt.QtWidgets import QWidget,QScrollArea,QVBoxLayout,QHBoxLayout,QTabWidget,QSizePolicy,QApplication,QLabel
+from qgis.PyQt.QtCore import QSize, Qt, QObject, QEvent
+from qgis.PyQt.QtWidgets import QWidget,QScrollArea,QVBoxLayout,QHBoxLayout,QTabWidget,QSizePolicy,QApplication,QLabel,QBoxLayout
 from .compat import enum_value
 from .theme import refresh_controls,action_icon
 
@@ -102,12 +102,44 @@ def refine_method_options(dialog):
     for name in ('groupIDWOptions','groupTPSOptions'):
         panel=getattr(dialog,name,None)
         if panel is not None: panel.setProperty('bfiSection',True)
+    options=getattr(dialog,'groupDetOptions',None)
+    if options is not None and isinstance(options.layout(),QBoxLayout):
+        options._bfi_reflow=MethodOptionsReflow(dialog,options)
+        options.installEventFilter(options._bfi_reflow)
+        options._bfi_reflow.update_direction()
     button=getattr(dialog,'btnRFRun',None)
     page=getattr(dialog,'tabRFInterpolation',None)
     if button is not None and page is not None:
         button.parentWidget().layout().removeWidget(button)
         scroll_content(page)
         page.layout().addWidget(button)
+
+
+class MethodOptionsReflow(QObject):
+    """Keep complete option text visible with larger system fonts or small windows."""
+    def __init__(self,dialog,group):
+        super().__init__(group)
+        self.group=group
+        self.widgets=(dialog.groupIDWOptions,dialog.groupTPSOptions,dialog.btnInterpolate)
+        self.controls=(dialog.radManualParams,dialog.chkOptimize,dialog.lblNeighbors,
+                       dialog.lblPower,dialog.spinNeighbors,dialog.spinPower,dialog.chkTPS)
+
+    def update_direction(self):
+        for widget in self.controls:
+            minimum=widget.minimumSizeHint().width()
+            if widget.minimumWidth()!=minimum: widget.setMinimumWidth(minimum)
+        layout=self.group.layout()
+        margins=layout.contentsMargins()
+        required=sum(widget.minimumSizeHint().width() for widget in self.widgets)+2*layout.spacing()+margins.left()+margins.right()
+        direction=enum_value(QBoxLayout,'Direction','TopToBottom' if self.group.width()<required else 'LeftToRight')
+        if layout.direction()!=direction:
+            layout.setDirection(direction)
+            self.group.updateGeometry()
+
+    def eventFilter(self,obj,event):
+        if event.type() in tuple(enum_value(QEvent,'Type',name) for name in ('Resize','Show','FontChange','LayoutRequest')):
+            self.update_direction()
+        return False
 
 
 def refine_main_dialog(dialog):
