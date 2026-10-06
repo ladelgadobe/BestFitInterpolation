@@ -1,3 +1,7 @@
+# Historical development evidence
+
+This directory records development checks dated below. Current release information is in [the plugin README](../README.md) and [version 2.0 notes](../../docs/releases/2.0.md).
+
 # Best Fit Interpolator update 2026-10-05
 
 Incremental delivery based on the local 1.2 source. The base source is preserved

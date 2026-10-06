@@ -1,15 +1,23 @@
 """Discover official version tags; never replace a missing target with another QGIS."""
 import argparse
 import json
+import os
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def get_json(url):
-    request = Request(url, headers={'User-Agent': 'BestFitInterpolator-compatibility', 'Accept': 'application/json'})
+    headers = {'User-Agent': 'BestFitInterpolator-compatibility', 'Accept': 'application/json'}
+    origin = urlsplit(url)
+    if origin.scheme == 'https' and origin.netloc == 'api.github.com':
+        token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
+        if token:
+            headers['Authorization'] = 'Bearer ' + token
+    request = Request(url, headers=headers)
     with urlopen(request, timeout=25) as response:
         return json.load(response)
 

@@ -55,7 +55,7 @@
   ],
   "referenced_assets_sha256": {
     "Gitap.png": "4fd974fdeca5d9e43cec6ba85dfc2c8c4bd85b0a5c6219ca94bf348e869a3a73",
-    "about.png": "413de041fad10c017f84fb88719f351f088ca5d7bba44a8088e9563e0fe5435d",
+    "about.png": "fe1c6d91a85f9a147f8d6d7f52f92fc40a41f057ae29db060d9e01d622cc2051",
     "covariates.png": "b0138686651de907849a83b9795b6a9f5129e8034c92289bfa35f58e82354c24",
     "data.png": "fe9b9ad9ea76b0a26fa649470a976d31dc9247f1cfa604ccd5df983bc617a883",
     "dense_massive_workflow.png": "fa0e508b82a32b4170d869e988bbc7135a2ccf761163f266a75ad8e635978fa0",
@@ -107,5 +107,15 @@
   "diagram_sources_sha256": {
     "dense_massive_workflow.svg": "f13ad5b24c10d3d71d6a942331fb845a6c10f9660f37578d0716ef8cfe6a4e00",
     "render_dense_massive_workflow.py": "a742fc8a84b73d8327d84d948de56cd9f8918f37a7e2796c5dcc19d23bfa115e"
+  },
+  "release_update": {
+    "plugin_version": "2.0",
+    "recaptured_figures": [
+      "about.png"
+    ],
+    "qgis": "4.2.3",
+    "study": "Paulínia",
+    "metadata_sha256": "df6306c50e22c9a8a4aa84e428e27fd2414b24a7fdd3cdbec70a0f9d7a0992c4",
+    "source_algorithms_unchanged": true
   }
 }

@@ -3,6 +3,7 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from unittest.mock import patch, MagicMock
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -15,6 +16,31 @@ def load(name):
 
 
 class PolicyTests(unittest.TestCase):
+    def test_discovery_authentication_is_limited_to_github_https_api(self):
+        resolver=load('resolve_images')
+        response=MagicMock()
+        response.__enter__.return_value.read.return_value=b'{}'
+        urls=(
+            'https://api.github.com/repos/qgis/QGIS/tags',
+            'https://hub.docker.com/v2/repositories/qgis/qgis/tags',
+            'https://api.github.com.example.org/tags',
+            'http://api.github.com/repos/qgis/QGIS/tags',
+        )
+        with patch.dict(resolver.os.environ,{'GH_TOKEN':'test-only-token'},clear=True):
+            for url in urls:
+                with self.subTest(url=url), patch.object(resolver,'urlopen',return_value=response) as opened:
+                    resolver.get_json(url)
+                    auth=opened.call_args[0][0].get_header('Authorization')
+                    self.assertEqual(auth, 'Bearer test-only-token' if url==urls[0] else None)
+
+    def test_discovery_without_token_remains_usable_locally(self):
+        resolver=load('resolve_images')
+        response=MagicMock()
+        response.__enter__.return_value.read.return_value=b'{"results":[]}'
+        with patch.dict(resolver.os.environ,{},clear=True), patch.object(resolver,'urlopen',return_value=response) as opened:
+            self.assertEqual(resolver.get_json('https://api.github.com/repos/qgis/QGIS/tags'),{'results':[]})
+            self.assertIsNone(opened.call_args[0][0].get_header('Authorization'))
+
     def test_full_matrix_includes_every_stable_intermediate_qgis3(self):
         config=json.loads((ROOT/'ci/qgis_targets.json').read_text())
         labels=load('resolve_images').target_labels(config,'full','4.2')

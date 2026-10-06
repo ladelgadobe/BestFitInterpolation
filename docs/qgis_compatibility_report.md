@@ -16,7 +16,7 @@ The palette adapter now uses the public registry where available and retains the
 
 The corrected Windows 4.2.3 and 3.44.8 distributions each passed 107 checks, all 13 functional blocks, numerical baselines and full IDW/TPS/OK/RF/SVM/RK sessions. Actual Qt preview pixels were checked after optimized IDW, Larger View and repeated tab switches at 1000×700 and 800×600. Source hashes bind the Windows evidence to the correction. These API-removal and pixel checks also run in every CI target. [Windows reproduction and correction evidence](windows_qgis_4_2_report.json) records the failure, dependencies, successful results, full session and screenshot hashes.
 
-The original Linux table and measurements below remain a historical record. Current expanded CI results are published as workflow artifacts and linked from draft PR #3. Offscreen tests use real QGIS/Qt widgets with synthetic data and a small iface double; they do not certify every desktop, monitor scale or large dataset.
+The original Linux table and measurements below remain a historical record. Current expanded CI results are published as workflow artifacts and linked from PR #3. Offscreen tests use real QGIS/Qt widgets with synthetic data and a small iface double; they do not certify every desktop, monitor scale or large dataset.
 
 ## Semivariogram followup 2026-10-05
 
@@ -127,7 +127,7 @@ Across every tested target, maximum absolute fixture difference was **4.88498130
 - `bestfitinterpolator/test/test_development_tasks.py`
 - `bestfitinterpolator/test/test_development_ui_refinement.py`
 - `bestfitinterpolator/test/test_figure_clone_compatibility.py`
-- `bestfitinterpolator/test/test_release_1_2_contract.py`
+- `bestfitinterpolator/test/test_release_contract.py`
 - `bestfitinterpolator/test/test_version_1_2_foundation_contract.py`
 - `bestfitinterpolator/theme.py`
 - `bestfitinterpolator/ui_arrow_down.svg`

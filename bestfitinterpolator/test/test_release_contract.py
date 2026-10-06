@@ -1,4 +1,4 @@
-"""Release contract for the QGIS plugin version 1.2 development package."""
+"""Release contract for the current public QGIS plugin package."""
 
 import configparser
 from pathlib import Path
@@ -16,8 +16,8 @@ def _metadata():
 
 def test_release_version_and_changelog_are_consistent():
     metadata = _metadata()
-    assert metadata["version"] == "1.2"
-    assert metadata["changelog"].startswith("Version 1.2:")
+    assert metadata["version"] == "2.0"
+    assert metadata["changelog"].startswith("Version 2.0:")
 
 
 def test_release_documentation_has_no_legacy_r_squared_encoding():

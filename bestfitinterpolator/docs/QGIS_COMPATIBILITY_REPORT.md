@@ -103,7 +103,7 @@ Across every tested target, maximum absolute fixture difference was **4.88498130
 - `bestfitinterpolator/test/test_development_tasks.py`
 - `bestfitinterpolator/test/test_development_ui_refinement.py`
 - `bestfitinterpolator/test/test_figure_clone_compatibility.py`
-- `bestfitinterpolator/test/test_release_1_2_contract.py`
+- `bestfitinterpolator/test/test_release_contract.py`
 - `bestfitinterpolator/test/test_version_1_2_foundation_contract.py`
 - `bestfitinterpolator/theme.py`
 - `bestfitinterpolator/ui_arrow_down.svg`

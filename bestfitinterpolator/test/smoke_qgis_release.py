@@ -2,6 +2,7 @@
 
 import os
 import sys
+import configparser
 from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -29,7 +30,9 @@ print(f"Tabs: {tabs}")
 print(f"About version: {version}")
 
 assert tabs[-1] == "About"
-assert version == "Version 1.2"
+metadata = configparser.ConfigParser(interpolation=None)
+metadata.read(PLUGIN_DIR / "metadata.txt", encoding="utf-8-sig")
+assert version == "Version " + metadata["general"]["version"]
 
 dialog.deleteLater()
 app.exitQgis()
