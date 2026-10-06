@@ -209,8 +209,11 @@ class MatplotlibMapDisplay(QObject):
             if colorbar is not None and any(colorbar.mappable is artist for artist in updated):
                 # deepcopy retains a built-in remove callback bound to the original list.
                 for artist in [colorbar.solids]+list(getattr(colorbar,'solids_patches',[])):
-                    if artist is not None and any(artist is child for child in ax._children):
-                        artist._remove_method=ax._children.remove
+                    children=getattr(ax,'_children',None)
+                    if children is None:
+                        children=ax.collections if any(artist is child for child in ax.collections) else ax.patches
+                    if artist is not None and any(artist is child for child in children):
+                        artist._remove_method=children.remove
                 colorbar.update_normal(colorbar.mappable)
 
     def fit(self):
@@ -236,6 +239,12 @@ class MatplotlibMapDisplay(QObject):
 
 
 def attach_map_controls(canvas):
+    # Historical Matplotlib links the colorbar only from its scalar mappable.
+    for ax in canvas.figure.axes:
+        for artist in list(ax.images)+list(ax.collections):
+            colorbar=getattr(artist,'colorbar',None)
+            if colorbar is not None and colorbar.ax in canvas.figure.axes:
+                colorbar.ax._colorbar=colorbar
     if getattr(canvas,'_bfi_no_display_settings',False) or getattr(canvas.figure,'_bfi_validation',False):
         return
     if getattr(canvas,"_bfi_map_display",None) is not None: return

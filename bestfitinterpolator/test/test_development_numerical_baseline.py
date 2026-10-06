@@ -76,7 +76,16 @@ def test_core_algorithms_and_policies_are_unchanged():
     for name in ("IDW_optimized.py","Thin_plate_spline.py","kriging_ordinary.py","kriging_reml.py","RF_Interpolation.py","SVM_Interpolation.py","performance_policy.py","validation_policy.py","variogram_utils.py"):
         # Qt-only imports differ; numerical functions retain the same AST.
         def functions(path):
-            tree=ast.parse(path.read_text(encoding="utf-8-sig"));return {n.name:ast.dump(n,include_attributes=False) for n in tree.body if isinstance(n,ast.FunctionDef)}
+            tree=ast.parse(path.read_text(encoding="utf-8-sig"))
+            if name == "variogram_utils.py":
+                # Only the bounded bin index storage may vary with interpreter bitness.
+                function=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=="bin_experimental_variogram")
+                for node in ast.walk(function):
+                    if isinstance(node,ast.Assign) and any(isinstance(t,ast.Name) and t.id=="bins" for t in node.targets):
+                        for value in ast.walk(node.value):
+                            if isinstance(value,ast.Attribute) and isinstance(value.value,ast.Name) and value.value.id=="np" and value.attr=="intp":
+                                value.attr="int64"
+            return {n.name:ast.dump(n,include_attributes=False) for n in tree.body if isinstance(n,ast.FunctionDef)}
         assert functions(root/name)==functions(BASE/name),name
 
 

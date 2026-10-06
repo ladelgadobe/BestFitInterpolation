@@ -10,12 +10,8 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def function_source(path, name):
-    source = path.read_text(encoding="utf-8-sig")
-    tree = ast.parse(source)
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.name == name:
-            return ast.get_source_segment(source, node)
-    raise AssertionError(f"Function {name} not found in {path.name}")
+    from bestfitinterpolator.test.source_helpers import function_source as extract
+    return extract(path, name)
 
 
 def standalone_method(path, name):

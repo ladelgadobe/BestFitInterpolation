@@ -58,6 +58,19 @@ def resolve(tags, target):
             'digest': digest, 'origin': 'Official QGIS Docker Hub' if not entry['name'].startswith('final-') else 'Archived official QGIS image'}
 
 
+def target_labels(configuration, mode, latest):
+    labels = list(configuration[mode])
+    if mode == 'full' and latest:
+        major, minor = (int(part) for part in latest.split('.'))
+        if major != 4 or minor % 2:
+            raise ValueError('Latest stable QGIS 4 must have an even minor version')
+        for number in range(0, minor + 1, 2):
+            label = '4.{}'.format(number)
+            if label not in labels:
+                labels.append(label)
+    return labels
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', choices=('fast', 'full'), default='fast')
@@ -70,14 +83,14 @@ def main():
     try: tags, latest = discover()
     except Exception as exc: tags, latest, error = [], None, str(exc)
     entries = {}
-    for label in configuration[args.mode]:
+    for label in target_labels(configuration, args.mode, latest):
         requested = latest if label == 'latest4' else label
         key = requested or label
         if key not in entries:
             entries[key] = {'requested': key, 'aliases': [], 'required': False, 'pdf': False, 'resolution': None}
         row = entries[key]
         row['aliases'].append(label)
-        row['required'] |= label in configuration['required']
+        row['required'] |= args.mode == 'full' or label in configuration['required']
         row['pdf'] |= label in configuration['pdf']
         row['resolution'] = resolve(tags, requested) if requested else None
         row['discovery_error'] = error

@@ -19,11 +19,19 @@ def clone_figure(figure):
     """Clone our own figure graph on Matplotlib versions that forbid transform copies."""
     import copy
     try:
-        return copy.deepcopy(figure)
+        cloned = copy.deepcopy(figure)
     except NotImplementedError:
         # These bytes originate only from the in-memory figure, never from external files.
         import pickle
-        return pickle.loads(pickle.dumps(figure,protocol=4))
+        cloned = pickle.loads(pickle.dumps(figure,protocol=4))
+    # Matplotlib 3.1 removes this required attribute from its serialized state.
+    if hasattr(figure, '_cachedRenderer') and not hasattr(cloned, '_cachedRenderer'):
+        cloned._cachedRenderer = None
+    return cloned
+
+
+def canvas_pixel_ratio(canvas):
+    return getattr(canvas, 'device_pixel_ratio', getattr(canvas, '_dpi_ratio', 1.))
 try:
     from matplotlib.colors import TwoSlopeNorm
 except ImportError:
@@ -60,7 +68,7 @@ class FigureCanvas(_FigureCanvas):
 
     def draw(self):
         if self.isVisible() and self.width()>0 and self.height()>0:
-            ratio=getattr(self,'device_pixel_ratio',1.)
+            ratio=canvas_pixel_ratio(self)
             self.figure._original_dpi=self._bfi_base_dpi
             self.figure._set_dpi(self._bfi_base_dpi*ratio,forward=False)
             # Figure.__getstate__ resets DPI but retains the copied physical transform.
@@ -85,3 +93,12 @@ class FigureCanvas(_FigureCanvas):
                 self.figure.tight_layout(pad=.8)
             self._bfi_plot_geometry=geometry
         return super().draw()
+
+    def print_figure(self, *args, **kwargs):
+        # Older Qt backends draw before setting is_saving; keep export draws isolated.
+        previous = getattr(self, '_bfi_exporting', False)
+        self._bfi_exporting = True
+        try:
+            return super().print_figure(*args, **kwargs)
+        finally:
+            self._bfi_exporting = previous

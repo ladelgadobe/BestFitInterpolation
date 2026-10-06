@@ -8,12 +8,8 @@ if not (ROOT / "BestFitInterpolator.py").exists():
 
 
 def function_source(path, name):
-    source = path.read_text(encoding="utf-8-sig")
-    tree = ast.parse(source)
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
-            return ast.get_source_segment(source, node)
-    raise AssertionError(f"Function {name} not found in {path.name}")
+    from bestfitinterpolator.test.source_helpers import function_source as extract
+    return extract(path, name)
 
 
 def test_validation_uses_saved_interpolation_configuration():

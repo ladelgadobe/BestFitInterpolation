@@ -43,7 +43,7 @@ jobs:
       - id: matrix
         env:
           MODE: ${{ github.event_name == 'schedule' && 'full' || github.event_name == 'release' && 'full' || contains(github.event.head_commit.message, '[compatibility full]') && 'full' || inputs.matrix || 'fast' }}
-          NIGHTLY: ${{ inputs.nightly || false }}
+          NIGHTLY: ${{ github.event_name == 'schedule' || inputs.nightly || false }}
         run: |
           extra=()
           if [ "$NIGHTLY" = 'true' ]; then extra+=(--nightly); fi

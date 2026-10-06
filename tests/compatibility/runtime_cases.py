@@ -99,6 +99,13 @@ class RuntimeCases:
         events()
 
     def main_window(self):
+        from bestfitinterpolator.test.test_native_variogram_indices import (
+            test_exact_variogram_accepts_32bit_native_indices,
+            test_sampled_variogram_accepts_32bit_native_indices_without_numerical_change,
+            test_condensed_pair_ordinals_keep_64bit_precision)
+        test_exact_variogram_accepts_32bit_native_indices()
+        test_sampled_variogram_accepts_32bit_native_indices_without_numerical_change()
+        test_condensed_pair_ordinals_keep_64bit_precision()
         from bestfitinterpolator.test.test_matplotlib_palette_compatibility import (
             test_registry_does_not_call_removed_cm_get_cmap,
             test_old_matplotlib_lookup_and_missing_turbo_fallback,
@@ -204,10 +211,21 @@ class RuntimeCases:
     def regression(self):
         p = self.plugin
         rk = p.rk_ctrl
-        rk._fit_rf_stage(feature_names=['x', 'y'], prompt_for_predictors=False)
-        assert rk._rf_model is not None and np.isfinite(rk._residuals).all()
-        rk._fit_variogram_stage()
-        assert rk._variogram_fit is not None
+        p.dlg.spinRK_ntree_manual.setValue(30)
+        for name, value in (('spinRK_ntree_min',20),('spinRK_ntree_max',30),('spinRK_ntree_step',10),
+                            ('spinRK_mtry_min',1),('spinRK_mtry_max',2),('spinRK_mtry_step',1),
+                            ('spinRK_nodesize_min',1),('spinRK_nodesize_max',2),('spinRK_nodesize_step',1),
+                            ('spinRKSearchK',3),('spinRKSearchIter',2)):
+            getattr(p.dlg,name).setValue(value)
+        for use_grid in (False,True):
+            rk._rk_grid_widget.setChecked(use_grid)
+            if not use_grid: rk._rk_manual_widget.setChecked(True)
+            rk._fit_rf_stage(feature_names=['x', 'y'], prompt_for_predictors=False)
+            assert rk._rf_fit_config['search_mode'] == ('grid' if use_grid else 'manual')
+            assert rk._rf_model is not None and np.isfinite(rk._residuals).all()
+            rk._fit_variogram_stage()
+            rk._draw_variogram_plot()
+            assert rk._variogram_fit is not None and rk._vario_fig.axes[0].lines
         rk._run_rk_prediction()
         assert rk._last_interpolation_config is not None
         rk._on_run_rk_cv_clicked()

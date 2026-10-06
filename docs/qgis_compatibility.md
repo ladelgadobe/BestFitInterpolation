@@ -7,10 +7,10 @@ The pre-change [audit](qgis_compatibility_audit.md) records existing risks. The 
 ## Matrix and statuses
 
 - Fast, every push and PR: 3.14, 3.44, 4.0, latest stable 4.x.
-- Full, manual, weekly and on a published release: 3.14, 3.16, 3.22, 3.28, 3.34, 3.40, 3.44, 4.0, 4.2, latest stable 4.x.
-- Latest stable is resolved from official QGIS release tags. Duplicate major/minor targets retain their aliases but run once. To add a future version, edit ci/qgis_targets.json.
-- Required targets block the compatibility gate on any failure, missing artifact or missing environment. Historical intermediate targets initially provide informative results, including failures. The repository's main branch now requires `compatibility-gate` from the GitHub Actions app, with strict updates and administrator enforcement. A fork should configure its own branch protection separately.
-- Optional nightly is deliberately outside the required set. Its runtime can be invoked with `--requested nightly` on an explicitly pinned official nightly image; it must never replace a stable target.
+- Full, manual, weekly and on a published release: every stable minor from 3.14 through 3.44, and every released stable QGIS 4 minor through the latest official release. As of this revision these are 18 distinct stable targets. All full-matrix targets are required.
+- Latest stable is resolved from official QGIS release tags. New stable 4.x releases and their intermediate minors enter the full matrix automatically. Duplicate major/minor targets retain their aliases but run once; images are pinned by digest for each run.
+- Required targets block the compatibility gate on any failure, missing artifact or missing environment. The repository's main branch requires `compatibility-gate` from the GitHub Actions app, with strict updates and administrator enforcement. A fork should configure its own branch protection separately.
+- Nightly runs automatically in the weekly workflow and can also be requested manually. It remains informational and must never replace a stable target. Its result records upstream development compatibility, without certifying unreleased versions.
 
 EXECUTED means the requested QGIS major/minor matched the runtime and every functional case passed. FAILED means runtime setup or plugin tests failed with diagnostic evidence. STATICALLY_CHECKED means import/API/Qt/Python/dependency inventory ran, but that target did not execute; no PASS is displayed. UNAVAILABLE means no usable environment/evidence could be produced. Infrastructure errors remain visible even when static fallback is available.
 
@@ -63,6 +63,8 @@ The API-removal regressions and preview checks run in every CI target through th
 To trigger full GitHub Actions, open Actions → QGIS compatibility → Run workflow → full. The same container runner is invoked locally and in CI. Download `qgis-compatibility-report` for Markdown/JSON, each runtime artifact for logs/figures/PDFs and `pyqgis4-checker` for the migration diagnostics. The final report includes actual versions, component results, warnings/errors and numerical differences against the baseline.
 
 A deliberate push can also request the full matrix by including `[compatibility full]` in its commit message. The manual workflow has an optional nightly checkbox; nightly remains informational.
+
+The 32-bit Windows QGIS 3.14 runtime is additionally exercised locally against its own Python 3.7, NumPy and ML packages. CI also forces the variogram binning contract to use 32-bit native indices, even on 64-bit Linux. Both exact and sampled pairs are covered; wide pair ordinals and counters remain int64. Every runtime checks manual and grid RF training followed by residual fitting. See [the integer compatibility correction](integer_compatibility_20261006.md) for measured Windows evidence. Future releases receive new execution evidence from CI; no current test can certify every future upstream API or every downstream package combination.
 
 No compatibility badge is added before this workflow becomes stable. No release or merge is performed by the compatibility workflow.
 

@@ -35,7 +35,7 @@ class LargerViewDialog(QDialog):
 
     def source_changed(self,event):
         if not is_alive(self.canvas): return
-        if event.canvas is not self.source_canvas or self.source_canvas.is_saving(): return
+        if event.canvas is not self.source_canvas or self.source_canvas.is_saving() or getattr(self.source_canvas, '_bfi_exporting', False): return
         # A figure copy retains images, masks, normalizations, artists and limits.
         figure=clone_figure(self.source)
         self.canvas.figure=figure; figure.set_canvas(self.canvas)

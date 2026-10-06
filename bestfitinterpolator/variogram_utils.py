@@ -151,7 +151,8 @@ def bin_experimental_variogram(
                 continue
             dd = dd[mask]
             gamma = gamma[mask]
-            bins = np.minimum(np.floor(dd / width).astype(np.int64), nbins - 1)
+            # bincount requires native indices (int32 in 32-bit QGIS, int64 in 64-bit QGIS).
+            bins = np.minimum(np.floor(dd / width).astype(np.intp), nbins - 1)
             sums += np.bincount(bins, weights=gamma, minlength=nbins)[:nbins]
             counts += np.bincount(bins, minlength=nbins)[:nbins]
             dist_sums += np.bincount(bins, weights=dd, minlength=nbins)[:nbins]
@@ -164,7 +165,7 @@ def bin_experimental_variogram(
         mask = np.isfinite(dd) & np.isfinite(gamma) & (dd > 0) & (dd <= cutoff)
         dd = dd[mask]
         gamma = gamma[mask]
-        bins = np.minimum(np.floor(dd / width).astype(np.int64), nbins - 1)
+        bins = np.minimum(np.floor(dd / width).astype(np.intp), nbins - 1)
         sums += np.bincount(bins, weights=gamma, minlength=nbins)[:nbins]
         counts += np.bincount(bins, minlength=nbins)[:nbins]
         dist_sums += np.bincount(bins, weights=dd, minlength=nbins)[:nbins]

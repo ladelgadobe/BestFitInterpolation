@@ -13,8 +13,16 @@ def events():
     QCoreApplication.processEvents()
 
 
+def set_pixel_ratio(canvas, ratio):
+    if hasattr(canvas, '_set_device_pixel_ratio'):
+        canvas._set_device_pixel_ratio(ratio)
+    else:
+        # Matplotlib 3.1 reads the Qt ratio directly; inject a controlled test ratio.
+        canvas.device_pixel_ratio = ratio
+
+
 def test_larger_view_preserves_mask_palette_normalization_limits_and_updates():
-    from matplotlib.colors import TwoSlopeNorm
+    from bestfitinterpolator.mpl_compat import TwoSlopeNorm
     from bestfitinterpolator.larger_view import LargerViewDialog
     owner=QWidget(); layout=QVBoxLayout(owner)
     fig=Figure(); canvas=FigureCanvas(fig); canvas._bfi_is_map=True; layout.addWidget(canvas)
@@ -59,7 +67,7 @@ def test_palette_choices_show_the_actual_gradient_and_controls_stay_in_popup():
 
 
 def test_framework_correlation_mirror_keeps_scalar_data_and_editable_colors():
-    from matplotlib.colors import TwoSlopeNorm
+    from bestfitinterpolator.mpl_compat import TwoSlopeNorm
     from bestfitinterpolator.framework_tab import FrameworkTabController
     from bestfitinterpolator.larger_view import LargerViewDialog
     source = Figure(); source_canvas = FigureCanvas(source)
@@ -220,7 +228,7 @@ def test_framework_figure_sync_never_freezes_canvas_size_and_respects_pixel_rati
     fig.subplots().plot([0,1],[1,0]);owner.resize(800,600);owner.show();events()
     minimum=canvas.minimumSize()
     for ratio in (1.,1.5,2.):
-        canvas._set_device_pixel_ratio(ratio)
+        set_pixel_ratio(canvas, ratio)
         for width,height in ((800,600),(640,480),(1000,700)):
             owner.resize(width,height);events()
             FrameworkTabController._sync_figure_to_canvas(None,fig,canvas)
@@ -246,10 +254,12 @@ def test_export_draw_does_not_replace_the_embedded_framework_map():
     with tempfile.TemporaryDirectory() as temporary:
         source.savefig(str(Path(temporary)/'export.png'),dpi=300,bbox_inches='tight')
         assert controller.interpolation_fig is mirrored
-    source_canvas._set_device_pixel_ratio(1.5);source_canvas.draw();events()
+    set_pixel_ratio(source_canvas,1.5);source_canvas.draw();events()
     assert controller.interpolation_fig is not mirrored
     for iteration in range(4): events()
     target.draw()
-    assert target.figure.dpi==target._bfi_base_dpi*target.device_pixel_ratio
-    np.testing.assert_allclose(target.figure.bbox.size,(target.width()*target.device_pixel_ratio,target.height()*target.device_pixel_ratio),atol=1.)
+    from bestfitinterpolator.mpl_compat import canvas_pixel_ratio
+    ratio=canvas_pixel_ratio(target)
+    assert target.figure.dpi==target._bfi_base_dpi*ratio
+    np.testing.assert_allclose(target.figure.bbox.size,(target.width()*ratio,target.height()*ratio),atol=1.)
     owner.close();events()

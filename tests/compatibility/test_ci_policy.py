@@ -15,6 +15,18 @@ def load(name):
 
 
 class PolicyTests(unittest.TestCase):
+    def test_full_matrix_includes_every_stable_intermediate_qgis3(self):
+        config=json.loads((ROOT/'ci/qgis_targets.json').read_text())
+        labels=load('resolve_images').target_labels(config,'full','4.2')
+        self.assertTrue(set('3.{}'.format(v) for v in range(14,45,2)).issubset(labels))
+
+    def test_future_stable_qgis4_adds_intermediate_versions_automatically(self):
+        config=json.loads((ROOT/'ci/qgis_targets.json').read_text())
+        labels=load('resolve_images').target_labels(config,'full','4.8')
+        self.assertTrue(set(('4.0','4.2','4.4','4.6','4.8','latest4')).issubset(labels))
+        self.assertNotIn('4.10',labels)
+        self.assertNotIn('4.4',load('resolve_images').target_labels(config,'fast','4.8'))
+
     def test_missing_requested_image_is_not_substituted(self):
         resolver=load('resolve_images')
         tags=[dict(name='3.44.8-noble',digest='sha256:'+'a'*64,images=[dict(architecture='amd64',os='linux')])]

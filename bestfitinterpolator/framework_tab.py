@@ -725,7 +725,8 @@ class FrameworkTabController(QObject):
             width = max(int(canvas.width()), 80)
             height = max(int(canvas.height()), 80)
             dpi = float(fig.get_dpi() or 100.0)
-            ratio=getattr(canvas,'device_pixel_ratio',1.)
+            from .mpl_compat import canvas_pixel_ratio
+            ratio=canvas_pixel_ratio(canvas)
             fig.set_size_inches(width*ratio / dpi, height*ratio / dpi, forward=False)
         except Exception:
             try:
@@ -2802,7 +2803,7 @@ class FrameworkTabController(QObject):
         source_canvas=source_fig.canvas
         def refresh_display(event):
             # Export draws use a temporary canvas, DPI and bounding box.
-            if event.canvas is source_canvas and not source_canvas.is_saving():
+            if event.canvas is source_canvas and not source_canvas.is_saving() and not getattr(source_canvas, '_bfi_exporting', False):
                 self._copy_source_figure_to_framework_map(source_fig)
         connection=source_canvas.mpl_connect('draw_event',refresh_display)
         self._interpolation_source_connection=(source_canvas,connection)

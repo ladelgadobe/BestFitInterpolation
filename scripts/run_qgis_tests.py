@@ -38,6 +38,7 @@ def main():
     parser.add_argument('--pdf', action='store_true')
     parser.add_argument('--image', default='local installed runtime')
     parser.add_argument('--plugin-root', default=str(ROOT/'bestfitinterpolator'), help='Plugin source directory to exercise, including an installed copy')
+    parser.add_argument('--dependency-path', help='Existing packages for this interpreter, without installing or changing its profile')
     args = parser.parse_args()
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -50,6 +51,12 @@ def main():
         if plugin_root.name!='bestfitinterpolator' or not (plugin_root/'__init__.py').is_file():
             raise RuntimeError('The requested plugin source directory is invalid')
         sys.path.insert(0,str(plugin_root.parent))
+        if args.dependency_path:
+            dependency_path = Path(args.dependency_path).resolve()
+            if not dependency_path.is_dir():
+                raise RuntimeError('The requested dependency directory does not exist')
+            sys.path.insert(0, str(dependency_path))
+            report['dependency_path'] = str(dependency_path)
         report['plugin_source']=str(plugin_root)
         if not __debug__:
             raise RuntimeError('Tests cannot run with assertions disabled; unset PYTHONOPTIMIZE and omit -O.')
@@ -73,10 +80,14 @@ def main():
         report['actual'] = actual
         report['environment'].update(QGIS=actual, Qt=QT_VERSION_STR, Python=platform.python_version(),
                                      GDAL=gdal.VersionInfo('RELEASE_NAME'))
+        import struct
+        report['environment']['pointer_bits'] = struct.calcsize('P') * 8
         report['environment']['PROJ'] = '.'.join(str(getattr(osr, 'GetPROJVersion' + part)()) for part in ('Major', 'Minor', 'Micro')) if hasattr(osr, 'GetPROJVersionMajor') else 'unavailable'
         for label, module_name in [('NumPy', 'numpy'), ('SciPy', 'scipy'), ('scikit-learn', 'sklearn'), ('matplotlib', 'matplotlib'), ('pandas', 'pandas')]:
             module = importlib.import_module(module_name)
             report['environment'][label] = module.__version__
+        import numpy as np
+        report['environment']['index_dtype'] = str(np.dtype(np.intp))
         print(json.dumps(report['environment'], indent=2), flush=True)
         requested = args.requested.split('.')[:2]
         actual_parts = actual.split('-')[0].split('.')[:2]
@@ -115,6 +126,9 @@ def main():
             if suite.slot_errors or suite.alerts:
                 raise RuntimeError('Qt or plugin errors: ' + repr(suite.slot_errors + suite.alerts))
             report['status'] = 'EXECUTED' if not report['errors'] else 'FAILED'
+            # QGIS 3.14 on Windows holds qgis-auth.db open until exitQgis.
+            app.exitQgis()
+            app = None
     except Exception:
         message = traceback.format_exc()
         report['errors'].append(message)

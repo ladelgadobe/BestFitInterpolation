@@ -153,8 +153,9 @@ def test_plugin_wraps_iface_and_all_message_bar_calls_use_it():
                 continue
             if node.func.attr not in {"pushMessage", "pushWarning", "pushCritical", "pushSuccess"}:
                 continue
-            receiver = ast.unparse(node.func.value)
-            if receiver != "self.iface.messageBar()":
+            receiver = ast.dump(node.func.value)
+            expected = ast.dump(ast.parse("self.iface.messageBar()", mode="eval").body)
+            if receiver != expected:
                 offenders.append(f"{path.name}:{node.lineno}: {receiver}")
 
     assert not offenders, "Unrouted message-bar calls found:\n" + "\n".join(offenders)

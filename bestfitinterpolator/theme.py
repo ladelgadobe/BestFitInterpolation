@@ -206,5 +206,6 @@ def save_figure(figure,*args,**kwargs):
     style_figure(figure)
     artist=getattr(figure,"_bfi_brand_artist",None)
     if artist is not None:
-        kwargs["bbox_extra_artists"]=tuple(kwargs.get("bbox_extra_artists",()))+(artist,)
+        # Old AnnotationBbox inherits an empty bounding box; its OffsetImage has the actual extent.
+        kwargs["bbox_extra_artists"]=tuple(kwargs.get("bbox_extra_artists",()))+(artist.offsetbox,)
     return figure.savefig(*args,**kwargs)
