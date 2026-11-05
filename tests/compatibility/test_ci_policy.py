@@ -96,5 +96,29 @@ class PolicyTests(unittest.TestCase):
             self.assertEqual(rows[0]['status'],'FAILED')
             self.assertIn('IMPORT',text)
 
+    def test_revision_scope_is_reported_separately_from_numerical_values(self):
+        baseline=json.loads((ROOT/'tests/data/numerical_baseline.json').read_text())
+        with tempfile.TemporaryDirectory() as folder:
+            target=dict(requested='3.14',aliases=['3.14'],required=True,pdf=False,resolution=None)
+            scope=dict(intentionally_revised_keys=['fit_spherical'],
+                       correctness_checks=['independent_bounded_optimizer'])
+            result=dict(status='EXECUTED',actual='3.14.15',tests={'numerical_baseline':{'result':'PASS'}},
+                        numerical_results={'fit_spherical':baseline['results']['fit_spherical'],
+                                           'idw':baseline['results']['idw'],'v2_1_scope':scope})
+            Path(folder,'3.14.json').write_text(json.dumps(result))
+            rows,text=load('summarize').summarize({'targets':[target]},Path(folder))
+            self.assertEqual(rows[0]['status'],'EXECUTED')
+            self.assertIn('intentional v2.1 ordinary-fit change',text)
+            self.assertIn('independent_bounded_optimizer',text)
+            self.assertIn('| 3.14 | idw | 0 |',text)
+
+    def test_unknown_numerical_calculations_are_not_silently_discarded(self):
+        with tempfile.TemporaryDirectory() as folder:
+            target=dict(requested='3.14',aliases=['3.14'],required=True,pdf=False,resolution=None)
+            Path(folder,'3.14.json').write_text(json.dumps(dict(status='EXECUTED',tests={},
+                numerical_results={'unknown_calculation':[1.]})))
+            with self.assertRaisesRegex(ValueError,'Unknown numerical calculation'):
+                load('summarize').summarize({'targets':[target]},Path(folder))
+
 
 if __name__=='__main__': unittest.main()
