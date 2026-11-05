@@ -20,6 +20,7 @@ from .localization import _message
 from .localization import _combo_text, _dialog, _new, _ui
 from .theme import save_figure
 from .compat import enum_value, qt_exec, LOG
+from .covariate_sampling import frame_coverage, set_frame_coverage
 from .theme import COLORS,clean_display_name
 
 import os
@@ -2734,7 +2735,7 @@ class MachineLearningTabController:
 
         headers = ["x", "y", attr_name] + cov_names
         points_df = pd.DataFrame(rows, columns=headers)
-        points_df.attrs["covariate_coverage"] = coverage
+        set_frame_coverage(points_df, coverage)
         return points_df, attr_name, feature_names
 
     def run_framework_interpolation(self, method, feature_names=None, search_settings=None):
@@ -2901,7 +2902,7 @@ class MachineLearningTabController:
             resolved_params = dict(best_params or manual_params)
             setattr(self, config_attr, {
                 "points_df": points_df.copy(deep=True),
-            "training_coverage": points_df.attrs.get("covariate_coverage"),
+            "training_coverage": frame_coverage(points_df),
                 "target_name": str(target_name),
                 "feature_names": list(resolved_features),
                 "resolved_params": resolved_params,
@@ -3195,7 +3196,7 @@ class MachineLearningTabController:
                     "search_summary": model_search_record(tuned_model),
                     "framework_search_settings": settings,
                     "points_df": train_df.copy(deep=True) if subset_used else points_df.copy(deep=True),
-                    "training_coverage": points_df.attrs.get("covariate_coverage"),
+                    "training_coverage": frame_coverage(points_df),
                     "target_name": str(target_name),
                     "feature_names": list(resolved_features),
                     "resolved_params": dict(best_params or manual_params),
@@ -3237,7 +3238,7 @@ class MachineLearningTabController:
                     "search_summary": model_search_record(tuned_model),
                     "framework_search_settings": settings,
                     "points_df": train_df.copy(deep=True) if subset_used else points_df.copy(deep=True),
-                    "training_coverage": points_df.attrs.get("covariate_coverage"),
+                    "training_coverage": frame_coverage(points_df),
                     "target_name": str(target_name),
                     "feature_names": list(resolved_features),
                     "resolved_params": dict(best_params or manual_params),
@@ -3918,7 +3919,7 @@ class MachineLearningTabController:
             "grid_coverage": grid_meta.get("covariate_coverage"),
             "search_summary": result.get("search_summary"),
             "points_df": points_df.copy(deep=True),
-            "training_coverage": points_df.attrs.get("covariate_coverage"),
+            "training_coverage": frame_coverage(points_df),
             "target_name": str(target_name),
             "feature_names": list(cov_names),
             "resolved_params": resolved_params,
@@ -4920,7 +4921,7 @@ class MachineLearningTabController:
             "grid_coverage": grid_meta.get("covariate_coverage"),
             "search_summary": result.get("search_summary"),
             "points_df": points_df.copy(deep=True),
-            "training_coverage": points_df.attrs.get("covariate_coverage"),
+            "training_coverage": frame_coverage(points_df),
             "target_name": str(target_name),
             "feature_names": list(cov_names),
             "resolved_params": resolved_params,

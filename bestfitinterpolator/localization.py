@@ -422,7 +422,9 @@ class LanguageController(QObject):
             while parent is not None:
                 if parent is self.root:
                     localize_widget(obj); break
-                parent = parent.parent()
+                # Some plugin widgets store their owner in a Python ``parent``
+                # attribute. Call Qt directly so that attribute cannot shadow it.
+                parent = QObject.parent(parent)
         return False
 
     def dispose(self):

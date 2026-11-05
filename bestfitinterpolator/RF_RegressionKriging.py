@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Tuple
 
 from .semivariogram_engine import SemivariogramEngine
+from .covariate_sampling import frame_coverage, set_frame_coverage
 import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
@@ -770,6 +771,7 @@ class RegressionKrigingRFController:
         if points_df is None or target_name is None or covariate_names is None:
             raise ValueError("Training data could not be prepared.")
         self._train_df = points_df.copy()
+        set_frame_coverage(self._train_df, frame_coverage(points_df))
         self._target_name = target_name
         self._covariate_names = list(covariate_names)
 
@@ -859,6 +861,7 @@ class RegressionKrigingRFController:
             "validation_subset_used": bool(validation_subset_used),
         }
         self._last_interpolation_config = None
+        set_frame_coverage(train_df, frame_coverage(self._train_df))
         self._train_df = train_df
         self._train_predictions = pred
         self._residuals = residuals
@@ -923,7 +926,7 @@ class RegressionKrigingRFController:
                 raise ValueError("Regression Kriging parameters could not be prepared.")
             self._last_interpolation_config = {
                 "train_df": self._train_df.copy(deep=True),
-            "training_coverage": self._train_df.attrs.get("covariate_coverage"),
+            "training_coverage": frame_coverage(self._train_df),
                 "target_name": str(self._target_name),
                 "feature_names": list(self._covariate_names),
                 "rf_params": dict(self._rf_fit_config["resolved_params"]),
@@ -1315,7 +1318,7 @@ class RegressionKrigingRFController:
         interpolation_config = {
             "grid_coverage": self._grid_meta.get("covariate_coverage"),
             "train_df": self._train_df.copy(deep=True),
-            "training_coverage": self._train_df.attrs.get("covariate_coverage"),
+            "training_coverage": frame_coverage(self._train_df),
             "target_name": str(self._target_name),
             "feature_names": list(self._covariate_names),
             "rf_params": dict(self._rf_fit_config["resolved_params"]),

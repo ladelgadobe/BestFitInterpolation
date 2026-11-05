@@ -3,6 +3,23 @@ import numpy as np
 from qgis.core import QgsCoordinateTransform, QgsPointXY, QgsRasterLayer
 
 
+def frame_coverage(frame):
+    """Read diagnostic metadata without requiring pandas 1.0's attrs API."""
+    attrs = getattr(frame, 'attrs', None)
+    if isinstance(attrs, dict):
+        return attrs.get('covariate_coverage')
+    return getattr(frame, '_bfi_covariate_coverage', None)
+
+
+def set_frame_coverage(frame, coverage):
+    """Keep coverage separate from predictor columns on historical pandas."""
+    attrs = getattr(frame, 'attrs', None)
+    if isinstance(attrs, dict):
+        attrs['covariate_coverage'] = coverage
+    else:
+        object.__setattr__(frame, '_bfi_covariate_coverage', coverage)
+
+
 class CovariateSampler:
     def __init__(self, names, layers, source_crs, project):
         self.names = list(names)

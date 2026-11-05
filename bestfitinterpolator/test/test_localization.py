@@ -12,6 +12,19 @@ from bestfitinterpolator.BestFitInterpolator import BestFitInterpolatorDialog
 from bestfitinterpolator.report_model import ReportState, ReportSection, ReportTable, report_html
 
 
+def test_show_translation_traverses_widgets_with_shadowed_parent_attribute():
+    from qgis.PyQt.QtCore import QEvent
+    root = QWidget()
+    branch = QWidget(root)
+    branch.parent = root
+    label = QLabel('Prediction', branch)
+    loc._set_language('es')
+    loc.LanguageController.eventFilter(SimpleNamespace(root=root), label,
+                                      QEvent(QEvent.Type.Show))
+    assert label.text() == 'Predicción'
+    root.deleteLater()
+
+
 @pytest.fixture(autouse=True)
 def english():
     loc._set_language('en')

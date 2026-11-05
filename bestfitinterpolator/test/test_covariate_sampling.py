@@ -5,6 +5,28 @@ from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsP
 from bestfitinterpolator.covariate_sampling import CovariateSampler, severe_coverage_loss, coverage_message
 
 
+def test_coverage_metadata_supports_frames_without_pandas_attrs():
+    from bestfitinterpolator.covariate_sampling import frame_coverage, set_frame_coverage
+    legacy = SimpleNamespace(columns=['x', 'y', 'value'])
+    coverage = dict(supplied=114, retained=114)
+    set_frame_coverage(legacy, coverage)
+    assert frame_coverage(legacy) == coverage
+    assert legacy.columns == ['x', 'y', 'value'] and not hasattr(legacy, 'attrs')
+    assert frame_coverage(SimpleNamespace()) is None
+
+
+def test_coverage_metadata_preserves_modern_frame_values_and_columns():
+    import pandas as pd
+    from bestfitinterpolator.covariate_sampling import frame_coverage, set_frame_coverage
+    frame = pd.DataFrame({'x': [1., 2.], 'value': [3., 4.]})
+    before = frame.copy(deep=True)
+    coverage = dict(supplied=2, retained=2)
+    set_frame_coverage(frame, coverage)
+    assert frame_coverage(frame) == coverage
+    np.testing.assert_array_equal(frame.to_numpy(), before.to_numpy())
+    assert list(frame.columns) == list(before.columns)
+
+
 class Raster:
     def __init__(self, crs, sample, name):
         self._crs, self._sample, self._name = crs, sample, name
