@@ -1,6 +1,6 @@
 """Hide noninteractive Windows dependency and CPU-discovery subprocesses."""
 import os
-import subprocess
+import subprocess  # nosec B404 - Used only for Windows startup flags/STARTUPINFO; no commands are constructed here.
 
 
 def hidden_process_options():
