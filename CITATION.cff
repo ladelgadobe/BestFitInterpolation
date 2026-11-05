@@ -2,11 +2,11 @@ cff-version: 1.2.0
 message: "If you use this software, please cite both the software and the reference article below."
 title: "Best Fit Interpolator"
 type: software
-version: "2.0"
-date-released: 2026-10-06
+version: "2.1"
+date-released: 2026-11-05
 license: GPL-3.0-or-later
 repository-code: "https://github.com/ladelgadobe/BestFitInterpolation"
-url: "https://github.com/ladelgadobe/BestFitInterpolation/releases/tag/v2.0"
+url: "https://github.com/ladelgadobe/BestFitInterpolation"
 authors:
   - given-names: Laura
     family-names: Delgado Bejarano

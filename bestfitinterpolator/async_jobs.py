@@ -1,13 +1,15 @@
 """Numerical background jobs; QgsTask completion runs on the GUI thread."""
 from qgis.core import QgsApplication, QgsTask
 from .compat import is_alive, log_exception
+from .numerical_runtime import numerical_limits
 
 
 def submit(owner, title, calculate, complete):
     jobs = owner.__dict__.setdefault("_bfi_jobs", set())
     def run(task):
         if task.isCanceled(): raise InterruptedError(title+" cancelled")
-        result=calculate(task.isCanceled)
+        with numerical_limits():
+            result=calculate(task.isCanceled)
         if task.isCanceled(): raise InterruptedError(title+" cancelled")
         # A nonempty tuple also transports empty or false-valued results safely.
         return (result,)
@@ -15,7 +17,7 @@ def submit(owner, title, calculate, complete):
         jobs.discard(task)
         if not is_alive(owner):
             return
-        if exception is not None and task.isCanceled():
+        if task.isCanceled():
             exception = InterruptedError(title + " cancelled")
         if exception is not None:
             if isinstance(exception, InterruptedError):

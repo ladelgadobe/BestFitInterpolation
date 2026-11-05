@@ -16,6 +16,8 @@ Logic for the Machine Learning → Covariables tab.
 
 All code comments are in English. User-facing messages are in English.
 """
+from .localization import _message
+from .localization import _combo_text, _dialog, _new, _ui
 from .theme import save_figure
 from .compat import enum_value, qt_exec, LOG
 from .theme import COLORS,clean_display_name
@@ -299,7 +301,7 @@ class MachineLearningTabController:
             if hasattr(self.dlg, "px_import") and hasattr(
                 self.dlg.px_import, "setText"
             ):
-                self.dlg.px_import.setText(f"{px:.0f}")
+                _ui(self.dlg.px_import, 'setText', f"{px:.0f}")
         except Exception:  # nosec B110
             pass
         # Seed target pixel size only once as default, still editable
@@ -531,7 +533,7 @@ class MachineLearningTabController:
         def _set(name, value):
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "setText"):
-                w.setText(value)
+                _ui(w, 'setText', value)
 
         def _fmt(v):
             return "—" if v is None or not np.isfinite(v) else f"{v:.3f}"
@@ -608,12 +610,20 @@ class MachineLearningTabController:
             widget = getattr(self.dlg, name, None)
             if widget is not None and hasattr(widget, "setText"):
                 try:
-                    widget.setText("--")
+                    _ui(widget, 'setText', "--")
                 except Exception:  # nosec B110
                     pass
 
     def clear_plots(self):
         """Clear Machine Learning plots and cached plot payloads."""
+        self._analysis_generation = getattr(self, '_analysis_generation', 0) + 1
+        self._rf_output_payload = None
+        selector = getattr(self, '_rf_output_selector', None)
+        if selector is not None: selector.clear()
+        self._last_rf_interpolation_config = None
+        self._last_svm_interpolation_config = None
+        self._last_rf_cv_result = None
+        self._last_svm_cv_result = None
         plot_items = [
             ("_corr_fig", "_corr_canvas", "_corr_ax"),
             ("_rf_map_fig", "_rf_map_canvas", "_rf_map_ax"),
@@ -666,6 +676,12 @@ class MachineLearningTabController:
             "valSVMMAE",
             "valSVMPearsonR",
         ])
+
+    def reset_for_analysis_change(self):
+        """Invalidate fitted populations while retaining loaded raster covariates."""
+        self.clear_plots()
+        self._extracted_headers = None
+        self._extracted_rows = None
 
     def reset_for_data_change(self):
         """Reset ML covariates and outputs when the selected dataset changes."""
@@ -750,6 +766,12 @@ class MachineLearningTabController:
             self._rf_map_canvas._bfi_is_map = True
             self._rf_map_ax = None
             map_layout.addWidget(self._rf_map_canvas)
+            from .uncertainty_maps import MapOutputSelector
+            self._rf_output_selector = MapOutputSelector(map_container, self._rf_map_canvas,
+                'cmbRFMapOutput', self._render_rf_output)
+            self.dlg.cmbRFMapOutput = self._rf_output_selector.combo
+            from .uncertainty_maps import install_sd_control
+            install_sd_control(self.dlg, "RF", self._rf_output_selector)
             self._install_plot_canvas_menu(
                 self._rf_map_canvas,
                 lambda: self._rf_map_fig if self._rf_last_map_payload is not None else None,
@@ -1001,6 +1023,7 @@ class MachineLearningTabController:
             canvas = self._rf_map_canvas
         if fig is None or canvas is None:
             return
+        fig._bfi_output_kind = grid_meta.get('map_output_kind', 'prediction')
 
         xmin = float(grid_meta["xmin"])
         xmax = float(grid_meta["xmax"])
@@ -1035,6 +1058,9 @@ class MachineLearningTabController:
                 target_column,
                 "RF",
             )
+            ax.set_title(grid_meta.get('map_title', 'RF interpolation ('+target_column+')'))
+            if len(fig.axes)>1: fig.axes[-1].set_ylabel(grid_meta.get('map_value_label', target_column))
+            canvas.draw_idle()
             if fig is self._rf_map_fig:
                 self._rf_map_ax = ax
             return
@@ -1052,7 +1078,7 @@ class MachineLearningTabController:
 
         fig.clear()
         ax = fig.add_subplot(111)
-        ax.set_title(f"RF interpolation ({target_column})")
+        ax.set_title(grid_meta.get('map_title', f"RF interpolation ({target_column})"))
 
         x_edges = np.linspace(xmin, xmax, n_cols + 1)
         y_edges = np.linspace(ymin, ymax, n_rows + 1)
@@ -1072,7 +1098,7 @@ class MachineLearningTabController:
             **color_kwargs,
         )
         cbar = fig.colorbar(pm, ax=ax, orientation="vertical")
-        cbar.set_label(target_column)
+        cbar.set_label(grid_meta.get('map_value_label', target_column))
 
         self._draw_polygon_outline(ax, poly_layer)
 
@@ -1085,6 +1111,24 @@ class MachineLearningTabController:
         canvas.draw()
         if fig is self._rf_map_fig:
             self._rf_map_ax = ax
+
+    def _set_rf_map_outputs(self, grid, meta, target, columns):
+        from .uncertainty_maps import map_entries
+        entries = map_entries(grid, target, 'RF', columns)
+        keep = [name for name in ('x', 'y', '__flat_index', '__grid_row', '__grid_col') if name in grid]
+        keep += [entry['column'] for entry in entries.values()]
+        self._rf_output_payload = (grid[list(dict.fromkeys(keep))].copy(), dict(meta), target)
+        self._rf_output_selector.configure(entries)
+
+    def _render_rf_output(self, key, entry):
+        payload = getattr(self, '_rf_output_payload', None)
+        if payload is None: return
+        grid, meta, target = payload
+        names = [name for name in ('x', 'y', '__flat_index', '__grid_row', '__grid_col') if name in grid]
+        view = grid[names+[entry['column']]].rename(columns={entry['column']: target+'_pred'})
+        settings = dict(meta, map_title=entry['title'], map_value_label=entry['value_label'], map_output_kind=key)
+        if key != 'prediction': settings.pop('value_limits', None)
+        self._draw_rf_interpolation_preview(view, settings, target)
 
     def _draw_rf_importance_plot(self, importance_df, fig=None, canvas=None):
         """Draw RF variable importance as a horizontal bar chart using viridis."""
@@ -1150,22 +1194,22 @@ class MachineLearningTabController:
             fig = get_figure_fn() if callable(get_figure_fn) else None
             if fig is None:
                 menu = QMenu(self.dlg)
-                act_none = menu.addAction("No graph to save")
+                act_none = _ui(menu, 'addAction', "No graph to save")
                 act_none.setEnabled(False)
                 qt_exec(menu, canvas.mapToGlobal(pos))
                 return
 
             menu = QMenu(self.dlg)
-            act_save = menu.addAction("Save graph as PNG")
-            act_zoom = menu.addAction("Open larger view")
-            act_copy = menu.addAction("Copy graph")
+            act_save = _ui(menu, 'addAction', "Save graph as PNG")
+            act_zoom = _ui(menu, 'addAction', "Open larger view")
+            act_copy = _ui(menu, 'addAction', "Copy graph")
             chosen = qt_exec(menu, canvas.mapToGlobal(pos))
 
             if chosen == act_copy:
                 self._copy_figure_to_clipboard(fig)
             elif chosen == act_save:
                 suggested = os.path.join(tempfile.gettempdir(), f"{save_prefix}.png")
-                path, _ = QFileDialog.getSaveFileName(
+                path, _ = _dialog(QFileDialog.getSaveFileName, 
                     self.dlg,
                     "Save graph",
                     suggested,
@@ -1174,15 +1218,15 @@ class MachineLearningTabController:
                 if path:
                     try:
                         save_figure(fig, path, dpi=300, bbox_inches="tight")
-                        QMessageBox.information(self.dlg, "Saved", f"Graph saved to:\n{path}")
+                        _dialog(QMessageBox.information, self.dlg, "Saved", f"Graph saved to:\n{path}")
                     except Exception as e:
-                        QMessageBox.warning(self.dlg, "Save error", f"Could not save PNG:\n{e}")
+                        _dialog(QMessageBox.warning, self.dlg, "Save error", f"Could not save PNG:\n{e}")
             elif chosen == act_zoom:
                 try:
                     from .larger_view import show_larger_view
                     show_larger_view(fig,self.dlg,zoom_title + ' Larger view')
                 except Exception as e:
-                    QMessageBox.warning(self.dlg, "Zoom error", f"Could not open larger view:\n{e}")
+                    _dialog(QMessageBox.warning, self.dlg, "Zoom error", f"Could not open larger view:\n{e}")
 
         canvas.customContextMenuRequested.connect(_show_menu)
         self._plot_canvas_menu_bound.add(id(canvas))
@@ -1198,9 +1242,9 @@ class MachineLearningTabController:
             pixmap = QPixmap()
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
-            QMessageBox.information(self.dlg, "Copied", "Graph copied to clipboard.")
+            _dialog(QMessageBox.information, self.dlg, "Copied", "Graph copied to clipboard.")
         except Exception as e:
-            QMessageBox.warning(self.dlg, "Copy error", f"Could not copy graph:\n{e}")
+            _dialog(QMessageBox.warning, self.dlg, "Copy error", f"Could not copy graph:\n{e}")
 
     def _redraw_rf_map_into(self, fig, canvas):
         payload = self._rf_last_map_payload
@@ -1233,15 +1277,15 @@ class MachineLearningTabController:
         if self._last_corr_matrix is None or self._last_corr_names is None:
             # Nothing drawn yet – just tell the user
             menu = QMenu(self.dlg)
-            act_none = menu.addAction("No graph to save")
+            act_none = _ui(menu, 'addAction', "No graph to save")
             act_none.setEnabled(False)
             qt_exec(menu, self._corr_canvas.mapToGlobal(pos))
             return
 
         menu = QMenu(self.dlg)
-        act_save = menu.addAction("Save graph as PNG")
-        act_zoom = menu.addAction("Open larger view")
-        act_copy = menu.addAction("Copy graph")
+        act_save = _ui(menu, 'addAction', "Save graph as PNG")
+        act_zoom = _ui(menu, 'addAction', "Open larger view")
+        act_copy = _ui(menu, 'addAction', "Copy graph")
         chosen = qt_exec(menu, self._corr_canvas.mapToGlobal(pos))
 
         if chosen == act_copy:
@@ -1250,7 +1294,7 @@ class MachineLearningTabController:
             suggested = os.path.join(
                 tempfile.gettempdir(), "covariates_correlation.png"
             )
-            path, _ = QFileDialog.getSaveFileName(
+            path, _ = _dialog(QFileDialog.getSaveFileName, 
                 self.dlg,
                 "Save graph",
                 suggested,
@@ -1259,11 +1303,11 @@ class MachineLearningTabController:
             if path:
                 try:
                     save_figure(self._corr_fig, path, dpi=300, bbox_inches="tight")
-                    QMessageBox.information(
+                    _dialog(QMessageBox.information, 
                         self.dlg, "Saved", f"Graph saved to:\n{path}"
                     )
                 except Exception as e:
-                    QMessageBox.warning(
+                    _dialog(QMessageBox.warning, 
                         self.dlg,
                         "Save error",
                         f"Could not save PNG:\n{e}",
@@ -1292,7 +1336,7 @@ class MachineLearningTabController:
             )
             return
 
-        raster_name = combo.currentText()
+        raster_name = _combo_text(combo)
         raster_id = combo.currentData()
 
         existing_names = [
@@ -1342,7 +1386,7 @@ class MachineLearningTabController:
         self._extracted_headers = None
         self._extracted_rows = None
         try:
-            self.dlg.labelResamplingInfo.setText("")
+            _ui(self.dlg.labelResamplingInfo, 'setText', "")
         except Exception:  # nosec B110
             pass
 
@@ -1376,10 +1420,10 @@ class MachineLearningTabController:
             return
 
         total = list_widget.count()
-        progress = QProgressDialog(
+        progress = _new(QProgressDialog, 
             "Resampling covariates", "Cancel", 0, total, self.dlg
         )
-        progress.setWindowTitle("Resampling")
+        _ui(progress, 'setWindowTitle', "Resampling")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
 
@@ -1429,18 +1473,18 @@ class MachineLearningTabController:
             new_name = out_name
             self.covariate_layers.pop(old_name, None)
             self.covariate_layers[new_name] = resampled_layer
-            list_widget.item(i).setText(new_name)
+            _ui(list_widget.item(i), 'setText', new_name)
 
             resampled_count += 1
 
         progress.setValue(total)
 
         if resampled_count > 0:
-            label_info.setText(
+            _ui(label_info, 'setText', 
                 f"Resampled {resampled_count} covariate(s) to {target_pixel_size:.2f} pixel size (bilinear)."
             )
         else:
-            label_info.setText(
+            _ui(label_info, 'setText', 
                 "Resampling failed or no valid covariates were found."
             )
 
@@ -1476,10 +1520,10 @@ class MachineLearningTabController:
         standardized_count = 0
         total = list_widget.count()
 
-        progress = QProgressDialog(
+        progress = _new(QProgressDialog, 
             "Standardizing covariates", "Cancel", 0, total, self.dlg
         )
-        progress.setWindowTitle("Standardization")
+        _ui(progress, 'setWindowTitle', "Standardization")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
 
@@ -1612,7 +1656,7 @@ class MachineLearningTabController:
             new_name = out_name
             self.covariate_layers.pop(old_name, None)
             self.covariate_layers[new_name] = std_layer
-            list_widget.item(i).setText(new_name)
+            _ui(list_widget.item(i), 'setText', new_name)
 
             standardized_count += 1
 
@@ -1632,7 +1676,7 @@ class MachineLearningTabController:
 
     def _get_standardization_method(self):
         """Return the selected standardization method as a canonical string."""
-        text = self.dlg.cmbStandardizeMethod.currentText().strip().lower()
+        text = _combo_text(self.dlg.cmbStandardizeMethod).strip().lower()
         if "z" in text:
             return "zscore"
         if "-1" in text:
@@ -1697,7 +1741,7 @@ class MachineLearningTabController:
             )
             return
 
-        attr_name = self.dlg.cmbVariable.currentText().strip()
+        attr_name = _combo_text(self.dlg.cmbVariable).strip()
         if not attr_name:
             self._show_warning_message(
                 "No variable", "Please select a variable in the Data tab."
@@ -1735,19 +1779,8 @@ class MachineLearningTabController:
             )
             return
 
-        raster_crs = raster_layers[0].crs()
-        point_crs = points_layer.crs()
-
-        if (
-            raster_crs.isValid()
-            and point_crs.isValid()
-            and raster_crs != point_crs
-        ):
-            transform = QgsCoordinateTransform(
-                point_crs, raster_crs, self.project
-            )
-        else:
-            transform = None
+        from .covariate_sampling import CovariateSampler
+        sampler = CovariateSampler(cov_names, raster_layers, points_layer.crs(), self.project)
 
         data_rows = []
 
@@ -1768,12 +1801,6 @@ class MachineLearningTabController:
                     continue
                 pt = multi[0]
 
-            if transform is not None:
-                try:
-                    pt = transform.transform(pt)
-                except Exception:  # nosec B112
-                    continue
-
             val = feat[attr_index]
             if val is None:
                 continue
@@ -1783,24 +1810,9 @@ class MachineLearningTabController:
             except Exception:  # nosec B112
                 continue
 
-            row = [y_value]
-            missing = False
-
-            for rlayer in raster_layers:
-                provider = rlayer.dataProvider()
-                sample_point = QgsPointXY(pt.x(), pt.y())
-                sample_val, res = provider.sample(sample_point, 1)
-                if (
-                    not res
-                    or sample_val is None
-                    or math.isnan(sample_val)
-                ):
-                    missing = True
-                    break
-                row.append(float(sample_val))
-
-            if not missing:
-                data_rows.append(row)
+            cov_values = sampler.sample(QgsPointXY(pt.x(), pt.y()))
+            if cov_values is not None:
+                data_rows.append([y_value] + cov_values)
 
         if len(data_rows) < 3:
             self._show_warning_message(
@@ -1983,13 +1995,13 @@ class MachineLearningTabController:
             icon_path = os.path.join(plugin_dir, "info.png")
             if not os.path.exists(icon_path):
                 return None
-            label = QLabel(self.dlg)
+            label = _new(QLabel, self.dlg)
             label.setObjectName(object_name)
             pixmap = QPixmap(icon_path)
             if not pixmap.isNull():
                 label.setPixmap(pixmap.scaled(16, 16, enum_value(Qt, "AspectRatioMode", "KeepAspectRatio"), enum_value(Qt, "TransformationMode", "SmoothTransformation")))
-            label.setToolTip(tooltip_text)
-            label.setWhatsThis(tooltip_text)
+            _ui(label, 'setToolTip', tooltip_text)
+            _ui(label, 'setWhatsThis', tooltip_text)
             label.setFixedSize(QSize(18, 18))
             label.setScaledContents(False)
             label.setCursor(enum_value(Qt, "CursorShape", "ArrowCursor"))
@@ -2005,8 +2017,8 @@ class MachineLearningTabController:
             if widget is None:
                 continue
             try:
-                widget.setToolTip("")
-                widget.setWhatsThis("")
+                _ui(widget, 'setToolTip', "")
+                _ui(widget, 'setWhatsThis', "")
                 widget.setEnabled(False)
                 widget.setVisible(False)
             except Exception:  # nosec B110
@@ -2019,8 +2031,8 @@ class MachineLearningTabController:
             if widget is None:
                 continue
             try:
-                widget.setToolTip("")
-                widget.setWhatsThis("")
+                _ui(widget, 'setToolTip', "")
+                _ui(widget, 'setWhatsThis', "")
             except Exception:  # nosec B110
                 pass
 
@@ -2460,6 +2472,7 @@ class MachineLearningTabController:
                 except Exception:  # nosec B110
                     pass
         return 10
+
     def _ensure_output_dir_for_rf(self):
         """
         Return the raster output directory for RF/SVM.
@@ -2551,11 +2564,12 @@ class MachineLearningTabController:
             previous = list(option_names)
 
         dlg = QDialog(self.dlg)
-        dlg.setWindowTitle(title)
+        _ui(dlg, 'setWindowTitle', title)
         layout = QVBoxLayout(dlg)
         checks = []
         for name in option_names:
             chk = QCheckBox(name)
+            chk._bfi_i18n_user = True
             chk.setChecked(name in previous)
             layout.addWidget(chk)
             checks.append(chk)
@@ -2595,7 +2609,7 @@ class MachineLearningTabController:
             )
             return None, None, None
 
-        attr_name = self.dlg.cmbVariable.currentText().strip()
+        attr_name = _combo_text(self.dlg.cmbVariable).strip()
         if not attr_name:
             self._show_warning_message(
                 "No variable",
@@ -2662,15 +2676,10 @@ class MachineLearningTabController:
             )
             return None, None, None
 
-        # CRS sync between points and rasters
-        point_crs = points_layer.crs()
-        raster_crs = raster_layers[0].crs() if raster_layers else None
-        if raster_crs is not None and raster_crs.isValid() and point_crs.isValid() and raster_crs != point_crs:
-            transform = QgsCoordinateTransform(point_crs, raster_crs, self.project)
-        else:
-            transform = None
-
+        from .covariate_sampling import CovariateSampler, severe_coverage_loss, coverage_message
+        sampler = CovariateSampler(cov_names, raster_layers, points_layer.crs(), self.project)
         rows = []
+        eligible_count = 0
 
         for feat in points_layer.getFeatures():
 
@@ -2692,13 +2701,6 @@ class MachineLearningTabController:
             # Original coordinates (for x/y)
             orig_pt = pt
 
-            sample_pt = pt
-            if transform is not None:
-                try:
-                    sample_pt = transform.transform(pt)
-                except Exception:  # nosec B112
-                    continue
-
             val = feat[attr_index]
             if val is None:
                 continue
@@ -2708,22 +2710,20 @@ class MachineLearningTabController:
             except Exception:  # nosec B112
                 continue
 
-            cov_values = []
-            missing = False
-
-            for rlayer in raster_layers:
-                provider = rlayer.dataProvider()
-                sample_point = QgsPointXY(sample_pt.x(), sample_pt.y())
-                sample_val, res = provider.sample(sample_point, 1)
-                if (not res) or (sample_val is None) or math.isnan(sample_val):
-                    missing = True
-                    break
-                cov_values.append(float(sample_val))
-
-            if missing:
+            if not np.isfinite(target_val):
+                continue
+            eligible_count += 1
+            cov_values = sampler.sample(orig_pt)
+            if cov_values is None:
                 continue
 
             rows.append([orig_pt.x(), orig_pt.y(), target_val] + cov_values)
+
+        coverage = sampler.summary(eligible_count, len(rows))
+        self._last_training_coverage = coverage
+        if severe_coverage_loss(coverage):
+            self._show_warning_message("Incomplete predictor coverage", coverage_message(coverage))
+            return None, None, None
 
         if not rows:
             self._show_warning_message(
@@ -2734,10 +2734,13 @@ class MachineLearningTabController:
 
         headers = ["x", "y", attr_name] + cov_names
         points_df = pd.DataFrame(rows, columns=headers)
+        points_df.attrs["covariate_coverage"] = coverage
         return points_df, attr_name, feature_names
 
-    def run_framework_interpolation(self, method, feature_names=None):
+    def run_framework_interpolation(self, method, feature_names=None, search_settings=None):
         """Run RF/SVM from Framework using its predictors and current data state."""
+        from .framework_search import search_settings as automatic_settings, for_method
+        settings = automatic_settings(search_settings)
         method_key = str(method or "").strip().upper()
         if method_key == "RFE":
             method_key = "RF"
@@ -2772,18 +2775,17 @@ class MachineLearningTabController:
             if method_key == "RF"
             else "_last_svm_interpolation_config"
         )
-        cached_config = getattr(self, config_attr, None)
         selected_features = list(feature_names or ["x", "y"])
         self._framework_feature_names_override = selected_features
         self._framework_execution = True
-        progress = QProgressDialog(
+        progress = _new(QProgressDialog, 
             f"Running {method_label} from Framework",
             "Cancel",
             0,
             0,
             self.dlg,
         )
-        progress.setWindowTitle("Framework interpolation")
+        _ui(progress, 'setWindowTitle', "Framework interpolation")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         try:
@@ -2796,7 +2798,7 @@ class MachineLearningTabController:
 
         def _safe_set_progress(done, total, label=None):
             if label:
-                progress.setLabelText(clean_display_name(str(label)))
+                _ui(progress, 'setLabelText', clean_display_name(str(label)))
             if total is None or int(total) <= 0:
                 progress.setRange(0, 0)
             else:
@@ -2833,37 +2835,11 @@ class MachineLearningTabController:
             grid_meta["sample_count"] = int(len(points_df))
             grid_meta["value_limits"] = self._target_value_limits(points_df[target_name])
 
-            cached_params = {}
-            if isinstance(cached_config, dict):
-                cached_target = str(cached_config.get("target_name", ""))
-                cached_features = list(cached_config.get("feature_names", []) or [])
-                if (
-                    cached_config.get("source") == "framework"
-                    and cached_target == str(target_name)
-                    and cached_features == list(resolved_features)
-                ):
-                    cached_params = dict(cached_config.get("resolved_params") or {})
-
-            if method_key == "RF":
-                use_grid_search = False if cached_params else self._is_rf_using_grid_search()
-                manual_params = cached_params or self._get_rf_manual_params()
-                grid_params = (
-                    {key: dict(value) for key, value in cached_config.get("grid_params", {}).items()}
-                    if cached_params and isinstance(cached_config, dict)
-                    else self._get_rf_grid_params()
-                )
-                search_folds = int(cached_config.get("search_folds", self._get_rf_search_folds())) if cached_params else self._get_rf_search_folds()
-                search_iterations = int(cached_config.get("search_iterations", self._get_rf_search_iterations())) if cached_params else self._get_rf_search_iterations()
-            else:
-                use_grid_search = False if cached_params else self._is_svm_using_grid_search()
-                manual_params = cached_params or self._get_svm_manual_params()
-                grid_params = (
-                    {key: dict(value) for key, value in cached_config.get("grid_params", {}).items()}
-                    if cached_params and isinstance(cached_config, dict)
-                    else self._get_svm_grid_params()
-                )
-                search_folds = int(cached_config.get("search_folds", self._get_svm_search_folds())) if cached_params else self._get_svm_search_folds()
-                search_iterations = int(cached_config.get("search_iterations", self._get_svm_search_iterations())) if cached_params else self._get_svm_search_iterations()
+            use_grid_search = True
+            manual_params = {}
+            grid_params = settings["grids"][method_key]
+            budget = for_method(settings, method_key)
+            search_folds, search_iterations = budget["folds"], budget["iterations"]
 
             search_folds, search_iterations, adjusted = dense_search_limits(
                 len(points_df),
@@ -2871,26 +2847,43 @@ class MachineLearningTabController:
                 search_iterations,
             )
 
+            from .framework_search_cache import lookup, remember, reuse_record, reuse_progress
+            key, cached = lookup(self, method_key, points_df, target_name, resolved_features,
+                                 grid_params, search_folds, search_iterations, budget)
+            if cached:
+                manual_params = cached['parameters']
             kwargs = dict(
                 points_df=points_df,
                 grid_df=grid_df,
                 target_column=target_name,
                 covariate_columns=list(resolved_features),
-                use_grid_search=use_grid_search,
+                use_grid_search=cached is None,
                 manual_params=manual_params,
                 grid_params=grid_params,
                 x_col="x",
                 y_col="y",
                 cv_folds=search_folds,
                 max_iterations=search_iterations,
+                search_strategy=settings["strategy"],
                 n_jobs=1,
                 random_state=20,
-                progress_fn=_safe_set_progress,
+                progress_fn=reuse_progress(_safe_set_progress) if cached else _safe_set_progress,
             )
+            generation = getattr(self, '_analysis_generation', 0)
             result = backend(**kwargs)
+            if generation != getattr(self, '_analysis_generation', 0):
+                raise KeyboardInterrupt('Data changed; the old RF result was discarded.')
             if result is None or "grid_with_pred" not in result:
                 self._last_framework_dispatch_error = f"{method_label} did not return a valid interpolation grid."
                 return False
+
+            if cached:
+                result['best_params'] = cached['parameters']
+                result['search_summary'] = reuse_record(cached)
+                if result.get('model') is not None:
+                    result['model']._bfi_search_summary = result['search_summary']
+            else:
+                remember(self, method_key, key, result.get('best_params'), result.get('search_summary'))
 
             grid_with_pred = result["grid_with_pred"]
             best_params = result.get("best_params")
@@ -2908,18 +2901,31 @@ class MachineLearningTabController:
             resolved_params = dict(best_params or manual_params)
             setattr(self, config_attr, {
                 "points_df": points_df.copy(deep=True),
+            "training_coverage": points_df.attrs.get("covariate_coverage"),
                 "target_name": str(target_name),
                 "feature_names": list(resolved_features),
                 "resolved_params": resolved_params,
-                "search_mode": "cached" if cached_params else ("grid" if use_grid_search else "manual"),
+                "search_mode": "grid",
+                "search_summary": result.get("search_summary"),
+                "framework_search_settings": settings,
                 "grid_params": {key: dict(value) for key, value in grid_params.items()},
                 "search_folds": int(search_folds),
                 "search_iterations": int(search_iterations),
+                "grid_coverage": grid_meta.get("covariate_coverage"),
                 "raster_path": str(out_path),
                 "source": "framework",
             })
 
             if method_key == "RF":
+                from .uncertainty_maps import export_uncertainty
+                configuration = getattr(self, config_attr)
+                configuration['training_sample_count'] = result.get('training_sample_count', len(points_df))
+                configuration['uncertainty_tree_count'] = result.get('tree_count')
+                export_uncertainty(self, grid_with_pred, grid_meta, target_name, 'RF',
+                    result.get('uncertainty_columns', {}), configuration)
+                if generation != getattr(self, '_analysis_generation', 0):
+                    raise InterruptedError('Data changed; the old RF output was discarded.')
+                self._set_rf_map_outputs(grid_with_pred, grid_meta, target_name, result.get('uncertainty_columns', {}))
                 self._update_rf_metrics_ui(
                     train_mae,
                     train_rmse,
@@ -2928,7 +2934,6 @@ class MachineLearningTabController:
                     resolved_params=resolved_params,
                 )
                 try:
-                    self._draw_rf_interpolation_preview(grid_with_pred, grid_meta, target_name)
                     self._draw_rf_importance_plot(result.get("importance_df"))
                 except Exception:  # nosec B110
                     pass
@@ -2943,7 +2948,7 @@ class MachineLearningTabController:
             if published is None:
                 self._last_framework_dispatch_error = f"{method_label} output could not be registered."
                 return False
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Framework interpolation",
                 f"{method_label} interpolation completed from Framework.",
                 level=0,
@@ -2951,7 +2956,7 @@ class MachineLearningTabController:
             return True
         except KeyboardInterrupt:
             self._last_framework_dispatch_error = "Canceled by user."
-            self.iface.messageBar().pushMessage("Framework interpolation", "Canceled by the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "Framework interpolation", "Canceled by the user.", level=1)
             return False
         except Exception as exc:
             self._last_framework_dispatch_error = str(exc)
@@ -2966,11 +2971,11 @@ class MachineLearningTabController:
             self._framework_execution = previous_mode
 
     def _make_grid_summary_label(self, object_name, placeholder):
-        label = QLabel(self.dlg)
+        label = _new(QLabel, self.dlg)
         label.setObjectName(object_name)
         label.setWordWrap(True)
         label.setMinimumHeight(56)
-        label.setText(placeholder)
+        _ui(label, 'setText', placeholder)
         label.setProperty("bfiCard",True)
         return label
 
@@ -3021,12 +3026,12 @@ class MachineLearningTabController:
     def _set_rf_grid_summary_text(self, text=None):
         label = getattr(self, "_rf_summary_label", None)
         if label is not None and hasattr(label, "setText"):
-            label.setText(text or "Best RF model metrics will appear here after interpolation.")
+            _ui(label, 'setText', text or "Best RF model metrics will appear here after interpolation.")
 
     def _set_svm_grid_summary_text(self, text=None):
         label = getattr(self, "_svm_summary_label", None)
         if label is not None and hasattr(label, "setText"):
-            label.setText(text or "Best SVM model metrics will appear here after interpolation.")
+            _ui(label, 'setText', text or "Best SVM model metrics will appear here after interpolation.")
 
     def _update_rf_grid_summary(self, best_params, train_mae, train_rmse, search_mode=None, resolved_params=None):
         params = dict(best_params or resolved_params or {})
@@ -3084,13 +3089,15 @@ class MachineLearningTabController:
             )
         self._set_svm_grid_summary_text("<br>".join(lines))
 
-    def prepare_framework_validation(self, method, feature_names=None, max_validation_samples=None):
+    def prepare_framework_validation(self, method, feature_names=None, max_validation_samples=None, search_settings=None):
         """Resolve ML parameters from current data without running a tab interpolation.
 
         Framework validation calls this entry point directly. It intentionally
         prepares only the training configuration, so no raster or individual
         interpolation window has to run first.
         """
+        from .framework_search import search_settings as automatic_settings, for_method
+        settings = automatic_settings(search_settings)
         method_key = str(method or "").strip().upper()
         if method_key == "RFE":
             method_key = "RF"
@@ -3126,14 +3133,14 @@ class MachineLearningTabController:
         X = train_df[list(resolved_features)].to_numpy(dtype=float)
         y = train_df[target_name].to_numpy(dtype=float)
 
-        progress = QProgressDialog(
+        progress = _new(QProgressDialog, 
             f"Preparing {method_label} for Framework validation",
             "Cancel",
             0,
             100,
             self.dlg,
         )
-        progress.setWindowTitle("Framework validation")
+        _ui(progress, 'setWindowTitle', "Framework validation")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         try:
@@ -3146,7 +3153,7 @@ class MachineLearningTabController:
 
         def _progress(done, total, label=None):
             if label:
-                progress.setLabelText(clean_display_name(str(label)))
+                _ui(progress, 'setLabelText', clean_display_name(str(label)))
             if total is None or total <= 0:
                 progress.setRange(0, 0)
             else:
@@ -3156,19 +3163,21 @@ class MachineLearningTabController:
             if progress.wasCanceled():
                 raise KeyboardInterrupt("Canceled by user")
 
+        from .framework_search_cache import fit as cached_fit
         try:
             if method_key == "RF":
                 from .RF_Interpolation import _tune_random_forest
 
-                use_search = self._is_rf_using_grid_search()
+                use_search = True
                 manual_params = self._get_rf_manual_params()
-                grid_params = self._get_rf_grid_params()
+                grid_params = settings["grids"]["RF"]
                 folds, iterations, adjusted = framework_search_limits(
                     len(train_df),
-                    self._get_rf_search_folds(),
-                    self._get_rf_search_iterations(),
+                    for_method(settings, method_key)["folds"],
+                    for_method(settings, method_key)["iterations"],
                 )
-                _, best_params = _tune_random_forest(
+                tuned_model, best_params = cached_fit(
+                    self, method_key, train_df, target_name, resolved_features, _tune_random_forest, dict(
                     X=X,
                     y=y,
                     use_grid_search=use_search,
@@ -3178,10 +3187,15 @@ class MachineLearningTabController:
                     random_state=20,
                     cv_folds=folds,
                     max_iterations=iterations,
+                    search_strategy=settings["strategy"],
                     progress_fn=_progress,
-                )
+                ), requested_budget=for_method(settings, method_key))
+                from .search_provenance import model_search_record
                 self._last_rf_interpolation_config = {
+                    "search_summary": model_search_record(tuned_model),
+                    "framework_search_settings": settings,
                     "points_df": train_df.copy(deep=True) if subset_used else points_df.copy(deep=True),
+                    "training_coverage": points_df.attrs.get("covariate_coverage"),
                     "target_name": str(target_name),
                     "feature_names": list(resolved_features),
                     "resolved_params": dict(best_params or manual_params),
@@ -3197,27 +3211,33 @@ class MachineLearningTabController:
             else:
                 from .SVM_Interpolation import _tune_svm
 
-                use_search = self._is_svm_using_grid_search()
+                use_search = True
                 manual_params = self._get_svm_manual_params()
-                grid_params = self._get_svm_grid_params()
+                grid_params = settings["grids"]["SVM"]
                 folds, iterations, adjusted = framework_search_limits(
                     len(train_df),
-                    self._get_svm_search_folds(),
-                    self._get_svm_search_iterations(),
+                    for_method(settings, method_key)["folds"],
+                    for_method(settings, method_key)["iterations"],
                 )
-                _, best_params = _tune_svm(
-                    X,
-                    y,
+                tuned_model, best_params = cached_fit(
+                    self, method_key, train_df, target_name, resolved_features, _tune_svm, dict(
+                    X=X,
+                    y=y,
                     use_grid_search=use_search,
                     manual_params=manual_params,
                     grid_params=grid_params,
                     cv_folds=folds,
                     max_iterations=iterations,
+                    search_strategy=settings["strategy"],
                     random_state=20,
                     progress_fn=_progress,
-                )
+                ), requested_budget=for_method(settings, method_key))
+                from .search_provenance import model_search_record
                 self._last_svm_interpolation_config = {
+                    "search_summary": model_search_record(tuned_model),
+                    "framework_search_settings": settings,
                     "points_df": train_df.copy(deep=True) if subset_used else points_df.copy(deep=True),
+                    "training_coverage": points_df.attrs.get("covariate_coverage"),
                     "target_name": str(target_name),
                     "feature_names": list(resolved_features),
                     "resolved_params": dict(best_params or manual_params),
@@ -3232,7 +3252,7 @@ class MachineLearningTabController:
                 }
             return True
         except KeyboardInterrupt:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Framework validation",
                 f"{method_label} preparation was canceled.",
                 level=1,
@@ -3253,7 +3273,7 @@ class MachineLearningTabController:
             layer = self.project.mapLayer(layer_id)
 
         if layer is None:
-            name = combo.currentText()
+            name = _combo_text(combo)
             for lyr in self.project.mapLayers().values():
                 if lyr.name() == name:
                     layer = lyr
@@ -3382,22 +3402,17 @@ class MachineLearningTabController:
             return None, None
         raster_providers = [rlayer.dataProvider() for rlayer in raster_layers]
 
-        # CRS transform from polygon to raster CRS (use first raster as reference)
-        poly_crs = poly_layer.crs()
-        raster_crs = raster_layers[0].crs() if raster_layers else None
-        if raster_crs is not None and raster_crs.isValid() and poly_crs.isValid() and raster_crs != poly_crs:
-            transform = QgsCoordinateTransform(poly_crs, raster_crs, self.project)
-        else:
-            transform = None
+        from .covariate_sampling import CovariateSampler, severe_coverage_loss, coverage_message
+        sampler = CovariateSampler(raster_cov_names, raster_layers, poly_layer.crs(), self.project)
 
         rows = []
         total_inside = int(inside_points.shape[0])
 
-        progress = QProgressDialog(
+        progress = _new(QProgressDialog, 
             progress_label, "Cancel", 0, total_inside, self.dlg
         )
-        progress.setWindowTitle(progress_title)
-        progress.setLabelText(progress_label)
+        _ui(progress, 'setWindowTitle', progress_title)
+        _ui(progress, 'setLabelText', progress_label)
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         try:
@@ -3416,7 +3431,8 @@ class MachineLearningTabController:
             grid_df["__grid_row"] = (inside_indices // int(n_cols)).astype(np.int64, copy=False)
             grid_df["__grid_col"] = (inside_indices % int(n_cols)).astype(np.int64, copy=False)
             grid_meta = {
-                "xmin": float(xmin),
+                "covariate_coverage": sampler.summary(total_inside, total_inside) if not raster_providers else coverage,
+            "xmin": float(xmin),
                 "ymin": float(ymin),
                 "xmax": float(xmax),
                 "ymax": float(ymax),
@@ -3433,31 +3449,8 @@ class MachineLearningTabController:
                 canceled = True
                 break
 
-            sample_pt = QgsPointXY(x, y)
-            if transform is not None:
-                try:
-                    sample_pt = transform.transform(sample_pt)
-                except Exception:
-                    if idx_i % 128 == 0 or idx_i == total_inside:
-                        progress.setValue(idx_i)
-                        QCoreApplication.processEvents()
-                    continue
-
-            cov_values = []
-            missing = False
-
-            for provider in raster_providers:
-                sample_val, res = provider.sample(sample_pt, 1)
-                try:
-                    sample_value = float(sample_val)
-                except Exception:
-                    sample_value = float("nan")
-                if (not res) or (sample_val is None) or (not np.isfinite(sample_value)):
-                    missing = True
-                    break
-                cov_values.append(sample_value)
-
-            if not missing:
+            cov_values = sampler.sample(QgsPointXY(x, y))
+            if cov_values is not None:
                 rows.append([
                     x,
                     y,
@@ -3475,6 +3468,13 @@ class MachineLearningTabController:
             self._last_grid_error = "Grid preparation was canceled by the user."
             return None, None
         progress.close()
+
+        coverage = sampler.summary(total_inside, len(rows))
+        self._last_grid_coverage = coverage
+        if severe_coverage_loss(coverage):
+            self._last_grid_error = coverage_message(coverage)
+            self._show_warning_message("Incomplete predictor coverage", self._last_grid_error)
+            return None, None
 
         if not rows:
             self._last_grid_error = (
@@ -3497,6 +3497,7 @@ class MachineLearningTabController:
 
         # Return also a small metadata dict needed to build the output raster
         grid_meta = {
+            "covariate_coverage": sampler.summary(total_inside, total_inside) if not raster_providers else coverage,
             "xmin": float(xmin),
             "ymin": float(ymin),
             "xmax": float(xmax),
@@ -3516,6 +3517,7 @@ class MachineLearningTabController:
         method_prefix,
         method_label,
         pred_column=None,
+        add_to_project=True,
     ):
         """Stream ML grid predictions to a GeoTIFF and add it as a QGIS layer."""
         xmin = grid_meta["xmin"]
@@ -3651,6 +3653,9 @@ class MachineLearningTabController:
         ds.FlushCache()
         ds = None
 
+        if not add_to_project:
+            return out_path
+
         layer_name = f"{method_prefix} Interpolation ({target_column})"
         raster_layer = self._create_output_raster_layer(out_path, layer_name)
         if not raster_layer.isValid():
@@ -3662,7 +3667,7 @@ class MachineLearningTabController:
 
         self._mark_temporary_layer(raster_layer, out_path)
         QgsProject.instance().addMapLayer(raster_layer)
-        self.iface.messageBar().pushMessage(
+        _message(self.iface.messageBar().pushMessage, 
             f"{method_prefix} interpolation",
             f"{method_prefix} raster created: {out_path}",
             level=0,
@@ -3690,7 +3695,7 @@ class MachineLearningTabController:
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "setText"):
                 try:
-                    w.setText(value_str)
+                    _ui(w, 'setText', value_str)
                 except Exception:  # nosec B110
                     pass
 
@@ -3758,14 +3763,14 @@ class MachineLearningTabController:
         if rf_interpolation is None:
             return
 
-        progress = QProgressDialog(
+        progress = _new(QProgressDialog, 
             "Preparing data",
             "Cancel",
             0,
             0,
             self.dlg,
         )
-        progress.setWindowTitle("Random Forest")
+        _ui(progress, 'setWindowTitle', "Random Forest")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         try:
@@ -3778,7 +3783,7 @@ class MachineLearningTabController:
         QCoreApplication.processEvents()
 
         try:
-            progress.setLabelText("Preparing training data")
+            _ui(progress, 'setLabelText', "Preparing training data")
             QCoreApplication.processEvents()
 
             points_df, target_name, cov_names = self._build_points_dataframe_for_rf()
@@ -3789,7 +3794,7 @@ class MachineLearningTabController:
                 progress.close()
                 return
 
-            progress.setLabelText("Preparing interpolation grid")
+            _ui(progress, 'setLabelText', "Preparing interpolation grid")
             QCoreApplication.processEvents()
 
             grid_df, grid_meta = self._build_grid_dataframe_for_rf(cov_names)
@@ -3816,7 +3821,7 @@ class MachineLearningTabController:
             def _safe_set_progress(done, total, label=None):
                 try:
                     if label:
-                        progress.setLabelText(clean_display_name(str(label)))
+                        _ui(progress, 'setLabelText', clean_display_name(str(label)))
                     if total is None or total <= 0:
                         progress.setRange(0, 0)
                     else:
@@ -3866,19 +3871,22 @@ class MachineLearningTabController:
                 _safe_set_progress(0, 100, "Hyperparameter optimization")
             else:
                 progress.setRange(0, 0)
-                progress.setLabelText("Hyperparameter optimization")
+                _ui(progress, 'setLabelText', "Hyperparameter optimization")
                 QCoreApplication.processEvents()
 
             try:
+                generation = getattr(self, '_analysis_generation', 0)
                 result = rf_interpolation(**kwargs)
+                if generation != getattr(self, '_analysis_generation', 0):
+                    raise KeyboardInterrupt('Data changed; the old RF result was discarded.')
             except KeyboardInterrupt:
                 progress.close()
-                self.iface.messageBar().pushMessage(
+                _message(self.iface.messageBar().pushMessage, 
                     "RF interpolation", "Canceled by the user.", level=1
                 )
                 return
 
-            progress.setLabelText("Writing RF raster")
+            _ui(progress, 'setLabelText', "Writing RF raster")
             progress.setRange(0, 0)
             QCoreApplication.processEvents()
 
@@ -3907,7 +3915,10 @@ class MachineLearningTabController:
 
         resolved_params = dict(best_params or manual_params)
         rf_config = {
+            "grid_coverage": grid_meta.get("covariate_coverage"),
+            "search_summary": result.get("search_summary"),
             "points_df": points_df.copy(deep=True),
+            "training_coverage": points_df.attrs.get("covariate_coverage"),
             "target_name": str(target_name),
             "feature_names": list(cov_names),
             "resolved_params": resolved_params,
@@ -3923,13 +3934,25 @@ class MachineLearningTabController:
             grid_with_pred, grid_meta, target_name
         )
         if out_path is None:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "RF interpolation",
                 "Model fitting completed, but the interpolation raster could not be created or loaded in QGIS.",
                 level=1,
             )
             return
         rf_config["raster_path"] = str(out_path)
+        rf_config['training_sample_count'] = result.get('training_sample_count', len(points_df))
+        rf_config['uncertainty_tree_count'] = result.get('tree_count')
+        from .uncertainty_maps import export_uncertainty
+        try:
+            export_uncertainty(self, grid_with_pred, grid_meta, target_name, 'RF',
+                result.get('uncertainty_columns', {}), rf_config)
+            if generation != getattr(self, '_analysis_generation', 0):
+                raise InterruptedError('Data changed; the old RF output was discarded.')
+            self._set_rf_map_outputs(grid_with_pred, grid_meta, target_name, result.get('uncertainty_columns', {}))
+        except Exception as error:
+            self._show_warning_message('RF uncertainty', str(error))
+            return
         self._last_rf_interpolation_config = rf_config
         from .interpolation_result import publish_result
         publish_result(self,'RF',rf_config,self._rf_map_fig)
@@ -3943,11 +3966,7 @@ class MachineLearningTabController:
         )
 
         try:
-            self._draw_rf_interpolation_preview(
-                grid_with_pred,
-                grid_meta,
-                target_name,
-            )
+            self._rf_output_selector.show()
         except Exception:  # nosec B110
             pass
 
@@ -3961,7 +3980,7 @@ class MachineLearningTabController:
             msg += f" Best: ntree={best_params.get('ntree')}, mtry={best_params.get('mtry')}, nodesize={best_params.get('nodesize')}."
         if (train_mae is not None) and (train_rmse is not None):
             msg += f" Train MAE={train_mae:.3f}, RMSE={train_rmse:.3f}."
-        self.iface.messageBar().pushMessage(
+        _message(self.iface.messageBar().pushMessage, 
             "RF interpolation",
             msg,
             level=0,
@@ -3989,8 +4008,8 @@ class MachineLearningTabController:
             self._show_warning_message("RF validation error", f"Random Forest validation is unavailable.\n{e}")
             return
 
-        progress = QProgressDialog("Preparing RF cross validation", "Cancel", 0, 0, self.dlg)
-        progress.setWindowTitle("RF cross validation")
+        progress = _new(QProgressDialog, "Preparing RF cross validation", "Cancel", 0, 0, self.dlg)
+        _ui(progress, 'setWindowTitle', "RF cross validation")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setRange(0, 0)
@@ -3998,7 +4017,7 @@ class MachineLearningTabController:
         QCoreApplication.processEvents()
 
         try:
-            progress.setLabelText("Preparing training data")
+            _ui(progress, 'setLabelText', "Preparing training data")
             QCoreApplication.processEvents()
             points_df = config["points_df"].copy(deep=True)
             target_name = config["target_name"]
@@ -4057,7 +4076,7 @@ class MachineLearningTabController:
                     raise KeyboardInterrupt("Canceled by user")
 
                 progress.setValue(fold_idx - 1)
-                progress.setLabelText(f"Running {cv_desc} fold {fold_idx}/{total_folds}")
+                _ui(progress, 'setLabelText', f"Running {cv_desc} fold {fold_idx}/{total_folds}")
                 QCoreApplication.processEvents()
 
                 test_idx = np.asarray(test_idx_list, dtype=int)
@@ -4085,7 +4104,7 @@ class MachineLearningTabController:
                 preds[test_idx] = np.asarray(model.predict(X_test), dtype=float)
 
             progress.setValue(total_folds)
-            progress.setLabelText("Computing RF validation metrics")
+            _ui(progress, 'setLabelText', "Computing RF validation metrics")
             QCoreApplication.processEvents()
 
             rmse = self._rf_rmse(y_all, preds)
@@ -4113,7 +4132,7 @@ class MachineLearningTabController:
 
         except KeyboardInterrupt:
             progress.close()
-            self.iface.messageBar().pushMessage("RF validation", "Canceled by the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "RF validation", "Canceled by the user.", level=1)
             return
         except Exception as e:
             progress.close()
@@ -4121,7 +4140,7 @@ class MachineLearningTabController:
             return
 
         progress.close()
-        self.iface.messageBar().pushMessage(
+        _message(self.iface.messageBar().pushMessage, 
             "RF validation",
             f"{cv_desc} finished. RMSE={rmse:.3f}, RMSE%={(rmse_pct if np.isfinite(rmse_pct) else float('nan')):.2f}%, "
             f"MAE={mae:.3f}, R²={(r2 if np.isfinite(r2) else float('nan')):.3f}, "
@@ -4145,7 +4164,7 @@ class MachineLearningTabController:
             )
             return
 
-        attr_name = self.dlg.cmbVariable.currentText().strip()
+        attr_name = _combo_text(self.dlg.cmbVariable).strip()
         if not attr_name:
             self._show_warning_message(
                 "No variable", "Please select a variable in the Data tab."
@@ -4183,19 +4202,8 @@ class MachineLearningTabController:
             )
             return
 
-        raster_crs = raster_layers[0].crs()
-        point_crs = points_layer.crs()
-
-        if (
-            raster_crs.isValid()
-            and point_crs.isValid()
-            and raster_crs != point_crs
-        ):
-            transform = QgsCoordinateTransform(
-                point_crs, raster_crs, self.project
-            )
-        else:
-            transform = None
+        from .covariate_sampling import CovariateSampler
+        sampler = CovariateSampler(cov_names, raster_layers, points_layer.crs(), self.project)
 
         rows = []
 
@@ -4227,13 +4235,6 @@ class MachineLearningTabController:
             x_coord = orig_pt.x()
             y_coord = orig_pt.y()
 
-            sample_pt = pt
-            if transform is not None:
-                try:
-                    sample_pt = transform.transform(pt)
-                except Exception:  # nosec B112
-                    continue
-
             val = feat[attr_index]
             if val is None:
                 continue
@@ -4243,23 +4244,8 @@ class MachineLearningTabController:
             except Exception:  # nosec B112
                 continue
 
-            cov_values = []
-            missing = False
-
-            for rlayer in raster_layers:
-                provider = rlayer.dataProvider()
-                sample_point = QgsPointXY(sample_pt.x(), sample_pt.y())
-                sample_val, res = provider.sample(sample_point, 1)
-                if (
-                    not res
-                    or sample_val is None
-                    or math.isnan(sample_val)
-                ):
-                    missing = True
-                    break
-                cov_values.append(float(sample_val))
-
-            if missing:
+            cov_values = sampler.sample(QgsPointXY(orig_pt.x(), orig_pt.y()))
+            if cov_values is None:
                 continue
 
             rows.append([x_coord, y_coord, y_value] + cov_values)
@@ -4299,12 +4285,12 @@ class MachineLearningTabController:
             return
 
         dialog = QDialog(self.dlg)
-        dialog.setWindowTitle("Extracted covariate values")
+        _ui(dialog, 'setWindowTitle', "Extracted covariate values")
 
         table = QTableWidget(dialog)
         table.setRowCount(len(self._extracted_rows))
         table.setColumnCount(len(self._extracted_headers))
-        table.setHorizontalHeaderLabels(self._extracted_headers)
+        _ui(table, 'setHorizontalHeaderLabels', self._extracted_headers)
 
         for i, row in enumerate(self._extracted_rows):
             for j, value in enumerate(row):
@@ -4333,7 +4319,7 @@ class MachineLearningTabController:
         corr = self._last_corr_matrix
         names = self._last_corr_names
 
-        out_path, _ = QFileDialog.getSaveFileName(
+        out_path, _ = _dialog(QFileDialog.getSaveFileName, 
             self.dlg,
             "Save correlation matrix as CSV",
             "",
@@ -4827,8 +4813,8 @@ class MachineLearningTabController:
         if svm_interpolation is None:
             return
 
-        progress = QProgressDialog("Preparing data", "Cancel", 0, 0, self.dlg)
-        progress.setWindowTitle("SVM")
+        progress = _new(QProgressDialog, "Preparing data", "Cancel", 0, 0, self.dlg)
+        _ui(progress, 'setWindowTitle', "SVM")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         try:
@@ -4841,14 +4827,14 @@ class MachineLearningTabController:
         QCoreApplication.processEvents()
 
         try:
-            progress.setLabelText("Preparing training data")
+            _ui(progress, 'setLabelText', "Preparing training data")
             QCoreApplication.processEvents()
             points_df, target_name, cov_names = self._build_points_dataframe_for_rf()
             if points_df is None or target_name is None or cov_names is None:
                 progress.close()
                 return
 
-            progress.setLabelText("Preparing interpolation grid")
+            _ui(progress, 'setLabelText', "Preparing interpolation grid")
             QCoreApplication.processEvents()
             grid_df, grid_meta = self._build_grid_dataframe_for_rf(
                 cov_names,
@@ -4876,7 +4862,7 @@ class MachineLearningTabController:
             def _safe_set_progress(done, total, label=None):
                 try:
                     if label:
-                        progress.setLabelText(clean_display_name(str(label)))
+                        _ui(progress, 'setLabelText', clean_display_name(str(label)))
                     if total is None or total <= 0:
                         progress.setRange(0, 0)
                     else:
@@ -4906,12 +4892,12 @@ class MachineLearningTabController:
             )
             result = svm_interpolation(**kwargs)
 
-            progress.setLabelText("Writing SVM raster")
+            _ui(progress, 'setLabelText', "Writing SVM raster")
             progress.setRange(0, 0)
             QCoreApplication.processEvents()
         except KeyboardInterrupt:
             progress.close()
-            self.iface.messageBar().pushMessage("SVM interpolation", "Canceled by the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "SVM interpolation", "Canceled by the user.", level=1)
             return
         except Exception as e:
             progress.close()
@@ -4931,7 +4917,10 @@ class MachineLearningTabController:
 
         resolved_params = dict(best_params or manual_params)
         svm_config = {
+            "grid_coverage": grid_meta.get("covariate_coverage"),
+            "search_summary": result.get("search_summary"),
             "points_df": points_df.copy(deep=True),
+            "training_coverage": points_df.attrs.get("covariate_coverage"),
             "target_name": str(target_name),
             "feature_names": list(cov_names),
             "resolved_params": resolved_params,
@@ -4945,7 +4934,7 @@ class MachineLearningTabController:
 
         out_path = self._write_svm_raster_from_grid_df(grid_with_pred, grid_meta, target_name)
         if out_path is None:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "SVM interpolation",
                 "Model fitting completed, but the interpolation raster could not be created or loaded in QGIS.",
                 level=1,
@@ -4977,7 +4966,7 @@ class MachineLearningTabController:
             )
         if (train_mae is not None) and (train_rmse is not None):
             msg += f" Train MAE={train_mae:.2f}, RMSE={train_rmse:.2f}."
-        self.iface.messageBar().pushMessage("SVM interpolation", msg, level=0)
+        _message(self.iface.messageBar().pushMessage, "SVM interpolation", msg, level=0)
 
     def _svm_get_cv_mode(self):
         try:
@@ -5008,7 +4997,7 @@ class MachineLearningTabController:
         def _set(name, value):
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "setText"):
-                w.setText(value)
+                _ui(w, 'setText', value)
         def _fmt(v):
             return "—" if v is None or not np.isfinite(v) else f"{v:.3f}"
         _set("valSVMRMSE", _fmt(rmse))
@@ -5093,8 +5082,8 @@ class MachineLearningTabController:
             self._show_warning_message("SVM validation error", f"SVM validation is unavailable.\n{e}")
             return
 
-        progress = QProgressDialog("Preparing SVM cross validation", "Cancel", 0, 0, self.dlg)
-        progress.setWindowTitle("SVM cross validation")
+        progress = _new(QProgressDialog, "Preparing SVM cross validation", "Cancel", 0, 0, self.dlg)
+        _ui(progress, 'setWindowTitle', "SVM cross validation")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setRange(0, 0)
@@ -5154,7 +5143,7 @@ class MachineLearningTabController:
                 if progress.wasCanceled():
                     raise KeyboardInterrupt("Canceled by user")
                 progress.setValue(fold_idx - 1)
-                progress.setLabelText(f"Running {cv_desc} fold {fold_idx}/{total_folds}")
+                _ui(progress, 'setLabelText', f"Running {cv_desc} fold {fold_idx}/{total_folds}")
                 QCoreApplication.processEvents()
                 test_idx = np.asarray(test_idx_list, dtype=int)
                 train_mask = np.ones(n, dtype=bool)
@@ -5211,7 +5200,7 @@ class MachineLearningTabController:
             self._update_svm_validation_metrics_ui(rmse, lccc, rmse_pct, r2, mae, pearson_r)
             self._plot_svm_validation_scatter(y_all, preds, cv_desc)
         except KeyboardInterrupt:
-            self.iface.messageBar().pushMessage("SVM validation", "Canceled by the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "SVM validation", "Canceled by the user.", level=1)
         except Exception as e:
             self._show_warning_message("SVM validation error", f"SVM cross validation failed:\n{e}")
         finally:
@@ -5233,7 +5222,7 @@ class MachineLearningTabController:
             layer = self.project.mapLayer(layer_id)
 
         if layer is None:
-            name = combo.currentText()
+            name = _combo_text(combo)
             for lyr in self.project.mapLayers().values():
                 if lyr.name() == name:
                     layer = lyr
@@ -5243,8 +5232,8 @@ class MachineLearningTabController:
 
     def _show_info_message(self, title, text):
         """Show an information message box."""
-        QMessageBox.information(self.dlg, title, text)
+        _dialog(QMessageBox.information, self.dlg, title, text)
 
     def _show_warning_message(self, title, text):
         """Show a warning message box."""
-        QMessageBox.warning(self.dlg, title, text)
+        _dialog(QMessageBox.warning, self.dlg, title, text)

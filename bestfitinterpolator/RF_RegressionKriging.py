@@ -13,6 +13,8 @@ All comments are in English. User-facing strings can be handled by the caller/UI
 """
 
 from __future__ import annotations
+from .localization import _message
+from .localization import _combo_text, _dialog, _item_text, _new, _ui
 from .theme import save_figure
 from .compat import enum_value, qt_exec
 from .theme import COLORS,clean_display_name
@@ -192,13 +194,13 @@ class RegressionKrigingRFController:
 
             def _show_menu(pos):
                 menu = QMenu(self.dlg)
-                act_save = menu.addAction("Save graph as PNG")
-                act_zoom = menu.addAction("Open larger view")
-                act_copy = menu.addAction("Copy graph")
+                act_save = _ui(menu, 'addAction', "Save graph as PNG")
+                act_zoom = _ui(menu, 'addAction', "Open larger view")
+                act_copy = _ui(menu, 'addAction', "Copy graph")
                 chosen = qt_exec(menu, canvas.mapToGlobal(pos))
                 if chosen == act_save:
                     suggested = f"{default_prefix}.png"
-                    path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
+                    path, _ = _dialog(QFileDialog.getSaveFileName, self.dlg, "Save graph", suggested, "PNG Images (*.png)")
                     if path:
                         save_figure(fig, path, dpi=300, bbox_inches='tight')
                 elif chosen == act_copy:
@@ -251,6 +253,12 @@ class RegressionKrigingRFController:
             self._map_canvas = FigureCanvas(self._map_fig)
             self._map_canvas._bfi_is_map = True
             layout.addWidget(self._map_canvas)
+            from .uncertainty_maps import MapOutputSelector
+            self._rk_output_selector = MapOutputSelector(map_container, self._map_canvas,
+                'cmbRKMapOutput', self._render_rk_output)
+            self.dlg.cmbRKMapOutput = self._rk_output_selector.combo
+            from .uncertainty_maps import install_sd_control
+            install_sd_control(self.dlg, "RK", self._rk_output_selector)
             self._install_canvas_menu(self._map_canvas, self._map_fig, "rk_map")
 
         if val_container is not None:
@@ -332,20 +340,20 @@ class RegressionKrigingRFController:
             return spin
 
         try:
-            label_cutoff = QLabel("Max distance / cutoff", parent)
+            label_cutoff = _new(QLabel, "Max distance / cutoff", parent)
             label_cutoff.setObjectName("labelRKCutoff")
             spin_cutoff = _spin("spinRKCutoff", 0.0)
-            spin_cutoff.setToolTip("Maximum lag distance used to build the residual semivariogram. Use 0 for automatic.")
-            label_lag = QLabel("Lag width", parent)
+            _ui(spin_cutoff, 'setToolTip', "Maximum lag distance used to build the residual semivariogram. Use 0 for automatic.")
+            label_lag = _new(QLabel, "Lag width", parent)
             label_lag.setObjectName("labelRKLagWidth")
             spin_lag = _spin("spinRKLag", 0.0)
-            spin_lag.setToolTip("Lag-bin width used to build the residual semivariogram. Use 0 for automatic nearest-neighbor width.")
+            _ui(spin_lag, 'setToolTip', "Lag-bin width used to build the residual semivariogram. Use 0 for automatic nearest-neighbor width.")
 
-            btn_fit = QPushButton("Fit residual semivariogram", parent)
+            btn_fit = _new(QPushButton, "Fit residual semivariogram", parent)
             btn_fit.setObjectName("btnRKFitVariogram")
-            btn_validate = QPushButton("Validate 3 models", parent)
+            btn_validate = _new(QPushButton, "Validate 3 models", parent)
             btn_validate.setObjectName("btnRKValidateVariogramModels")
-            summary = QLabel("Residual variogram model validation will appear here.", parent)
+            summary = _new(QLabel, "Residual variogram model validation will appear here.", parent)
             summary.setObjectName("valRKVariogramValidationSummary")
             summary.setWordWrap(True)
             summary.setMinimumHeight(64)
@@ -371,19 +379,24 @@ class RegressionKrigingRFController:
     def _set_variogram_validation_summary(self, text=None):
         label = getattr(self.dlg, "valRKVariogramValidationSummary", None)
         if label is not None and hasattr(label, "setText"):
-            label.setText(text or "Residual variogram model validation will appear here.")
+            _ui(label, 'setText', text or "Residual variogram model validation will appear here.")
 
     def _reset_validation_metric_labels(self):
         for name in ("valRKRMSE", "valRKRMSEpct", "valRKMAE", "valRKR2", "valRKPearsonR", "valRKLCCC"):
             widget = getattr(self.dlg, name, None)
             if widget is not None and hasattr(widget, "setText"):
                 try:
-                    widget.setText("--")
+                    _ui(widget, 'setText', "--")
                 except Exception:  # nosec B110
                     pass
 
     def clear_plots(self):
+        self._analysis_generation = getattr(self, '_analysis_generation', 0) + 1
+        self._grid_with_pred = None
+        selector = getattr(self, '_rk_output_selector', None)
+        if selector is not None: selector.clear()
         self._train_df = None
+        self._last_rk_cv_result = None
         self._residuals = None
         self._rf_model = None
         self._variogram_fit = None
@@ -510,12 +523,12 @@ class RegressionKrigingRFController:
             return None
 
         try:
-            label = QLabel(self.dlg)
+            label = _new(QLabel, self.dlg)
             label.setObjectName(object_name)
             from .theme import action_icon
             label.setPixmap(action_icon().pixmap(18,18))
-            label.setToolTip(tooltip_text)
-            label.setWhatsThis(tooltip_text)
+            _ui(label, 'setToolTip', tooltip_text)
+            _ui(label, 'setWhatsThis', tooltip_text)
             label.setFixedSize(QSize(18, 18))
             label.setCursor(enum_value(Qt, "CursorShape", "ArrowCursor"))
             setattr(self, object_name, label)
@@ -530,8 +543,8 @@ class RegressionKrigingRFController:
             if widget is None:
                 continue
             try:
-                widget.setToolTip("")
-                widget.setWhatsThis("")
+                _ui(widget, 'setToolTip', "")
+                _ui(widget, 'setWhatsThis', "")
                 widget.setEnabled(False)
                 widget.setVisible(False)
             except Exception:  # nosec B110
@@ -544,8 +557,8 @@ class RegressionKrigingRFController:
             if widget is None:
                 continue
             try:
-                widget.setToolTip("")
-                widget.setWhatsThis("")
+                _ui(widget, 'setToolTip', "")
+                _ui(widget, 'setWhatsThis', "")
             except Exception:  # nosec B110
                 pass
 
@@ -600,14 +613,14 @@ class RegressionKrigingRFController:
 
         lbl = getattr(self.dlg, "valRKStatus", None)
         if lbl is not None and hasattr(lbl, "setText"):
-            lbl.setText(status)
+            _ui(lbl, 'setText', status)
 
         lbl_params = getattr(self.dlg, "valRKBestParams", None)
         if lbl_params is not None and hasattr(lbl_params, "setText"):
             if (self._rf_best_params is None) or (not self._is_using_grid_search()):
-                lbl_params.setText("")
+                _ui(lbl_params, 'setText', "")
             else:
-                lbl_params.setText(
+                _ui(lbl_params, 'setText', 
                     "Best RF params: "
                     f"ntree={self._rf_best_params.get('ntree')}, "
                     f"mtry={self._rf_best_params.get('mtry')}, "
@@ -617,10 +630,10 @@ class RegressionKrigingRFController:
         lbl_res = getattr(self.dlg, "valRKResidualInfo", None)
         if lbl_res is not None and hasattr(lbl_res, "setText"):
             if self._variogram_fit is None:
-                lbl_res.setText("Residual variogram not fitted")
+                _ui(lbl_res, 'setText', "Residual variogram not fitted")
             else:
                 weak = " | weak structure" if self._variogram_fit.weak_structure else ""
-                lbl_res.setText(
+                _ui(lbl_res, 'setText', 
                     f"{self._variogram_fit.model.capitalize()} | "
                     f"SSE={self._variogram_fit.sse:.4f}{weak}"
                 )
@@ -629,7 +642,7 @@ class RegressionKrigingRFController:
         cmb = getattr(self.dlg, "cmbRKModel", None)
         if cmb is not None:
             for i in range(cmb.count()):
-                txt = (cmb.itemText(i) or "").strip().lower()
+                txt = (_item_text(cmb, i) or "").strip().lower()
                 if txt.startswith(fit.model[:3].lower()):
                     cmb.setCurrentIndex(i)
                     break
@@ -655,7 +668,7 @@ class RegressionKrigingRFController:
 
     def _get_model_token(self) -> str:
         cmb = getattr(self.dlg, "cmbRKModel", None)
-        txt = cmb.currentText().strip().lower() if cmb is not None else "exponential"
+        txt = _combo_text(cmb).strip().lower() if cmb is not None else "exponential"
         if txt.startswith("sph"):
             return "spherical"
         if txt.startswith("gau"):
@@ -767,13 +780,14 @@ class RegressionKrigingRFController:
         prompt_for_predictors=True,
         framework_mode=False,
         max_validation_samples=None,
+        search_settings=None,
     ):
         self._prepare_training_data(
             feature_names=feature_names,
             prompt_for_predictors=prompt_for_predictors,
         )
         cols = self._unique_columns(["x", "y"] + list(self._covariate_names) + [self._target_name])
-        train_df = self._train_df[cols].dropna().copy()
+        train_df = self._train_df[cols].replace([np.inf, -np.inf], np.nan).dropna().copy()
         full_train_count = int(len(train_df))
         validation_subset_used = False
         if max_validation_samples is not None and full_train_count > int(max_validation_samples):
@@ -788,11 +802,13 @@ class RegressionKrigingRFController:
         X = train_df[list(self._covariate_names)].to_numpy(dtype=float)
         y = train_df[self._target_name].to_numpy(dtype=float)
 
-        use_grid_search = self._is_using_grid_search()
+        from .framework_search import search_settings as automatic_settings, for_method
+        settings = automatic_settings(search_settings) if framework_mode else None
+        use_grid_search = True if framework_mode else self._is_using_grid_search()
         manual_params = self._get_manual_params()
-        grid_params = self._get_grid_params()
-        search_folds = self._get_search_folds()
-        search_iterations = self._get_search_iterations()
+        grid_params = settings["grids"]["RK"] if settings else self._get_grid_params()
+        search_folds = for_method(settings, "RK")["folds"] if settings else self._get_search_folds()
+        search_iterations = for_method(settings, "RK")["iterations"] if settings else self._get_search_iterations()
         search_folds, search_iterations, search_adjusted = dense_search_limits(
             len(train_df),
             search_folds,
@@ -810,17 +826,27 @@ class RegressionKrigingRFController:
             random_state=20,
             cv_folds=search_folds,
             max_iterations=search_iterations,
+            search_strategy=settings["strategy"] if settings else "randomized",
         )
         if "progress_fn" in sig.parameters:
             kwargs["progress_fn"] = progress_fn
 
-        model, best_params = _tune_random_forest(**kwargs)
+        if framework_mode:
+            from .framework_search_cache import fit as cached_fit
+            model, best_params = cached_fit(self, 'RK', train_df, self._target_name,
+                                           self._covariate_names, _tune_random_forest, kwargs,
+                                           requested_budget=for_method(settings, "RK"))
+        else:
+            model, best_params = _tune_random_forest(**kwargs)
         pred = np.asarray(model.predict(X), dtype=float)
         residuals = y - pred
 
         self._rf_model = model
         self._rf_best_params = best_params if use_grid_search else None
+        from .search_provenance import model_search_record
         self._rf_fit_config = {
+            "search_summary": model_search_record(model),
+            "framework_search_settings": settings,
             "resolved_params": dict(best_params or manual_params),
             "search_mode": "grid" if use_grid_search else "manual",
             "grid_params": {
@@ -848,19 +874,19 @@ class RegressionKrigingRFController:
         self._draw_importance_plot()
         self._refresh_status()
 
-    def prepare_framework_validation(self, feature_names=None, max_validation_samples=None):
+    def prepare_framework_validation(self, feature_names=None, max_validation_samples=None, search_settings=None):
         """Prepare RK validation directly from Framework without a prior raster run."""
         if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
             return False
 
-        progress = QProgressDialog(
+        progress = _new(QProgressDialog, 
             "Preparing Regression Kriging for Framework validation",
             "Cancel",
             0,
             100,
             self.dlg,
         )
-        progress.setWindowTitle("Framework validation")
+        _ui(progress, 'setWindowTitle', "Framework validation")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.show()
@@ -868,7 +894,7 @@ class RegressionKrigingRFController:
 
         def _progress(done, total, label=None):
             if label:
-                progress.setLabelText(clean_display_name(str(label)))
+                _ui(progress, 'setLabelText', clean_display_name(str(label)))
             if total is None or total <= 0:
                 progress.setRange(0, 0)
             else:
@@ -884,10 +910,11 @@ class RegressionKrigingRFController:
                 feature_names=feature_names,
                 prompt_for_predictors=False,
                 framework_mode=True,
+                search_settings=search_settings,
                 max_validation_samples=max_validation_samples,
             )
             progress.setRange(0, 0)
-            progress.setLabelText("Fitting residual semivariogram")
+            _ui(progress, 'setLabelText', "Fitting residual semivariogram")
             QCoreApplication.processEvents()
             self._fit_variogram_stage()
 
@@ -896,10 +923,13 @@ class RegressionKrigingRFController:
                 raise ValueError("Regression Kriging parameters could not be prepared.")
             self._last_interpolation_config = {
                 "train_df": self._train_df.copy(deep=True),
+            "training_coverage": self._train_df.attrs.get("covariate_coverage"),
                 "target_name": str(self._target_name),
                 "feature_names": list(self._covariate_names),
                 "rf_params": dict(self._rf_fit_config["resolved_params"]),
                 "rf_search_mode": self._rf_fit_config["search_mode"],
+                "search_summary": self._rf_fit_config.get("search_summary"),
+                "framework_search_settings": self._rf_fit_config.get("framework_search_settings"),
                 "validation_sample_count": int(self._rf_fit_config.get("validation_sample_count", len(self._train_df))),
                 "validation_full_sample_count": int(self._rf_fit_config.get("validation_full_sample_count", len(self._train_df))),
                 "validation_subset_used": bool(self._rf_fit_config.get("validation_subset_used", False)),
@@ -915,7 +945,7 @@ class RegressionKrigingRFController:
             }
             return True
         except KeyboardInterrupt:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Framework validation",
                 "Regression Kriging preparation was canceled.",
                 level=1,
@@ -928,8 +958,8 @@ class RegressionKrigingRFController:
         if not ensure_ml_ready(parent=self.dlg, method_name="Regression Kriging"):
             return
 
-        progress = QProgressDialog("Fitting RF parameters", "Cancel", 0, 0, self.dlg)
-        progress.setWindowTitle("Regression Kriging")
+        progress = _new(QProgressDialog, "Fitting RF parameters", "Cancel", 0, 0, self.dlg)
+        _ui(progress, 'setWindowTitle', "Regression Kriging")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.show()
@@ -937,7 +967,7 @@ class RegressionKrigingRFController:
 
         def _progress(done, total, label=None):
             if label:
-                progress.setLabelText(clean_display_name(str(label)))
+                _ui(progress, 'setLabelText', clean_display_name(str(label)))
             if total is None or total <= 0:
                 progress.setRange(0, 0)
             else:
@@ -950,16 +980,16 @@ class RegressionKrigingRFController:
         try:
             self._fit_rf_stage(progress_fn=_progress)
             if self._residuals is not None and self._train_df is not None:
-                progress.setLabelText("Fitting residual semivariogram")
+                _ui(progress, 'setLabelText', "Fitting residual semivariogram")
                 progress.setRange(0, 0)
                 QCoreApplication.processEvents()
                 self._fit_variogram_stage()
                 self._draw_variogram_plot()
                 QCoreApplication.processEvents()
         except KeyboardInterrupt:
-            self.iface.messageBar().pushMessage("Regression Kriging", "Canceled by the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", "Canceled by the user.", level=1)
         except Exception as e:
-            self.iface.messageBar().pushMessage("Regression Kriging", f"RF fitting failed: {e}", level=2)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", f"RF fitting failed: {e}", level=2)
         finally:
             progress.close()
 
@@ -1151,7 +1181,7 @@ class RegressionKrigingRFController:
         try:
             self._fit_variogram_stage()
         except Exception as e:
-            self.iface.messageBar().pushMessage("Regression Kriging", f"Residual variogram fitting failed: {e}", level=2)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", f"Residual variogram fitting failed: {e}", level=2)
 
     def _on_apply_variogram_clicked(self):
         try:
@@ -1159,7 +1189,7 @@ class RegressionKrigingRFController:
             self._draw_variogram_plot()
             self._refresh_status()
         except Exception as e:
-            self.iface.messageBar().pushMessage("Regression Kriging", f"Invalid variogram parameters: {e}", level=2)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", f"Invalid variogram parameters: {e}", level=2)
 
     # ------------------------------------------------------------------
     # RK interpolation stage
@@ -1205,6 +1235,7 @@ class RegressionKrigingRFController:
                 "Interpolation grid has no complete predictor rows for Regression Kriging."
             )
         X_grid = grid_clean[list(self._covariate_names)].to_numpy(dtype=float)
+        generation = getattr(self, '_analysis_generation', 0)
 
         if progress_fn is not None:
             progress_fn(20, 100, "Predicting RF trend on the interpolation grid")
@@ -1213,12 +1244,12 @@ class RegressionKrigingRFController:
             if progress_fn is not None:
                 progress_fn(20 + int(30 * done / max(total, 1)), 100, label)
 
-        rf_pred = predict_in_chunks(
-            self._rf_model,
-            X_grid,
-            progress_fn=_trend_progress,
-            label="Predicting RF trend on the interpolation grid",
-        )
+        from .forest_uncertainty import forest_prediction_dispersion
+        dispersion = forest_prediction_dispersion(self._rf_model, X_grid, progress_fn=_trend_progress)
+        rf_pred = predict_in_chunks(self._rf_model, X_grid, progress_fn=_trend_progress,
+                                    label="Predicting RF trend on the interpolation grid")
+        if generation != getattr(self, '_analysis_generation', 0):
+            raise InterruptedError('Data changed; the old RK result was discarded.')
 
         if progress_fn is not None:
             progress_fn(55, 100, "Kriging RF residuals on the interpolation grid")
@@ -1227,7 +1258,7 @@ class RegressionKrigingRFController:
         if fit is None:
             raise ValueError("Fit the residual variogram first.")
         self._variogram_fit = fit
-        residual_pred = ordinary_kriging_interpolation(
+        residual_pred, residual_variance = ordinary_kriging_interpolation(
             self._train_df["x"].to_numpy(dtype=float),
             self._train_df["y"].to_numpy(dtype=float),
             np.asarray(self._residuals, dtype=float),
@@ -1237,6 +1268,7 @@ class RegressionKrigingRFController:
             float(fit.psill),
             float(fit.range_),
             {"spherical": "Sph", "exponential": "Exp", "gaussian": "Gau"}[fit.model],
+            return_variance=True,
             progress_fn=(
                 (lambda done, total: progress_fn(
                     55 + int(35 * done / max(total, 1)),
@@ -1248,21 +1280,30 @@ class RegressionKrigingRFController:
         )
 
         final_pred = rf_pred + np.asarray(residual_pred, dtype=float)
+        if generation != getattr(self, '_analysis_generation', 0):
+            raise InterruptedError('Data changed; the old RK result was discarded.')
         pred_col = f"{self._target_name}_rk_pred"
         grid_clean[pred_col] = final_pred
+        columns = dict(rk_std=self._target_name+'_rk_sd', rk_variance=self._target_name+'_rk_variance',
+                       rf_std=self._target_name+'_trend_rf_sd', rf_variance=self._target_name+'_trend_rf_variance')
+        grid_clean[columns['rk_std']] = np.sqrt(np.maximum(residual_variance, 0.))
+        grid_clean[columns['rk_variance']] = np.maximum(residual_variance, 0.)
+        grid_clean[columns['rf_std']] = dispersion['std']
+        grid_clean[columns['rf_variance']] = dispersion['variance']
+        output_columns = [pred_col]+list(columns.values())
 
         merged = self._grid_df.copy()
         if "__flat_index" in merged.columns and "__flat_index" in grid_clean.columns:
             merged = pd.merge(
                 merged,
-                grid_clean[["__flat_index", pred_col]],
+                grid_clean[["__flat_index"]+output_columns],
                 on="__flat_index",
                 how="left",
             )
         else:
             merged = pd.merge(
                 merged,
-                grid_clean[["x", "y", pred_col]],
+                grid_clean[["x", "y"]+output_columns],
                 on=["x", "y"],
                 how="left",
             )
@@ -1272,11 +1313,17 @@ class RegressionKrigingRFController:
         if self._rf_fit_config is None:
             raise ValueError("The RF configuration used by Regression Kriging is unavailable.")
         interpolation_config = {
+            "grid_coverage": self._grid_meta.get("covariate_coverage"),
             "train_df": self._train_df.copy(deep=True),
+            "training_coverage": self._train_df.attrs.get("covariate_coverage"),
             "target_name": str(self._target_name),
             "feature_names": list(self._covariate_names),
             "rf_params": dict(self._rf_fit_config["resolved_params"]),
             "rf_search_mode": self._rf_fit_config["search_mode"],
+            "search_summary": self._rf_fit_config.get("search_summary"),
+            "framework_search_settings": self._rf_fit_config.get("framework_search_settings"),
+            "training_sample_count": len(self._train_df),
+            "uncertainty_tree_count": dispersion['tree_count'],
             "variogram_fit": VariogramFit(
                 model=str(fit.model),
                 nugget=float(fit.nugget),
@@ -1297,7 +1344,7 @@ class RegressionKrigingRFController:
             )
             if out_ref is None:
                 try:
-                    self.iface.messageBar().pushWarning(
+                    _message(self.iface.messageBar().pushWarning, 
                         "Regression Kriging",
                         "RK interpolation was computed, but the raster could not be exported to QGIS."
                     )
@@ -1306,12 +1353,18 @@ class RegressionKrigingRFController:
                 return
             interpolation_config["raster_path"] = str(out_ref)
 
+            from .uncertainty_maps import export_uncertainty
+            export_uncertainty(self, merged, self._grid_meta, self._target_name, 'RK', columns, interpolation_config)
+
+        if generation != getattr(self, '_analysis_generation', 0):
+            raise InterruptedError('Data changed; the old RK output was discarded.')
         self._last_interpolation_config = interpolation_config
 
         if progress_fn is not None:
             progress_fn(100, 100, "Regression Kriging interpolation completed.")
 
-        self._draw_map_plot(pred_col)
+        from .uncertainty_maps import map_entries
+        self._rk_output_selector.configure(map_entries(merged, self._target_name, 'RK', columns))
         from .interpolation_result import publish_result
         publish_result(self,'RK',interpolation_config,self._map_fig)
         self._refresh_status()
@@ -1324,8 +1377,8 @@ class RegressionKrigingRFController:
             return
         self._rk_running = True
 
-        progress = QProgressDialog("Running Regression Kriging", "Cancel", 0, 100, self.dlg)
-        progress.setWindowTitle("Regression Kriging")
+        progress = _new(QProgressDialog, "Running Regression Kriging", "Cancel", 0, 100, self.dlg)
+        _ui(progress, 'setWindowTitle', "Regression Kriging")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         try:
@@ -1338,7 +1391,7 @@ class RegressionKrigingRFController:
 
         def _progress(done, total, label=None):
             if label:
-                progress.setLabelText(clean_display_name(str(label)))
+                _ui(progress, 'setLabelText', clean_display_name(str(label)))
             progress.setRange(0, int(total) if total else 100)
             progress.setValue(int(done))
             QCoreApplication.processEvents()
@@ -1348,9 +1401,9 @@ class RegressionKrigingRFController:
         try:
             self._run_rk_prediction(progress_fn=_progress)
         except KeyboardInterrupt:
-            self.iface.messageBar().pushMessage("Regression Kriging", "Canceled by the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", "Canceled by the user.", level=1)
         except Exception as e:
-            self.iface.messageBar().pushMessage("Regression Kriging", f"Interpolation failed: {e}", level=2)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", f"Interpolation failed: {e}", level=2)
         finally:
             progress.close()
             self._rk_running = False
@@ -1449,7 +1502,7 @@ class RegressionKrigingRFController:
         def _set(name, value):
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "setText"):
-                w.setText(value)
+                _ui(w, 'setText', value)
 
         def _fmt(v):
             return "—" if v is None or not np.isfinite(v) else f"{v:.3f}"
@@ -1464,7 +1517,7 @@ class RegressionKrigingRFController:
     def _on_run_rk_cv_clicked(self):
         config = getattr(self, "_last_interpolation_config", None)
         if not config:
-            self.iface.messageBar().pushWarning(
+            _message(self.iface.messageBar().pushWarning, 
                 "Regression Kriging validation",
                 "Run the complete Regression Kriging interpolation first. Validation uses its exact predictors, RF parameters, and variogram.",
             )
@@ -1478,8 +1531,8 @@ class RegressionKrigingRFController:
         self._cv_running = True
         self._reset_validation_metric_labels()
 
-        progress = QProgressDialog("Preparing RK cross validation", "Cancel", 0, 0, self.dlg)
-        progress.setWindowTitle("Regression Kriging CV")
+        progress = _new(QProgressDialog, "Preparing RK cross validation", "Cancel", 0, 0, self.dlg)
+        _ui(progress, 'setWindowTitle', "Regression Kriging CV")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.show()
@@ -1533,7 +1586,7 @@ class RegressionKrigingRFController:
                     raise KeyboardInterrupt("Canceled by user")
 
                 progress.setValue(fold_idx - 1)
-                progress.setLabelText(f"Running {cv_desc} fold {fold_idx}/{total_folds}")
+                _ui(progress, 'setLabelText', f"Running {cv_desc} fold {fold_idx}/{total_folds}")
                 QCoreApplication.processEvents()
 
                 test_idx = np.asarray(test_idx_list, dtype=int)
@@ -1577,7 +1630,7 @@ class RegressionKrigingRFController:
                 preds[test_idx] = rf_test_pred + np.asarray(residual_test_pred, dtype=float)
 
             progress.setValue(total_folds)
-            progress.setLabelText("Computing RK validation metrics")
+            _ui(progress, 'setLabelText', "Computing RK validation metrics")
             QCoreApplication.processEvents()
 
             rmse = self._rmse(y_all, preds)
@@ -1604,9 +1657,9 @@ class RegressionKrigingRFController:
             self._draw_validation_plot(y_all, preds, cv_desc)
 
         except KeyboardInterrupt:
-            self.iface.messageBar().pushMessage("Regression Kriging", "Canceled by the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", "Canceled by the user.", level=1)
         except Exception as e:
-            self.iface.messageBar().pushMessage("Regression Kriging", f"Cross-validation failed: {e}", level=2)
+            _message(self.iface.messageBar().pushMessage, "Regression Kriging", f"Cross-validation failed: {e}", level=2)
         finally:
             progress.close()
             self._cv_running = False
@@ -1678,9 +1731,13 @@ class RegressionKrigingRFController:
         except Exception:  # nosec B110
             pass
 
-    def _draw_map_plot(self, pred_col: str):
+    def _render_rk_output(self, key, entry):
+        self._draw_map_plot(entry['column'], entry['title'], entry['value_label'], key)
+
+    def _draw_map_plot(self, pred_col: str, title='Regression Kriging', value_label=None, output_kind='prediction'):
         if self._map_fig is None or self._map_canvas is None or self._grid_with_pred is None or self._grid_meta is None:
             return
+        self._map_fig._bfi_output_kind = output_kind
 
         xmin = float(self._grid_meta["xmin"])
         xmax = float(self._grid_meta["xmax"])
@@ -1711,7 +1768,7 @@ class RegressionKrigingRFController:
 
         pm = ax.pcolormesh(x_edges, y_edges, masked, cmap="viridis", shading="auto")
         cbar = self._map_fig.colorbar(pm, ax=ax, orientation="vertical")
-        cbar.set_label(self._target_name or "Prediction")
+        cbar.set_label(value_label or self._target_name or "Prediction")
 
         try:
             for feat in poly_layer.getFeatures():
@@ -1728,7 +1785,7 @@ class RegressionKrigingRFController:
         except Exception:  # nosec B110
             pass
 
-        ax.set_title("Regression Kriging")
+        ax.set_title(title)
         ax.set_xlim(xmin, xmax)
         ax.set_ylim(ymin, ymax)
         ax.set_aspect("equal", adjustable="box")

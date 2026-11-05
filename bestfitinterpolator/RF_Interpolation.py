@@ -20,6 +20,11 @@ All comments are in English. No user-facing GUI code here.
 
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+try:
+    from .search_provenance import model_search_record, record_search
+except ImportError:  # standalone numerical use
+    from search_provenance import model_search_record, record_search
+
 import numpy as np
 import pandas as pd
 
@@ -73,7 +78,8 @@ def _build_param_distributions(
         vmax = int(d.get("max", vmin))
         step = max(1, int(d.get("step", 1)))
         if cap is not None:
-            vmax = min(vmax, cap)
+            vmin = max(1, min(vmin, cap))
+            vmax = max(1, min(vmax, cap))
         if vmax < vmin:
             vmax = vmin
         return list(range(vmin, vmax + 1, step))
@@ -97,6 +103,13 @@ def _build_param_distributions(
     return param_dist, total_combos > 1
 
 
+try:
+    from .numerical_runtime import responsive_numerical
+except ImportError:  # standalone numerical use
+    from numerical_runtime import responsive_numerical
+
+
+@responsive_numerical
 def _tune_random_forest(
     X: np.ndarray,
     y: np.ndarray,
@@ -108,6 +121,7 @@ def _tune_random_forest(
     cv_folds: int = 3,
     max_iterations: int = 10,
     progress_fn: Optional[Callable[[int, int, Optional[str]], None]] = None,
+    search_strategy="randomized",
 ) -> Tuple[Any, Dict[str, int]]:
     """
     Train a RandomForestRegressor with optional hyperparameter tuning.
@@ -163,6 +177,8 @@ def _tune_random_forest(
             "mtry": int(best_model.max_features),
             "nodesize": int(best_model.min_samples_leaf),
         }
+        record_search(best_model, use_grid_search, best_params, len(y),
+                      total=1 if use_grid_search else 0)
         return best_model, best_params
 
     cv_folds, max_iterations, _ = dense_search_limits(
@@ -179,7 +195,7 @@ def _tune_random_forest(
         * len(param_dist["min_samples_leaf"])
     )
     max_iterations = max(1, int(max_iterations))
-    n_iter = min(max_iterations, total_combos) if total_combos > 0 else 1
+    n_iter = total_combos if search_strategy == "exhaustive" else min(max_iterations, total_combos)
 
     candidates = list(ParameterSampler(param_dist, n_iter=n_iter, random_state=random_state))
     splits = list(cv.split(X_search))
@@ -192,10 +208,11 @@ def _tune_random_forest(
             f" on {len(y_search)} representative rows; final fit uses all {len(y)} rows"
             if subset_used else ""
         )
+        search_label = "Grid Search"
         progress_fn(
             completed,
             total_steps,
-            f"Running Random Search ({n_iter} settings, {cv_folds}-fold CV){subset_text}…",
+            f"Running {search_label} ({n_iter} settings, {cv_folds}-fold CV){subset_text}…",
         )
 
     for candidate_no, params in enumerate(candidates, start=1):
@@ -245,9 +262,16 @@ def _tune_random_forest(
     if progress_fn is not None:
         progress_fn(total_steps, total_steps, "Random Forest search completed.")
 
+    record_search(best_model, True, {key: best_params[key] for key in ("ntree", "mtry", "nodesize")},
+                  len(y), algorithm="grid_search" if len(candidates) == total_combos else "random_search", total=total_combos,
+                  evaluated=len(candidates), folds=len(splits), search_n=len(y_search),
+                  objective="MAE", score=best_score, random_state=random_state,
+                  space=dict(ntree=param_dist["n_estimators"], mtry=param_dist["max_features"],
+                             nodesize=param_dist["min_samples_leaf"]))
     return best_model, best_params
 
 
+@responsive_numerical
 def rf_interpolation(
     points_df: pd.DataFrame,
     grid_df: pd.DataFrame,
@@ -263,6 +287,7 @@ def rf_interpolation(
     cv_folds: int = 3,
     max_iterations: int = 10,
     progress_fn: Optional[Callable[[int, int, Optional[str]], None]] = None,
+    search_strategy="randomized",
 ) -> Dict[str, object]:
     """
     Main RF interpolation function used by the plugin.
@@ -303,6 +328,7 @@ def rf_interpolation(
         random_state=random_state,
         cv_folds=cv_folds,
         max_iterations=max_iterations,
+        search_strategy=search_strategy,
         progress_fn=progress_fn,
     )
 
@@ -330,26 +356,28 @@ def rf_interpolation(
     if progress_fn is not None:
         progress_fn(96, 100, "Predicting Random Forest values on the interpolation grid…")
 
-    grid_pred = predict_in_chunks(
-        model,
-        X_grid,
-        progress_fn=progress_fn,
-        label="Predicting Random Forest values on the interpolation grid…",
-    )
-    grid_clean[target_column + "_pred"] = grid_pred
+    from .forest_uncertainty import forest_prediction_dispersion, RF_DESCRIPTION
+    # Preserve the V2.0 prediction path; dispersion is an additional diagnostic.
+    grid_clean[target_column + "_pred"] = predict_in_chunks(
+        model, X_grid, progress_fn=progress_fn, label="Predicting Random Forest grid values…")
+    dispersion = forest_prediction_dispersion(model, X_grid, progress_fn=progress_fn)
+    sd_column, variance_column = target_column + '_rf_sd', target_column + '_rf_variance'
+    grid_clean[sd_column] = dispersion['std']
+    grid_clean[variance_column] = dispersion['variance']
+    output_columns = [target_column + '_pred', sd_column, variance_column]
 
     merged = grid_df.copy()
     if "__flat_index" in merged.columns and "__flat_index" in grid_clean.columns:
         merged = pd.merge(
             merged,
-            grid_clean[["__flat_index", target_column + "_pred"]],
+            grid_clean[["__flat_index"] + output_columns],
             on="__flat_index",
             how="left",
         )
     else:
         merged = pd.merge(
             merged,
-            grid_clean[[x_col, y_col, target_column + "_pred"]],
+            grid_clean[[x_col, y_col] + output_columns],
             on=[x_col, y_col],
             how="left",
         )
@@ -369,11 +397,16 @@ def rf_interpolation(
 
     result = {
         "model": model,
+        "search_summary": model_search_record(model),
         "best_params": best_params,
         "grid_with_pred": merged,
         "importance_df": importance_df,
         "train_mae": train_mae,
         "train_rmse": train_rmse,
+        "uncertainty_columns": dict(rf_std=sd_column, rf_variance=variance_column),
+        "uncertainty_definition": RF_DESCRIPTION,
+        "tree_count": dispersion['tree_count'],
+        "training_sample_count": len(train_df),
     }
 
     return result

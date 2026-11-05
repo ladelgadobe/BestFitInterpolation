@@ -1,4 +1,5 @@
 """Framework comparison of validated, generated method rasters."""
+from .localization import _combo_text, _new, _select_text, _ui
 import numpy as np
 from qgis.PyQt.QtWidgets import QWidget,QVBoxLayout,QHBoxLayout,QComboBox,QLabel,QPushButton,QCheckBox,QTabWidget,QDialog
 from qgis.PyQt.QtCore import Qt
@@ -21,19 +22,19 @@ class MapComparisonWidget(QWidget):
         top=QHBoxLayout(); root.addLayout(top)
         self.method_a,self.method_b=QComboBox(),QComboBox()
         for label,combo in (("Map A",self.method_a),("Map B",self.method_b)):
-            top.addWidget(QLabel(label)); top.addWidget(combo)
-        self.compare=QPushButton("Compare maps"); top.addWidget(self.compare); self.compare.clicked.connect(self.calculate)
-        self.settings_dialog=QDialog(self); self.settings_dialog.setWindowTitle('Comparison visualization settings')
+            top.addWidget(_new(QLabel, label)); top.addWidget(combo)
+        self.compare=_new(QPushButton, "Compare maps"); top.addWidget(self.compare); self.compare.clicked.connect(self.calculate)
+        self.settings_dialog=QDialog(self); _ui(self.settings_dialog, 'setWindowTitle', 'Comparison visualization settings')
         settings=QVBoxLayout(self.settings_dialog)
-        self.same_palette=QCheckBox("Use same palette"); self.same_range=QCheckBox("Use same value range"); self.same_extent=QCheckBox("Use same extent")
-        self.include=QCheckBox("Include this comparison in report")
+        self.same_palette=_new(QCheckBox, "Use same palette"); self.same_range=_new(QCheckBox, "Use same value range"); self.same_extent=_new(QCheckBox, "Use same extent")
+        self.include=_new(QCheckBox, "Include this comparison in report")
         for w in (self.same_palette,self.same_range,self.same_extent): w.setChecked(True); settings.addWidget(w); w.toggled.connect(self.render)
         root.addWidget(self.include); self.include.toggled.connect(self.save_state)
         self.controls_a,self.controls_b=MapDisplayControls(self),MapDisplayControls(self)
         display_tabs=QTabWidget(); settings.addWidget(display_tabs)
-        display_tabs.addTab(self.controls_a,'Map A / shared'); display_tabs.addTab(self.controls_b,'Map B')
+        _ui(display_tabs, 'addTab', self.controls_a,'Map A / shared'); _ui(display_tabs, 'addTab', self.controls_b,'Map B')
         self.controls_a.show(); self.controls_b.show()
-        done=QPushButton('Done'); done.clicked.connect(self.settings_dialog.close); settings.addWidget(done)
+        done=_new(QPushButton, 'Done'); done.clicked.connect(self.settings_dialog.close); settings.addWidget(done)
         apply_theme(self.settings_dialog)
         self.fig=Figure(figsize=(11,4)); self.canvas=FigureCanvas(self.fig); root.addWidget(self.canvas,1)
         self.canvas._bfi_display_source=True
@@ -44,15 +45,15 @@ class MapComparisonWidget(QWidget):
         self.controls_a.changed.connect(self.render); self.controls_b.changed.connect(self.render)
         self.controls_a.fitRequested.connect(self.fit); self.controls_b.fitRequested.connect(self.fit)
         self.controls_a.scaleRequested.connect(self.set_scale); self.controls_b.scaleRequested.connect(self.set_scale)
-        self.status=QLabel("Choose two evaluated methods. Compare generates any missing maps on the current grid."); self.status.setWordWrap(True); root.addWidget(self.status)
+        self.status=_new(QLabel, "Choose two evaluated methods. Compare generates any missing maps on the current grid."); self.status.setWordWrap(True); root.addWidget(self.status)
         self.refresh()
         self.method_a.currentIndexChanged.connect(self.selection_changed)
         self.method_b.currentIndexChanged.connect(self.selection_changed)
 
     def selection_changed(self,*args):
-        if self.state.previews and (self.method_a.currentText(),self.method_b.currentText()) != (self.state.method_a,self.state.method_b):
+        if self.state.previews and (_combo_text(self.method_a),_combo_text(self.method_b)) != (self.state.method_a,self.state.method_b):
             self.state=MapComparisonState(); self.fig.clear(); self.axes=[]; self.canvas.draw_idle(); self.save_state()
-            self.status.setText("Methods changed. Compare the current maps before including them in the report.")
+            _ui(self.status, 'setText', "Methods changed. Compare the current maps before including them in the report.")
 
     def save_state(self,*args):
         self.state.include_report=self.include.isChecked()
@@ -66,12 +67,12 @@ class MapComparisonWidget(QWidget):
         valid=list(dict.fromkeys(str(row.get('method','')) for row in rows if row.get('method') in f.state.validated_methods))
         for combo in (self.method_a,self.method_b):
             blocked=combo.blockSignals(True)
-            previous=combo.currentText(); combo.clear()
+            previous=_combo_text(combo); combo.clear()
             for method in valid:
                 layer_id=outputs.get(method)
                 layer=QgsProject.instance().mapLayer(layer_id)
                 combo.addItem(method,layer_id if is_alive(layer) and layer.isValid() else None)
-            if previous: combo.setCurrentText(previous)
+            if previous: _select_text(combo, previous)
             combo.blockSignals(blocked)
         if self.method_b.count()>1 and self.method_a.currentIndex()==self.method_b.currentIndex(): self.method_b.setCurrentIndex(1)
         self.compare.setEnabled(len(valid)>1)
@@ -82,30 +83,30 @@ class MapComparisonWidget(QWidget):
     def calculate(self):
         if self._loading: return
         from qgis.core import QgsProject
-        methods=(self.method_a.currentText(),self.method_b.currentText())
-        if not all(methods) or methods[0]==methods[1]: self.status.setText('Choose two different evaluated methods.'); return
+        methods=(_combo_text(self.method_a),_combo_text(self.method_b))
+        if not all(methods) or methods[0]==methods[1]: _ui(self.status, 'setText', 'Choose two different evaluated methods.'); return
         for method in methods:
             layer_id=self.framework.state.__dict__.get('interpolation_outputs',{}).get(method)
             layer=QgsProject.instance().mapLayer(layer_id)
             if not is_alive(layer) or not layer.isValid():
-                self.status.setText('Generating {} for comparison'.format(method))
+                _ui(self.status, 'setText', 'Generating {} for comparison'.format(method))
                 if not self.framework._dispatch_and_register_map(method,purpose='comparison'):
                     detail=self.framework.state.__dict__.pop('last_dispatch_error','')
-                    self.status.setText('Could not generate {}. {} The final interpolation result is unchanged.'.format(method,detail)); return
+                    _ui(self.status, 'setText', 'Could not generate {}. {} The final interpolation result is unchanged.'.format(method,detail)); return
         self.refresh()
         outputs=self.framework.state.__dict__.get('interpolation_outputs',{})
         la=QgsProject.instance().mapLayer(outputs.get(methods[0])); lb=QgsProject.instance().mapLayer(outputs.get(methods[1]))
-        if not is_alive(la) or not is_alive(lb): self.status.setText("Select two validated results."); return
+        if not is_alive(la) or not is_alive(lb): _ui(self.status, 'setText', "Select two validated results."); return
         paths=(la.source().split("|")[0],lb.source().split("|")[0])
-        methods=(self.method_a.currentText(),self.method_b.currentText())
+        methods=(_combo_text(self.method_a),_combo_text(self.method_b))
         framework_state=self.framework.state
-        self._loading=True; self.compare.setEnabled(False); self.status.setText("Calculating A − B on all aligned pixels")
+        self._loading=True; self.compare.setEnabled(False); _ui(self.status, 'setText', "Calculating A − B on all aligned pixels")
         def complete(error,result):
             self._loading=False; self.compare.setEnabled(True)
             if self.framework.state is not framework_state: return
-            if methods != (self.method_a.currentText(),self.method_b.currentText()):
-                self.status.setText("Selected maps changed during calculation. Compare again."); return
-            if error: self.status.setText(str(error)); return
+            if methods != (_combo_text(self.method_a),_combo_text(self.method_b)):
+                _ui(self.status, 'setText', "Selected maps changed during calculation. Compare again."); return
+            if error: _ui(self.status, 'setText', str(error)); return
             previews,statistics,grid,path=result
             self.state=MapComparisonState(method_a=methods[0],method_b=methods[1],previews=previews,statistics=statistics,grid=grid,difference_path=path)
             self.render()
@@ -152,7 +153,7 @@ class MapComparisonWidget(QWidget):
         if s.same_extent: self.sync_extent(self.axes[0])
         self.fig.tight_layout(); self.canvas.draw_idle()
         stats=s.statistics
-        self.status.setText("{} vs {} | Grid {} × {}; pixel size {:.6g} × {:.6g}; preview sampling every {} pixels. A − B: mean {:.6g}, median {:.6g}, min {:.6g}, max {:.6g}; {} valid common pixels. NoData excluded; no resampling. Spatial comparison complements validation.".format(
+        _ui(self.status, 'setText', "{} vs {} | Grid {} × {}; pixel size {:.6g} × {:.6g}; preview sampling every {} pixels. A − B: mean {:.6g}, median {:.6g}, min {:.6g}, max {:.6g}; {} valid common pixels. NoData excluded; no resampling. Spatial comparison complements validation.".format(
             s.method_a,s.method_b,cols,rows,abs(gt[1]),abs(gt[5]),s.grid.get("preview_step",1),stats["mean"],stats["median"],stats["minimum"],stats["maximum"],stats["count"]))
         self.save_state()
 
@@ -181,7 +182,7 @@ class MapComparisonWidget(QWidget):
         if not self.state.previews: return
         from osgeo import osr
         crs=osr.SpatialReference(); crs.SetFromUserInput(self.state.grid.get("crs",""))
-        if not crs.IsProjected(): self.status.setText("Numeric scale requires a projected CRS."); return
+        if not crs.IsProjected(): _ui(self.status, 'setText', "Numeric scale requires a projected CRS."); return
         display=MatplotlibMapDisplay.__new__(MatplotlibMapDisplay)
         from qgis.PyQt.QtCore import QObject
         QObject.__init__(display,self.canvas)

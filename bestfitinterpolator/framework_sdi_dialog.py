@@ -10,6 +10,7 @@ All code comments are in English.
 """
 
 from __future__ import annotations
+from .localization import _combo_text, _dialog, _find_text, _new, _select_text, _ui
 from .theme import save_figure
 from .compat import enum_value, qt_exec, is_alive
 from .semivariogram_engine import SemivariogramEngine
@@ -22,6 +23,8 @@ import math
 import os
 import tempfile
 import numpy as np
+from .semivariogram_fit import RANGE_HELP, range_summary, practical_range
+from .diagnostics_ui import feature_in_analysis
 
 try:
     from .variogram_utils import (
@@ -123,7 +126,7 @@ class FrameworkSDIDialog(QDialog):
         super().__init__(parent)
         self.plugin = plugin
         self.framework_ctrl = framework_ctrl or getattr(plugin, "framework_ctrl", None)
-        self.setWindowTitle("Framework SDI / Semivariogram")
+        _ui(self, 'setWindowTitle', "Framework SDI / Semivariogram")
         self.resize(1080, 690)
 
         self._inputs: Optional[SemivariogramInputs] = None
@@ -150,26 +153,26 @@ class FrameworkSDIDialog(QDialog):
         left_col = QVBoxLayout()
         right_col = QVBoxLayout()
 
-        grp_dataset = QGroupBox("Dataset")
+        grp_dataset = _new(QGroupBox, "Dataset")
         form_dataset = QFormLayout(grp_dataset)
-        self.lbl_variable = QLabel("—")
-        self.lbl_samples = QLabel("—")
-        self.lbl_fit_method = QLabel("—")
-        self.lbl_maxdist = QLabel("—")
-        self.lbl_used_model = QLabel("—")
-        form_dataset.addRow("Variable", self.lbl_variable)
-        form_dataset.addRow("Valid samples", self.lbl_samples)
-        form_dataset.addRow("Fit method", self.lbl_fit_method)
-        form_dataset.addRow("Model used", self.lbl_used_model)
-        form_dataset.addRow("Max pair distance", self.lbl_maxdist)
+        self.lbl_variable = _new(QLabel, "—")
+        self.lbl_samples = _new(QLabel, "—")
+        self.lbl_fit_method = _new(QLabel, "—")
+        self.lbl_maxdist = _new(QLabel, "—")
+        self.lbl_used_model = _new(QLabel, "—")
+        _ui(form_dataset, 'addRow', "Variable", self.lbl_variable)
+        _ui(form_dataset, 'addRow', "Valid samples", self.lbl_samples)
+        _ui(form_dataset, 'addRow', "Fit method", self.lbl_fit_method)
+        _ui(form_dataset, 'addRow', "Model used", self.lbl_used_model)
+        _ui(form_dataset, 'addRow', "Max pair distance", self.lbl_maxdist)
         left_col.addWidget(grp_dataset)
 
-        grp_settings = QGroupBox("Semivariogram settings")
+        grp_settings = _new(QGroupBox, "Semivariogram settings")
         form = QFormLayout(grp_settings)
 
         self.cmb_model = QComboBox()
-        self.cmb_model.addItems(["Automatic", "Spherical", "Exponential", "Gaussian"])
-        self.btn_model_validation = QPushButton("View validation")
+        _ui(self.cmb_model, 'addItems', ["Automatic", "Spherical", "Exponential", "Gaussian"])
+        self.btn_model_validation = _new(QPushButton, "View validation")
         model_row = QWidget()
         model_layout = QHBoxLayout(model_row)
         model_layout.setContentsMargins(0, 0, 0, 0)
@@ -179,37 +182,42 @@ class FrameworkSDIDialog(QDialog):
         self.spin_nugget = self._make_double_spin(0.0, 1e12, 6)
         self.spin_psill = self._make_double_spin(0.0, 1e12, 6)
         self.spin_range = self._make_double_spin(0.0, 1e12, 6)
+        _ui(self.spin_range, 'setToolTip', RANGE_HELP)
         self.spin_lag_width = self._make_double_spin(1e-12, 1e12, 12)
         self.spin_max_distance = self._make_double_spin(1e-12, 1e12, 6)
-        self.lbl_lag_count = QLabel("—")
+        self.lbl_lag_count = _new(QLabel, "—")
 
-        form.addRow("Model", model_row)
-        form.addRow("Nugget (Co)", self.spin_nugget)
-        form.addRow("Partial sill (C1)", self.spin_psill)
-        form.addRow("Range (a)", self.spin_range)
-        form.addRow("Lag(h) width", self.spin_lag_width)
-        form.addRow("Max distance", self.spin_max_distance)
-        form.addRow("Lags", self.lbl_lag_count)
+        _ui(form, 'addRow', "Model", model_row)
+        _ui(form, 'addRow', "Nugget (Co)", self.spin_nugget)
+        _ui(form, 'addRow', "Partial sill (C1)", self.spin_psill)
+        _ui(form, 'addRow', "Range (a, scale)", self.spin_range)
+        _ui(form, 'addRow', "Lag(h) width", self.spin_lag_width)
+        _ui(form, 'addRow', "Max distance", self.spin_max_distance)
+        _ui(form, 'addRow', "Lags", self.lbl_lag_count)
         left_col.addWidget(grp_settings)
 
-        grp_actions = QGroupBox("Actions")
+        grp_actions = _new(QGroupBox, "Actions")
         action_layout = QVBoxLayout(grp_actions)
-        self.btn_autofill = QPushButton("Autofill from geostatistics")
-        self.btn_recompute = QPushButton("Recompute semivariogram")
-        self.btn_apply_sdi = QPushButton("Apply SDI to Framework overview")
+        self.btn_autofill = _new(QPushButton, "Autofill from geostatistics")
+        self.btn_recompute = _new(QPushButton, "Recompute semivariogram")
+        self.btn_apply_sdi = _new(QPushButton, "Apply SDI to Framework overview")
         action_layout.addWidget(self.btn_autofill)
         action_layout.addWidget(self.btn_recompute)
         action_layout.addWidget(self.btn_apply_sdi)
         left_col.addWidget(grp_actions)
 
-        grp_result = QGroupBox("Result")
+        grp_result = _new(QGroupBox, "Result")
         form_result = QFormLayout(grp_result)
-        self.lbl_sdi = QLabel("—")
-        self.lbl_sdi_class = QLabel("—")
-        self.lbl_sill_total = QLabel("—")
-        form_result.addRow("SDI (%)", self.lbl_sdi)
-        form_result.addRow("SDI class", self.lbl_sdi_class)
-        form_result.addRow("Sill (Co + C1)", self.lbl_sill_total)
+        self.lbl_sdi = _new(QLabel, "—")
+        self.lbl_sdi_class = _new(QLabel, "—")
+        self.lbl_sill_total = _new(QLabel, "—")
+        _ui(form_result, 'addRow', "SDI (%)", self.lbl_sdi)
+        _ui(form_result, 'addRow', "SDI class", self.lbl_sdi_class)
+        _ui(form_result, 'addRow', "Sill (Co + C1)", self.lbl_sill_total)
+        self.lbl_practical_range = _new(QLabel, "—")
+        self.lbl_practical_range.setWordWrap(True)
+        _ui(self.lbl_practical_range, 'setToolTip', RANGE_HELP)
+        _ui(form_result, 'addRow', "Practical range", self.lbl_practical_range)
         left_col.addWidget(grp_result)
         left_col.addStretch(1)
 
@@ -246,15 +254,15 @@ class FrameworkSDIDialog(QDialog):
 
     def _show_canvas_context_menu(self, pos) -> None:
         menu = QMenu(self)
-        act_view = menu.addAction("View larger view")
-        act_copy = menu.addAction("Copy graph")
-        act_save = menu.addAction("Save graph")
+        act_view = _ui(menu, 'addAction', "View larger view")
+        act_copy = _ui(menu, 'addAction', "Copy graph")
+        act_save = _ui(menu, 'addAction', "Save graph")
         chosen = qt_exec(menu, self.canvas.mapToGlobal(pos))
         if chosen == act_copy:
             self._copy_figure_to_clipboard()
         elif chosen == act_save:
             suggested = os.path.join(tempfile.gettempdir(), "framework_sdi_semivariogram.png")
-            path, _ = QFileDialog.getSaveFileName(self, "Save graph", suggested, "PNG Images (*.png)")
+            path, _ = _dialog(QFileDialog.getSaveFileName, self, "Save graph", suggested, "PNG Images (*.png)")
             if path:
                 save_figure(self.fig, path, dpi=300, bbox_inches="tight")
         elif chosen == act_view:
@@ -272,7 +280,7 @@ class FrameworkSDIDialog(QDialog):
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
         except Exception as exc:
-            QMessageBox.warning(self, "Copy graph", f"Could not copy graph:\n{exc}")
+            _dialog(QMessageBox.warning, self, "Copy graph", f"Could not copy graph:\n{exc}")
 
     def _show_larger_graph(self) -> None:
         from .larger_view import show_larger_view
@@ -295,9 +303,9 @@ class FrameworkSDIDialog(QDialog):
 
         if data is None:
             if read_error is not None:
-                QMessageBox.warning(self, "Framework SDI", f"Failed to read current data\n{read_error}")
+                _dialog(QMessageBox.warning, self, "Framework SDI", f"Failed to read current data\n{read_error}")
                 return
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self,
                 "Framework SDI",
                 "No valid point dataset is currently available.\nLoad the data first in the Data tab and then reopen this window."
@@ -305,11 +313,12 @@ class FrameworkSDIDialog(QDialog):
             return
 
         self._inputs = data
-        self.lbl_variable.setText(data.variable_name or "—")
-        self.lbl_samples.setText(str(len(data.z)))
+        self.lbl_variable._bfi_i18n_user = True
+        _ui(self.lbl_variable, 'setText', data.variable_name or "—")
+        _ui(self.lbl_samples, 'setText', str(len(data.z)))
 
         max_dist = float(np.nanmax(self._pairwise_distances(data.x, data.y))) if len(data.z) > 1 else 0.0
-        self.lbl_maxdist.setText(self._fmt(max_dist))
+        _ui(self.lbl_maxdist, 'setText', self._fmt(max_dist))
 
         self._seed_defaults()
         self._recompute_plot()
@@ -394,8 +403,8 @@ class FrameworkSDIDialog(QDialog):
         points_widget = getattr(dlg, "Points", None) or getattr(dlg, "cmbPointsLayer", None)
         variable_widget = getattr(dlg, "Points_2", None) or getattr(dlg, "cmbVariable", None)
 
-        layer_name = points_widget.currentText().strip() if points_widget is not None else ""
-        variable_name = variable_widget.currentText().strip() if variable_widget is not None else ""
+        layer_name = _combo_text(points_widget).strip() if points_widget is not None else ""
+        variable_name = _combo_text(variable_widget).strip() if variable_widget is not None else ""
         if not layer_name or not variable_name:
             return None
 
@@ -411,6 +420,8 @@ class FrameworkSDIDialog(QDialog):
 
         xs, ys, zs = [], [], []
         for feat in layer.getFeatures():
+            if not feature_in_analysis(self.plugin, layer, feat):
+                continue
             geom = feat.geometry()
             if geom is None or geom.isEmpty():
                 continue
@@ -496,6 +507,8 @@ class FrameworkSDIDialog(QDialog):
                 pass
         else:
             ok_ctrl = getattr(self.plugin, "ok_ctrl", None) if self.plugin is not None else None
+            if ok_ctrl is not None and getattr(ok_ctrl, "trend_degree", lambda: 0)():
+                ok_ctrl = None  # Ordinary Framework SDI cannot reuse a UK residual variogram.
             if ok_ctrl is not None:
                 try:
                     if getattr(ok_ctrl, "_cutoff", None) is not None:
@@ -527,7 +540,7 @@ class FrameworkSDIDialog(QDialog):
 
         self._updating = True
         try:
-            self.cmb_model.setCurrentText(seeded_model if self.cmb_model.findText(seeded_model) >= 0 else "Automatic")
+            _select_text(self.cmb_model, seeded_model if _find_text(self.cmb_model, seeded_model) >= 0 else "Automatic")
             self.spin_nugget.setValue(max(0.0, float(seeded_nugget)))
             self.spin_psill.setValue(max(0.0, float(seeded_psill)))
             self.spin_range.setValue(max(1e-12, float(seeded_range)))
@@ -543,7 +556,7 @@ class FrameworkSDIDialog(QDialog):
 
         ok_ctrl = self._active_ok_controller()
         if ok_ctrl is None:
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self,
                 "Framework SDI",
                 "No active geostatistics controller is available. Open the Geostatistics tab once and try again.",
@@ -577,7 +590,7 @@ class FrameworkSDIDialog(QDialog):
 
         self._updating = True
         try:
-            self.cmb_model.setCurrentText(model if self.cmb_model.findText(model) >= 0 else "Spherical")
+            _select_text(self.cmb_model, model if _find_text(self.cmb_model, model) >= 0 else "Spherical")
             self.spin_nugget.setValue(max(0.0, float(nugget)))
             self.spin_psill.setValue(max(0.0, float(psill)))
             self.spin_range.setValue(max(1e-12, float(rng)))
@@ -607,6 +620,8 @@ class FrameworkSDIDialog(QDialog):
         ok_ctrl = getattr(self.plugin, "ok_ctrl", None) if self.plugin is not None else None
         if ok_ctrl is None:
             return None
+        if getattr(ok_ctrl, "trend_degree", lambda: 0)():
+            return None
         return getattr(ok_ctrl, "_active", None) or ok_ctrl
 
     @staticmethod
@@ -627,13 +642,13 @@ class FrameworkSDIDialog(QDialog):
 
     def _refresh_structure_labels(self) -> None:
         if self._lag_width is None or self._cutoff is None:
-            self.lbl_lag_count.setText("0")
+            _ui(self.lbl_lag_count, 'setText', "0")
             return
         try:
             n_lags = max(1, int(math.floor(float(self._cutoff) / float(self._lag_width))))
-            self.lbl_lag_count.setText(str(n_lags))
+            _ui(self.lbl_lag_count, 'setText', str(n_lags))
         except Exception:
-            self.lbl_lag_count.setText("0")
+            _ui(self.lbl_lag_count, 'setText', "0")
 
     def _on_model_changed(self, *args) -> None:
         if self._updating:
@@ -654,37 +669,37 @@ class FrameworkSDIDialog(QDialog):
             previous.close()
         window=QDialog(self)
         window.setAttribute(enum_value(Qt,"WidgetAttribute","WA_DeleteOnClose"),True)
-        window.setWindowTitle("Framework semivariogram validation")
+        _ui(window, 'setWindowTitle', "Framework semivariogram validation")
         layout=QVBoxLayout(window)
-        status=QLabel("Calculating cross validation for Spherical, Exponential and Gaussian")
+        status=_new(QLabel, "Calculating cross validation for Spherical, Exponential and Gaussian")
         status.setWordWrap(True); layout.addWidget(status)
         table=QTableWidget(0,7,window)
-        table.setHorizontalHeaderLabels(("Model","RMSE","RMSE%","MAE","R²","Pearson","LCCC"))
+        _ui(table, 'setHorizontalHeaderLabels', ("Model","RMSE","RMSE%","MAE","R²","Pearson","LCCC"))
         table.setSelectionBehavior(enum_value(QAbstractItemView,"SelectionBehavior","SelectRows"))
         table.setSelectionMode(enum_value(QAbstractItemView,"SelectionMode","SingleSelection"))
         table.setEditTriggers(enum_value(QAbstractItemView,"EditTrigger","NoEditTriggers"))
         table.horizontalHeader().setSectionResizeMode(enum_value(QHeaderView,"ResizeMode","Stretch"))
         layout.addWidget(table,1)
         actions=QHBoxLayout(); layout.addLayout(actions)
-        apply=QPushButton("Apply selected model"); apply.setEnabled(False); actions.addWidget(apply)
-        close=QPushButton("Close"); close.clicked.connect(window.reject); actions.addWidget(close)
+        apply=_new(QPushButton, "Apply selected model"); apply.setEnabled(False); actions.addWidget(apply)
+        close=_new(QPushButton, "Close"); close.clicked.connect(window.reject); actions.addWidget(close)
         window.status,window.table,window.apply,window.rows=status,table,apply,[]
         window.rejected.connect(lambda:[task.cancel() for task in tuple(getattr(window,"_bfi_jobs",()))])
         self._model_validation_dialog=window
         apply_theme(window); window.resize(850,360); window.show()
         if self._inputs is None:
-            status.setText("Load the point dataset in Data first."); return
+            _ui(status, 'setText', "Load the point dataset in Data first."); return
         x,y,z=(np.asarray(a,float).copy() for a in (self._inputs.x,self._inputs.y,self._inputs.z))
         cutoff,lag=self.spin_max_distance.value(),self.spin_lag_width.value()
         fit_method=self._fit_method
         signature=self._validation_signature()
         framework_ctrl=self._framework_controller()
         if framework_ctrl is None:
-            status.setText("Framework is not available."); return
+            _ui(status, 'setText', "Framework is not available."); return
         if self.plugin is not None:
             data=framework_ctrl._collect_current_plugin_data() or {}
             if any(not np.array_equal(a,np.asarray(data.get(key,[]),float)) for a,key in ((x,"x"),(y,"y"),(z,"z"))):
-                status.setText("The point dataset changed. Reload Framework data and reopen semivariogram settings before validating."); return
+                _ui(status, 'setText', "The point dataset changed. Reload Framework data and reopen semivariogram settings before validating."); return
         folds=framework_ctrl._automatic_fold_indices(len(z),x,y)
         engine=SemivariogramEngine("framework_sdi")
         def work(cancel):
@@ -692,46 +707,46 @@ class FrameworkSDIDialog(QDialog):
         def current():
             return self._validation_signature()==signature
         def completed(error,rows):
-            if error: status.setText(str(error)); return
+            if error: _ui(status, 'setText', str(error)); return
             if not current():
-                status.setText("Data or settings changed. Open validation again for the current settings."); return
+                _ui(status, 'setText', "Data or settings changed. Open validation again for the current settings."); return
             window.rows=rows; table.setRowCount(len(rows))
             for i,row in enumerate(rows):
                 for j,key in enumerate(("model","rmse","rmse_pct","mae","r2","pearson","lccc")):
                     value=row[key]
                     item=QTableWidgetItem(str(value) if isinstance(value,str) else
                         ("{:.3f}".format(value) if np.isfinite(value) else "Unavailable"))
-                    if row.get("error"): item.setToolTip(row["error"])
+                    if row.get("error"): _ui(item, 'setToolTip', row["error"])
                     table.setItem(i,j,item)
             valid=[row for row in rows if not row.get("error")]
             if not valid:
-                status.setText("No model passed validation. " + "; ".join(row["model"]+": "+row["error"] for row in rows)); return
+                _ui(status, 'setText', "No model passed validation. " + "; ".join(row["model"]+": "+row["error"] for row in rows)); return
             best=valid[0]
-            status.setText("Fit: {} | Maximum distance: {:.6g} | Lag: {:.6g} | Samples: {}. "
+            _ui(status, 'setText', "Fit: {} | Maximum distance: {:.6g} | Lag: {:.6g} | Samples: {}. "
                 "Recommended: {} (R² {:.3f}, RMSE {:.3f}). Framework selects the highest R²; "
                 "lower RMSE breaks ties. Metrics use the existing three decimal precision. "
                 "Select a row and Apply to change the current model.".format(
                     fit_method,cutoff,lag,len(z),best["model"],best["r2"],best["rmse"]))
             failures=[row["model"]+": "+row["error"] for row in rows if row.get("error")]
-            if failures: status.setText(status.text()+" "+"; ".join(failures))
+            if failures: _ui(status, 'setText', status.text()+" "+"; ".join(failures))
             table.selectRow(rows.index(best)); apply.setEnabled(True)
         def apply_selected():
             if not current():
                 window.rows=[]; table.setRowCount(0); apply.setEnabled(False)
-                status.setText("Data or settings changed. Open validation again before applying a model."); return
+                _ui(status, 'setText', "Data or settings changed. Open validation again before applying a model."); return
             if table.currentRow()<0: return
             row=window.rows[table.currentRow()]
             if row.get("error"):
-                status.setText("This model failed validation: "+row["error"]); return
+                _ui(status, 'setText', "This model failed validation: "+row["error"]); return
             self._updating=True
             try:
-                self.cmb_model.setCurrentText(row["model"])
+                _select_text(self.cmb_model, row["model"])
                 self._set_param_values(*row["fitted_params"])
                 self._reml_meta=dict(row.get("reml_meta",{}))
             finally: self._updating=False
             self._set_experimental_from_current_structure("reml" if fit_method=="REML" else "mom")
             self._update_result_labels(); self._draw_variogram(); self._sync_framework_preview()
-            status.setText(row["model"]+" applied. Its validated parameters are now shown in the semivariogram settings.")
+            _ui(status, 'setText', row["model"]+" applied. Its validated parameters are now shown in the semivariogram settings.")
         apply.clicked.connect(apply_selected)
         submit(window,"Framework semivariogram validation",work,completed)
 
@@ -792,7 +807,7 @@ class FrameworkSDIDialog(QDialog):
                     lags,
                     gamma,
                     self._cutoff,
-                    model=self._normalize_model_token(self.cmb_model.currentText()),
+                    model=self._normalize_model_token(_combo_text(self.cmb_model)),
                 )
                 lags = np.insert(lags, 0, 0.0)
                 gamma = np.insert(gamma, 0, 0.0)
@@ -818,7 +833,7 @@ class FrameworkSDIDialog(QDialog):
         cutoff = float(self.spin_max_distance.value())
         lagw = float(self.spin_lag_width.value())
         if cutoff <= 0:
-            QMessageBox.warning(self, "Framework SDI", "Max distance must be greater than zero.")
+            _dialog(QMessageBox.warning, self, "Framework SDI", "Max distance must be greater than zero.")
             return
         if lagw <= 0:
             lagw = self._safe_lag_width(self._inputs.x, self._inputs.y, cutoff, lagw)
@@ -828,7 +843,7 @@ class FrameworkSDIDialog(QDialog):
             finally:
                 self._updating = False
         if lagw >= cutoff:
-            QMessageBox.warning(self, "Framework SDI", "Lag(h) width must be smaller than max distance.")
+            _dialog(QMessageBox.warning, self, "Framework SDI", "Lag(h) width must be smaller than max distance.")
             return
         lagw = self._safe_lag_width(self._inputs.x, self._inputs.y, cutoff, lagw)
 
@@ -875,7 +890,7 @@ class FrameworkSDIDialog(QDialog):
                 lags,
                 gamma,
                 self._cutoff,
-                model=self._normalize_model_token(self.cmb_model.currentText()),
+                model=self._normalize_model_token(_combo_text(self.cmb_model)),
             )
             lags = np.insert(lags, 0, 0.0)
             gamma = np.insert(gamma, 0, 0.0)
@@ -911,12 +926,12 @@ class FrameworkSDIDialog(QDialog):
             lags_tmp0 = np.insert(lags_tmp, 0, 0.0)
             gamma_tmp0 = np.insert(gamma_tmp, 0, 0.0)
             nugget0, psill0, rng0 = self._guess_initial_params(
-                lags_tmp0[1:], gamma_tmp0[1:], self._cutoff, model=self._normalize_model_token(self.cmb_model.currentText())
+                lags_tmp0[1:], gamma_tmp0[1:], self._cutoff, model=self._normalize_model_token(_combo_text(self.cmb_model))
             )
         else:
             nugget0, psill0, rng0 = 0.0, float(np.var(z, ddof=1) if z.size > 1 else 1.0), max(self._cutoff * 0.5, 1.0)
 
-        model_txt = self._model_text_from_token(self._normalize_model_token(self.cmb_model.currentText()))
+        model_txt = self._model_text_from_token(self._normalize_model_token(_combo_text(self.cmb_model)))
         try:
             reml_res = fit_ok_reml_interface(
                 sample_xyz=np.column_stack([x, y, z]),
@@ -959,22 +974,22 @@ class FrameworkSDIDialog(QDialog):
                 pass
 
     def _update_method_labels(self) -> None:
-        self.lbl_fit_method.setText(self._fit_method)
-        self.lbl_used_model.setText(self.cmb_model.currentText())
+        _ui(self.lbl_fit_method, 'setText', self._fit_method)
+        _ui(self.lbl_used_model, 'setText', _combo_text(self.cmb_model))
 
     def _apply_to_framework(self) -> None:
         self._update_result_labels()
         if self._result is None:
-            QMessageBox.warning(self, "Framework SDI", "No valid SDI result is available.")
+            _dialog(QMessageBox.warning, self, "Framework SDI", "No valid SDI result is available.")
             return
 
         framework_ctrl = self._framework_controller()
         if framework_ctrl is not None:
             try:
                 framework_ctrl.load_sdi_result(self._result)
-                QMessageBox.information(self, "Framework SDI", "SDI values were sent to the Framework overview.")
+                _dialog(QMessageBox.information, self, "Framework SDI", "SDI values were sent to the Framework overview.")
             except Exception as exc:
-                QMessageBox.warning(self, "Framework SDI", f"Failed to update Framework overview\n{exc}")
+                _dialog(QMessageBox.warning, self, "Framework SDI", f"Failed to update Framework overview\n{exc}")
                 return
         self.accept()
 
@@ -999,11 +1014,11 @@ class FrameworkSDIDialog(QDialog):
         nugget = float(self.spin_nugget.value())
         psill = float(self.spin_psill.value())
         rng = float(self.spin_range.value())
-        model = self._normalize_model_token(self.cmb_model.currentText())
+        model = self._normalize_model_token(_combo_text(self.cmb_model))
         xmax = max(float(self.spin_max_distance.value()), float(lags_plot.max()) if lags_plot.size else 1.0)
         h_line = np.linspace(0.0, xmax, 200)
         th = self._model_func(h_line, model, nugget, psill, rng)
-        label = f"Theoretical ({self.cmb_model.currentText()} {self._fit_method})"
+        label = f"Theoretical ({_combo_text(self.cmb_model)} {self._fit_method})"
         ax.plot(h_line, th, '-', label=label, color=TH_COLOR, linewidth=2)
 
         title = "Semivariogram (REML model)" if mode == "reml" else "Semivariogram"
@@ -1025,15 +1040,17 @@ class FrameworkSDIDialog(QDialog):
         self.canvas.draw_idle()
 
     def _update_result_labels(self) -> None:
+        _ui(self.lbl_practical_range, 'setText', "{:.6g}".format(practical_range(_combo_text(self.cmb_model), self.spin_range.value())))
+        _ui(self.lbl_practical_range, 'setToolTip', range_summary(_combo_text(self.cmb_model), self.spin_range.value()) + "\n" + RANGE_HELP)
         nugget = max(0.0, float(self.spin_nugget.value()))
         psill = max(0.0, float(self.spin_psill.value()))
         sill_total = nugget + psill
         sdi = (psill / sill_total * 100.0) if sill_total > 0 else 0.0
         sdi_class = self._classify_sdi(sdi)
 
-        self.lbl_sdi.setText(self._fmt(sdi))
-        self.lbl_sdi_class.setText(sdi_class)
-        self.lbl_sill_total.setText(self._fmt(sill_total))
+        _ui(self.lbl_sdi, 'setText', self._fmt(sdi))
+        _ui(self.lbl_sdi_class, 'setText', sdi_class)
+        _ui(self.lbl_sill_total, 'setText', self._fmt(sill_total))
         self._update_method_labels()
 
         lags = self._experimental.get('lags', np.array([])) if self._experimental else np.array([])
@@ -1050,7 +1067,7 @@ class FrameworkSDIDialog(QDialog):
             "sdi_value": sdi,
             "sdi_status": sdi_class,
             "sdi_class": sdi_class,
-            "variogram_model": self.cmb_model.currentText(),
+            "variogram_model": _combo_text(self.cmb_model),
             "fit_method": self._fit_method,
             "nugget": nugget,
             "psill": psill,

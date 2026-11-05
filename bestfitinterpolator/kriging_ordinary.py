@@ -89,6 +89,13 @@ def _build_system(x, y, nugget, psill, var_range, model_key):
         lu, piv = lu_factor(K, check_finite=False)
     return lu, piv
 
+try:
+    from .numerical_runtime import responsive_numerical
+except ImportError:  # standalone numerical use
+    from numerical_runtime import responsive_numerical
+
+
+@responsive_numerical
 def ordinary_kriging_interpolation(
     x, y, z, x_pred, y_pred,
     nugget, psill, var_range, model,
@@ -96,6 +103,8 @@ def ordinary_kriging_interpolation(
     nmax=None,
     nmin=DENSE_KRIGING_NMIN,
     dense_threshold=DENSE_SAMPLE_THRESHOLD,
+    return_variance=False,
+    trend_degree=0,
 ):
     """
     Ordinary Kriging predictions at (x_pred, y_pred).
@@ -114,6 +123,13 @@ def ordinary_kriging_interpolation(
     -------
     preds : 1D ndarray
     """
+    if int(trend_degree) != 0:
+        from .kriging_universal import universal_kriging_interpolation
+        return universal_kriging_interpolation(
+            x, y, z, x_pred, y_pred, nugget, psill, var_range, model,
+            progress_fn=progress_fn, nmax=nmax, nmin=nmin,
+            dense_threshold=dense_threshold, return_variance=return_variance,
+            trend_degree=trend_degree)
     x = np.asarray(x, dtype=float); y = np.asarray(y, dtype=float); z = np.asarray(z, dtype=float)
     xp = np.asarray(x_pred, dtype=float); yp = np.asarray(y_pred, dtype=float)
 
@@ -128,6 +144,7 @@ def ordinary_kriging_interpolation(
     a = float(var_range); c0 = float(nugget); c = float(psill)
 
     preds = np.empty(xp.size, dtype=float)
+    variances = np.empty(xp.size, dtype=float) if return_variance else None
     total = xp.size
     requested_nmax = None if nmax is None else int(nmax)
     if requested_nmax is None:
@@ -151,9 +168,11 @@ def ordinary_kriging_interpolation(
             rhs[:, -1] = 1.0
             sol = lu_solve((lu, piv), rhs.T, check_finite=False).T
             preds[start:end] = sol[:, :-1] @ z
+            if return_variance:
+                variances[start:end] = np.maximum(np.sum(sol[:, :-1] * G0, axis=1) + sol[:, -1], 0.0)
             if progress_fn is not None:
                 progress_fn(end, total)
-        return preds
+        return (preds, variances) if return_variance else preds
 
     # Dense path: exact k-nearest moving neighborhoods, grouped and cached so
     # adjacent raster cells sharing a neighborhood reuse the same factorization.
@@ -202,9 +221,11 @@ def ordinary_kriging_interpolation(
             rhs[:, -1] = 1.0
             sol = lu_solve((lu, piv), rhs.T, check_finite=False).T
             block_pred[rows] = sol[:, :-1] @ sz
+            if return_variance:
+                variances[start + rows] = np.maximum(np.sum(sol[:, :-1] * gamma0, axis=1) + sol[:, -1], 0.0)
 
         preds[start:end] = block_pred
         if progress_fn is not None:
             progress_fn(end, total)
 
-    return preds
+    return (preds, variances) if return_variance else preds

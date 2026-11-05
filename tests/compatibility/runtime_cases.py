@@ -70,7 +70,9 @@ class RuntimeCases:
                 ('semivariogram_geostatistics', self.geostatistics),
                 ('spatial_diagnostics', self.diagnostics), ('regression_kriging', self.regression),
                 ('framework', self.framework), ('map_comparison', self.comparison),
-                ('report', self.report), ('repeated_open_close', self.reopen)]
+                ('report', self.report), ('exclusion_propagation', self.exclusions),
+                ('universal_uncertainty_original_validation', self.geostatistics_21),
+                ('repeated_open_close', self.reopen)]
 
     def imports(self):
         root = Path(__file__).resolve().parents[2] / 'bestfitinterpolator'
@@ -179,10 +181,26 @@ class RuntimeCases:
         from numerical import calculate
         baseline = json.loads((Path(__file__).resolve().parents[1] / 'data/numerical_baseline.json').read_text(encoding='utf-8'))
         self.numerical_results = calculate()
+        # Keep the v2.0 baseline immutable. Only automatic ordinary semivariogram
+        # fits, their curves and their resulting CV metrics intentionally change.
+        revised = {prefix + model for prefix in ('fit_', 'model_', 'cv_')
+                   for model in ('spherical', 'exponential', 'gaussian')}
         for key, expected in baseline['results'].items():
             actual = self.numerical_results[key]
+            if key in revised:
+                assert np.isfinite(actual).all(), key
+                continue
             if key == 'lisa': assert actual == expected, 'NUMERICAL LISA classes differ'
             else: np.testing.assert_allclose(actual, expected, rtol=baseline['rtol'], atol=baseline['atol'], err_msg=key)
+        from bestfitinterpolator.test import test_semivariogram_21
+        checks = []
+        for name in sorted(dir(test_semivariogram_21)):
+            if name.startswith('test_'):
+                getattr(test_semivariogram_21, name)()
+                checks.append(name)
+        self.numerical_results['v2_1_scope'] = dict(
+            preserved_keys=sorted(set(baseline['results']) - revised),
+            intentionally_revised_keys=sorted(revised), correctness_checks=checks)
     def geostatistics(self):
         self.plugin.dlg.mainTabs.setCurrentIndex(2)
         self.plugin.dlg.cmbOKModel.setCurrentText('Exp')
@@ -197,6 +215,11 @@ class RuntimeCases:
         from semivariogram_checks import check_method_sections,check_strategy_switches
         check_method_sections(self.plugin,self.output,events)
         check_strategy_switches(self.plugin,self.output,events,wait_jobs)
+        from bestfitinterpolator.semivariogram_fit import range_summary, RANGE_HELP
+        active = self.plugin.ok_ctrl._active
+        assert self.plugin.dlg.lblOKPracticalRange.text() == range_summary(active._get_selected_model(), active._read_params_from_ui()[2])
+        assert self.plugin.dlg.spinOKRange.toolTip() == RANGE_HELP
+        self.plugin.dlg.grab().save(str(self.output / 'geostatistics-v2_1.png'))
 
     def diagnostics(self):
         from bestfitinterpolator.diagnostics_engine import DiagnosticsEngine, classify
@@ -309,6 +332,8 @@ class RuntimeCases:
         from bestfitinterpolator.report_builder import ReportBuilderDialog, export_report_pdf
         state = snapshot_framework_report(self.plugin.framework_ctrl)
         assert state.sections and '<table' in report_html(state)
+        assert 'Conventional practical range' in report_html(state)
+        assert 'Range (a, model scale)' in report_html(state)
         assert any(section.figures for section in state.sections)
         for iteration in range(3):
             dialog = ReportBuilderDialog(state, self.plugin.dlg)
@@ -338,6 +363,14 @@ class RuntimeCases:
         if self.pdf:
             path = export_report_pdf(state, str(self.output / 'smoke.pdf'))
             assert Path(path).read_bytes().startswith(b'%PDF')
+
+    def exclusions(self):
+        from exclusion_checks import check_exclusions
+        check_exclusions(self,events,wait_jobs)
+
+    def geostatistics_21(self):
+        from geostatistics_21_checks import check_geostatistics_21
+        check_geostatistics_21(self, events, wait_jobs)
 
     def reopen(self):
         from bestfitinterpolator.semivariogram_dialog import SemivariogramSettingsDialog

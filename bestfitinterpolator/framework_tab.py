@@ -10,9 +10,13 @@ All code comments are in English.
 """
 
 from __future__ import annotations
+from .localization import _combo_text, _dialog, _find_text, _item_text, _new, _tab_text, _ui
+from .framework_search import current_settings
+from .framework_execution import isolated_framework_execution
 from .theme import save_figure
 from .compat import enum_value, qt_exec
 from .semivariogram_engine import SemivariogramEngine
+from .semivariogram_fit import practical_range, RANGE_HELP
 from .theme import COLORS
 
 from dataclasses import dataclass, field
@@ -43,6 +47,7 @@ from .performance_policy import (
     should_rasterize_scatter,
 )
 from .validation_policy import decide_automatic_cv
+from .numerical_runtime import responsive_validation, check_validation_cancelled
 
 try:
     from qgis.PyQt.QtCore import QObject, Qt, QCoreApplication
@@ -239,6 +244,7 @@ class FrameworkTabController(QObject):
         self.plugin = plugin
         self.iface = getattr(plugin, "iface", None)
         self.state = FrameworkDataState()
+        self._interpolation_prediction_figure = None
         if self.plugin is not None:
             self.plugin._last_interpolation_result=None
             self.plugin._last_interpolation_figure=None
@@ -259,6 +265,7 @@ class FrameworkTabController(QObject):
         """
 
         self.txt_variable = self._get("lblFrameworkVariableValue")
+        if self.txt_variable is not None: self.txt_variable._bfi_i18n_user = True
         self.txt_pixel = self._get("lblFrameworkPixelValue")
         self.txt_samples = self._get("lblFrameworkSamplesValue")
         self.txt_moran = self._get("lblFrameworkMoranValue")
@@ -314,7 +321,7 @@ class FrameworkTabController(QObject):
         self.txt_summary_mode = self._get("txtFrameworkSummaryMode")
         self.lbl_summary_winner_title = self._get("lblFrameworkSummaryWinnerTitle")
         if self.lbl_summary_winner_title and hasattr(self.lbl_summary_winner_title, "setText"):
-            self.lbl_summary_winner_title.setText("Selected")
+            _ui(self.lbl_summary_winner_title, 'setText', "Selected")
         self.txt_summary_winner = self._get("txtFrameworkSummaryWinner")
         self.txt_summary_diagnostics = self._get("txtFrameworkSummaryDiagnostics")
         self.txt_summary_methods = self._get("txtFrameworkSummaryMethods")
@@ -406,7 +413,7 @@ class FrameworkTabController(QObject):
         self._hide_framework_covariates_tab()
 
         if self.lbl_info_text:
-            self.lbl_info_text.setText(
+            _ui(self.lbl_info_text, 'setText', 
                 "Framework guidance is derived from the master's work. "
                 "Click the info button to view the article summary used in this tab."
             )
@@ -415,6 +422,8 @@ class FrameworkTabController(QObject):
         self._attach_preview_canvases()
         self._attach_framework_result_canvases()
         self._ensure_view_covariates_button()
+        from .framework_search import install_search_controls
+        install_search_controls(self)
         self._show_framework_mode_image()
         self._ensure_observed_method_live_selector()
         self._ensure_observed_method_buttons()
@@ -423,7 +432,7 @@ class FrameworkTabController(QObject):
         self._polish_report_option_grid()
 
         if self.cmb_validation_plot_type and self.cmb_validation_plot_type.count() == 0:
-            self.cmb_validation_plot_type.addItems(
+            _ui(self.cmb_validation_plot_type, 'addItems', 
                 ["LCCC comparison", "RMSE comparison", "Observed vs Predicted"]
             )
 
@@ -549,11 +558,11 @@ class FrameworkTabController(QObject):
             group = self._get("groupFrameworkReport")
             if group is None:
                 return
-            checkbox = QCheckBox("Include framework decision tree", group)
+            checkbox = _new(QCheckBox, "Include framework decision tree", group)
             checkbox.setObjectName("chkFrameworkReportDecisionTree")
             checkbox.setChecked(True)
             try:
-                checkbox.setToolTip("Include the dynamic Framework Decision flowchart in the exported PDF report.")
+                _ui(checkbox, 'setToolTip', "Include the dynamic Framework Decision flowchart in the exported PDF report.")
             except Exception:  # nosec B110
                 pass
 
@@ -641,9 +650,9 @@ class FrameworkTabController(QObject):
         layout = group.layout()
         if layout is None:
             return
-        lbl = QLabel("Observed/predicted method", group)
+        lbl = _new(QLabel, "Observed/predicted method", group)
         cmb = QComboBox(group)
-        btn = QPushButton("Update observed/predicted plot", group)
+        btn = _new(QPushButton, "Update observed/predicted plot", group)
         lbl.hide()
         cmb.hide()
         btn.hide()
@@ -673,7 +682,7 @@ class FrameworkTabController(QObject):
         layout = group.layout()
         if layout is None:
             return
-        btn = QPushButton("View covariates", group)
+        btn = _new(QPushButton, "View covariates", group)
         btn.setObjectName("btnFrameworkViewCovariates")
         btn.setMinimumWidth(170)
         btn.setMinimumHeight(28)
@@ -737,9 +746,9 @@ class FrameworkTabController(QObject):
     def _show_canvas_context_menu(self, canvas: FigureCanvas, get_figure_fn, save_prefix: str, zoom_title: str, pos) -> None:
         fig = get_figure_fn() if callable(get_figure_fn) else None
         menu = QMenu(self.dlg)
-        act_view = menu.addAction("View larger view")
-        act_copy = menu.addAction("Copy graph")
-        act_save = menu.addAction("Save graph")
+        act_view = _ui(menu, 'addAction', "View larger view")
+        act_copy = _ui(menu, 'addAction', "Copy graph")
+        act_save = _ui(menu, 'addAction', "Save graph")
         if fig is None:
             act_view.setEnabled(False)
             act_copy.setEnabled(False)
@@ -749,12 +758,12 @@ class FrameworkTabController(QObject):
             self._copy_figure_to_clipboard(fig)
         elif chosen == act_save and fig is not None:
             suggested = os.path.join(tempfile.gettempdir(), f"{save_prefix}.png")
-            path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
+            path, _ = _dialog(QFileDialog.getSaveFileName, self.dlg, "Save graph", suggested, "PNG Images (*.png)")
             if path:
                 try:
                     save_figure(fig, path, dpi=300, bbox_inches="tight")
                 except Exception as exc:
-                    QMessageBox.warning(self.dlg, "Save graph", f"Could not save graph:\n{exc}")
+                    _dialog(QMessageBox.warning, self.dlg, "Save graph", f"Could not save graph:\n{exc}")
         elif chosen == act_view and fig is not None:
             self._open_larger_figure(fig, zoom_title)
 
@@ -770,7 +779,7 @@ class FrameworkTabController(QObject):
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
         except Exception as exc:
-            QMessageBox.warning(self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
+            _dialog(QMessageBox.warning, self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
 
     def _open_larger_figure(self, source_fig: Figure, title: str) -> None:
         from .larger_view import show_larger_view
@@ -823,7 +832,7 @@ class FrameworkTabController(QObject):
             tabs = getattr(dlg, "mainTabs", None)
             if tabs is None:
                 return False
-            label = tabs.tabText(tabs.currentIndex())
+            label = _tab_text(tabs, tabs.currentIndex())
             checker = getattr(self.plugin, "_is_framework_tab", None)
             if callable(checker):
                 return bool(checker(label))
@@ -860,6 +869,19 @@ class FrameworkTabController(QObject):
 
     def reset_for_data_change(self, keep_data_context: bool = True) -> None:
         """Clear Framework outputs that belong to the previous dataset."""
+        workspace = getattr(self, '_execution_workspace', None)
+        if workspace is not None: workspace.invalidate()
+        self._interpolation_prediction_figure = None
+        connection = getattr(self, '_interpolation_source_connection', None)
+        if connection is not None:
+            connection[0].mpl_disconnect(connection[1])
+            self._interpolation_source_connection = None
+        from .uncertainty_maps import clear_framework_preview
+        clear_framework_preview(self)
+        for task in tuple(getattr(self.dlg, '_bfi_jobs', ())):
+            task.cancel()
+        selector = getattr(self, '_uncertainty_map_selector', None)
+        if selector is not None: selector.clear()
         self.report_state = None
         from .compat import is_alive
         previous=getattr(self,"report_dialog",None)
@@ -926,7 +948,7 @@ class FrameworkTabController(QObject):
             pass
 
         if self.lbl_validation_summary:
-            self.lbl_validation_summary.setText("Validation pending for the current dataset.")
+            _ui(self.lbl_validation_summary, 'setText', "Validation pending for the current dataset.")
 
         if keep_data_context and self.plugin is not None:
             try:
@@ -947,9 +969,9 @@ class FrameworkTabController(QObject):
         poly_widget = getattr(dlg, "poly", None) or getattr(dlg, "cmbPolygonLayer", None)
         pixel_widget = getattr(dlg, "spinPixelSize", None)
 
-        layer_name = points_widget.currentText().strip() if points_widget is not None else ""
-        variable_name = variable_widget.currentText().strip() if variable_widget is not None else ""
-        polygon_name = poly_widget.currentText().strip() if poly_widget is not None else ""
+        layer_name = _combo_text(points_widget).strip() if points_widget is not None else ""
+        variable_name = _combo_text(variable_widget).strip() if variable_widget is not None else ""
+        polygon_name = _combo_text(poly_widget).strip() if poly_widget is not None else ""
         pixel_size = float(pixel_widget.value()) if pixel_widget is not None and hasattr(pixel_widget, "value") else None
 
         if not layer_name or not variable_name:
@@ -1127,6 +1149,8 @@ class FrameworkTabController(QObject):
         if dispatcher is None:
             return None
         active_ok = getattr(dispatcher, "_active", None) or dispatcher
+        if getattr(active_ok, "trend_degree", lambda: 0)():
+            return None  # Framework's ordinary SDI uses the raw observations.
 
         expected_field = str(data.get("variable_name") or "")
         active_field = getattr(active_ok, "z_field", None) or getattr(dispatcher, "_field_name", None)
@@ -1501,7 +1525,7 @@ class FrameworkTabController(QObject):
         self._set_text(self.txt_summary_mode, self.state.framework_mode)
         from .interpolation_result import executed_method
         self._set_text(self.txt_summary_winner, executed_method(self))
-        if self.lbl_summary_winner_title: self.lbl_summary_winner_title.setText('Interpolated')
+        if self.lbl_summary_winner_title: _ui(self.lbl_summary_winner_title, 'setText', 'Interpolated')
         self._set_plain_text(
             self.txt_summary_diagnostics,
             self._build_diagnostics_summary(),
@@ -1514,7 +1538,7 @@ class FrameworkTabController(QObject):
 
         if self.lbl_eligibility_preview:
             preview = ", ".join(self.state.suggested_methods) if self.state.suggested_methods else "No methods evaluated yet."
-            self.lbl_eligibility_preview.setText(preview)
+            _ui(self.lbl_eligibility_preview, 'setText', preview)
 
         self._update_framework_decision_tree()
         self._refresh_covariate_list()
@@ -1523,6 +1547,8 @@ class FrameworkTabController(QObject):
         if hasattr(self,'comparison_widget'): self.comparison_widget.refresh()
         self._refresh_method_checkboxes()
         self._sync_validation_method_controls_visibility()
+        from .uncertainty_maps import configure_framework_selector
+        configure_framework_selector(self)
 
     # ------------------------------------------------------------------
     # Event handlers
@@ -1690,7 +1716,7 @@ class FrameworkTabController(QObject):
     def on_load_covariates_clicked(self) -> None:
         """Load covariate files from disk."""
 
-        files, _ = QFileDialog.getOpenFileNames(
+        files, _ = _dialog(QFileDialog.getOpenFileNames, 
             self.dlg,
             "Select covariate rasters",
             "",
@@ -1741,6 +1767,12 @@ class FrameworkTabController(QObject):
                 checkbox.setChecked(method in self.state.suggested_methods)
 
     def on_run_validation_clicked(self) -> None:
+        if getattr(self, '_bfi_validation_running', False):
+            return
+        self._run_standard_validation()
+
+    @responsive_validation
+    def _run_standard_validation(self) -> None:
         """Build the Framework validation table and plots."""
 
         selected_methods = self._selected_methods_from_checkboxes()
@@ -1766,6 +1798,7 @@ class FrameworkTabController(QObject):
         failures: List[str] = []
         small_sample_warnings: List[str] = []
         for method in selected_methods:
+            check_validation_cancelled()
             min_required = self._minimum_samples_for_method(method)
             if n_effective < min_required:
                 failures.append(
@@ -1787,6 +1820,7 @@ class FrameworkTabController(QObject):
                 continue
             results.append(row)
 
+        check_validation_cancelled()
         if not results:
             message = "No validation result was produced."
             if failures:
@@ -1825,7 +1859,7 @@ class FrameworkTabController(QObject):
                 validation_suffix = f" | Validation: spatial hold-out (test ≤ {max_test:,}; n={full_validation_count:,})"
             elif validation_subset_used:
                 validation_suffix = f" | Validation subset: {n_effective}/{full_validation_count}"
-            self.lbl_validation_summary.setText(
+            _ui(self.lbl_validation_summary, 'setText', 
                 f"Winner: {self.state.selected_winner} | Methods validated: {len(results)}{validation_suffix}"
             )
         if failures:
@@ -1887,7 +1921,7 @@ class FrameworkTabController(QObject):
         return x[keep], y[keep], z[keep], duplicate_rows, duplicate_groups
 
     def _confirm_tps_duplicate_handling(self, duplicate_rows: int, duplicate_groups: int) -> bool:
-        reply = QMessageBox.question(
+        reply = _dialog(QMessageBox.question, 
             self.dlg,
             "TPS duplicate locations",
             (
@@ -1934,12 +1968,14 @@ class FrameworkTabController(QObject):
         if self.cmb_final_method:
             self.cmb_final_method.setEnabled(not checked)
             if checked and self.state.selected_winner:
-                idx = self.cmb_final_method.findText(self.state.selected_winner)
+                idx = _find_text(self.cmb_final_method, self.state.selected_winner)
                 if idx >= 0:
                     self.cmb_final_method.setCurrentIndex(idx)
                 self.state.__dict__["selected_method"] = self.state.selected_winner
             elif not checked:
                 self._refresh_final_method_combo()
+        from .uncertainty_maps import configure_framework_selector
+        configure_framework_selector(self)
 
     def on_final_method_changed(self, method_name: str) -> None:
         """Update the final selected method without changing the validation winner."""
@@ -1953,11 +1989,11 @@ class FrameworkTabController(QObject):
         use_best = bool(self.chk_use_best and self.chk_use_best.isChecked())
         method = self.state.selected_winner if use_best else ""
         if use_best and method and self.cmb_final_method:
-            idx = self.cmb_final_method.findText(method)
+            idx = _find_text(self.cmb_final_method, method)
             if idx >= 0:
                 self.cmb_final_method.setCurrentIndex(idx)
         if not method and self.cmb_final_method:
-            method = self.cmb_final_method.currentText().strip()
+            method = _combo_text(self.cmb_final_method).strip()
         if not method:
             self._show_warning("Interpolation", "No interpolation method is available yet.")
             return
@@ -1978,23 +2014,27 @@ class FrameworkTabController(QObject):
             self._show_warning("Interpolation", message)
 
     def _install_extensions(self):
+        from .uncertainty_maps import install_framework_selector
+        if self.frame_interpolation_map is not None:
+            install_framework_selector(self)
         from .map_comparison_ui import MapComparisonWidget
         from qgis.PyQt.QtWidgets import QPushButton, QVBoxLayout, QWidget
         tabs=self.framework_subtabs
         if tabs is None:
             return
         self.comparison_widget=MapComparisonWidget(self)
-        tabs.addTab(self.comparison_widget,"Comparison")
+        _ui(tabs, 'addTab', self.comparison_widget,"Comparison")
         output_page=self._get('tabFrameworkInterpolation')
-        if output_page is not None: tabs.setTabText(tabs.indexOf(output_page),'Interpolation')
+        if output_page is not None: _ui(tabs, 'setTabText', tabs.indexOf(output_page),'Interpolation')
         old_report=self._get('groupFrameworkReport')
         if old_report is not None: old_report.hide()
         from .report_builder import ReportOverviewWidget
         self.report_overview=ReportOverviewWidget(self,tabs)
-        tabs.addTab(self.report_overview,"Report")
+        _ui(tabs, 'addTab', self.report_overview,"Report")
         tabs.currentChanged.connect(lambda index:self.report_overview.refresh() if tabs.currentWidget() is self.report_overview else None)
 
     def _dispatch_and_register_map(self,method,purpose='final'):
+        if purpose == 'final': self.state.__dict__['selected_method'] = method
         previous=getattr(self.plugin,'_bfi_interpolation_purpose','standalone')
         self.plugin._bfi_interpolation_purpose=purpose
         self.plugin._latest_produced_result=None
@@ -2068,63 +2108,63 @@ class FrameworkTabController(QObject):
         self._covariates_dialog_open = True
         try:
             dlg = QDialog(self.dlg)
-            dlg.setWindowTitle("Framework full Covariates")
+            _ui(dlg, 'setWindowTitle', "Framework full Covariates")
             dlg.setMinimumSize(600, 420)
             dlg.setSizeGripEnabled(True)
             root = QVBoxLayout(dlg)
 
-            top_group = QGroupBox("Covariate rasters")
+            top_group = _new(QGroupBox, "Covariate rasters")
             top = QHBoxLayout(top_group)
-            top.addWidget(QLabel("Raster:"))
+            top.addWidget(_new(QLabel, "Raster:"))
             cmb_raster = QComboBox()
             self._fill_raster_combo(cmb_raster)
             top.addWidget(cmb_raster, 1)
-            btn_load = QPushButton("Load")
+            btn_load = _new(QPushButton, "Load")
             top.addWidget(btn_load)
-            top.addWidget(QLabel("Pixel size: (from Data)"))
-            top.addWidget(QLabel(self._fmt(self.state.pixel_size)))
+            top.addWidget(_new(QLabel, "Pixel size: (from Data)"))
+            top.addWidget(_new(QLabel, self._fmt(self.state.pixel_size)))
             root.addWidget(top_group)
 
             splitter = QSplitter(enum_value(Qt, "Orientation", "Horizontal"))
             left = QWidget()
             left_layout = QVBoxLayout(left)
-            group_pre = QGroupBox("Covariates  preprocessing")
+            group_pre = _new(QGroupBox, "Covariates  preprocessing")
             pre_layout = QVBoxLayout(group_pre)
-            pre_layout.addWidget(QLabel("Loaded covariates:"))
+            pre_layout.addWidget(_new(QLabel, "Loaded covariates:"))
             list_widget = QListWidget()
             pre_layout.addWidget(list_widget, 1)
-            btn_remove = QPushButton("Remove selected")
-            btn_clear = QPushButton("Clear")
+            btn_remove = _new(QPushButton, "Remove selected")
+            btn_clear = _new(QPushButton, "Clear")
             pre_layout.addWidget(btn_remove)
             pre_layout.addWidget(btn_clear)
             left_layout.addWidget(group_pre, 1)
 
-            group_res = QGroupBox("Resampling")
+            group_res = _new(QGroupBox, "Resampling")
             res_layout = QVBoxLayout(group_res)
-            resampling_hint = QLabel("Resample all covariate rasters to a common pixel size.")
+            resampling_hint = _new(QLabel, "Resample all covariate rasters to a common pixel size.")
             resampling_hint.setWordWrap(True)
             res_layout.addWidget(resampling_hint)
             row_res = QHBoxLayout()
-            row_res.addWidget(QLabel("Target pixel size:"))
+            row_res.addWidget(_new(QLabel, "Target pixel size:"))
             spin_pixel = QDoubleSpinBox()
             spin_pixel.setDecimals(4)
             spin_pixel.setRange(0.0001, 99999999.0)
             spin_pixel.setValue(float(self.state.pixel_size or 0.01))
             row_res.addWidget(spin_pixel)
-            btn_resample = QPushButton("Resample covariates")
+            btn_resample = _new(QPushButton, "Resample covariates")
             res_layout.addLayout(row_res)
             res_layout.addWidget(btn_resample)
             row_std = QHBoxLayout()
-            row_std.addWidget(QLabel("Standardization:"))
+            row_std.addWidget(_new(QLabel, "Standardization:"))
             cmb_std = QComboBox()
-            cmb_std.addItems(["Z score", "Range [-1,1]"])
+            _ui(cmb_std, 'addItems', ["Z score", "Range [-1,1]"])
             row_std.addWidget(cmb_std)
-            btn_std = QPushButton("Standardize covariates")
+            btn_std = _new(QPushButton, "Standardize covariates")
             res_layout.addLayout(row_std)
             res_layout.addWidget(btn_std)
-            btn_extract = QPushButton("Extract covariates to sample points")
-            btn_view = QPushButton("View data with extractions ")
-            btn_export = QPushButton("Export extractions CSV")
+            btn_extract = _new(QPushButton, "Extract covariates to sample points")
+            btn_view = _new(QPushButton, "View data with extractions ")
+            btn_export = _new(QPushButton, "Export extractions CSV")
             res_layout.addWidget(btn_extract)
             res_layout.addWidget(btn_view)
             res_layout.addWidget(btn_export)
@@ -2132,7 +2172,7 @@ class FrameworkTabController(QObject):
 
             right = QWidget()
             right_layout = QVBoxLayout(right)
-            title = QLabel("Correlation Matrix")
+            title = _new(QLabel, "Correlation Matrix")
             title.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignCenter"))
             right_layout.addWidget(title)
             frame_corr = QWidget()
@@ -2146,8 +2186,8 @@ class FrameworkTabController(QObject):
             corr_layout.addWidget(corr_canvas)
             self._install_canvas_menu(corr_canvas, lambda: corr_canvas.figure, "framework_covariates_correlation", "Covariates correlation")
             corr_row = QVBoxLayout()
-            btn_corr = QPushButton("Compute correlations")
-            btn_export_corr = QPushButton("Export correlations CSV")
+            btn_corr = _new(QPushButton, "Compute correlations")
+            btn_export_corr = _new(QPushButton, "Export correlations CSV")
             corr_row.addWidget(btn_corr)
             corr_row.addWidget(btn_export_corr)
             right_layout.addLayout(corr_row)
@@ -2159,7 +2199,7 @@ class FrameworkTabController(QObject):
             splitter.setStretchFactor(0, 1)
             splitter.setStretchFactor(1, 1)
             root.addWidget(splitter, 1)
-            btn_apply_to_framework = QPushButton("Apply covariates to Framework")
+            btn_apply_to_framework = _new(QPushButton, "Apply covariates to Framework")
             root.addWidget(btn_apply_to_framework)
 
             def _sync_dialog_list():
@@ -2174,7 +2214,7 @@ class FrameworkTabController(QObject):
                     return
                 data = cmb_raster.currentData()
                 for i in range(ml_combo.count()):
-                    if ml_combo.itemData(i) == data or ml_combo.itemText(i) == cmb_raster.currentText():
+                    if ml_combo.itemData(i) == data or _item_text(ml_combo, i) == _combo_text(cmb_raster):
                         ml_combo.setCurrentIndex(i)
                         return
 
@@ -2221,7 +2261,7 @@ class FrameworkTabController(QObject):
             def _standardize():
                 combo = getattr(self.plugin.dlg, "cmbStandardizeMethod", None) if self.plugin is not None else None
                 if combo is not None:
-                    idx = combo.findText(cmb_std.currentText())
+                    idx = _find_text(combo, _combo_text(cmb_std))
                     if idx >= 0:
                         combo.setCurrentIndex(idx)
                 _call_ml("_on_apply_standardization_clicked")
@@ -2430,7 +2470,8 @@ class FrameworkTabController(QObject):
             self._report_figure_block(f"Observed vs Predicted - {row.get('method', '')}", self._make_observed_predicted_figure(row))
             for row in (self.state.validation_results or [])
         )
-        actual_figure=self.interpolation_fig if self.state.__dict__.get('executed_result') else None
+        from .uncertainty_maps import framework_prediction_figure
+        actual_figure=framework_prediction_figure(self)
         interpolation_img = self._report_figure_block("Interpolation map", actual_figure)
         correlation_img = self._report_figure_block("Covariate correlation plot", self._get_correlation_report_figure())
         covariate_map_imgs = ""
@@ -2444,14 +2485,18 @@ class FrameworkTabController(QObject):
         idw_block = ""
         if idw_details:
             idw_block = "<p><b>IDW optimization parameters:</b> " + esc("; ".join(idw_details)) + "</p>"
+        fitted_scale = self._safe_float(self.state.__dict__.get('range'))
+        practical = practical_range(self.state.__dict__.get('variogram_model'), fitted_scale) if fitted_scale is not None else None
         semivariogram_params = (
             "<table class='semivariogram-params'>"
             "<tr><th>Semivariogram parameter</th><th>Value</th></tr>"
             f"<tr><td>Model</td><td>{esc(self.state.__dict__.get('variogram_model', 'Pending'))}</td></tr>"
             f"<tr><td>Nugget (Co)</td><td>{esc(self._fmt(self.state.__dict__.get('nugget')))}</td></tr>"
             f"<tr><td>Partial sill (C1)</td><td>{esc(self._fmt(self.state.__dict__.get('psill')))}</td></tr>"
-            f"<tr><td>Range (a)</td><td>{esc(self._fmt(self.state.__dict__.get('range')))}</td></tr>"
+            f"<tr><td>Range (a, model scale)</td><td>{esc(self._fmt(fitted_scale))}</td></tr>"
+            f"<tr><td>Conventional practical range</td><td>{esc(self._fmt(practical))}</td></tr>"
             "</table>"
+            f"<p>{esc(RANGE_HELP)}</p>"
         )
         citation_html = esc(ARTICLE_CITATION)
         dense_profile_html = esc(self._dense_profile_summary())
@@ -2527,6 +2572,7 @@ class FrameworkTabController(QObject):
         </html>
         """
 
+    @isolated_framework_execution
     def _dispatch_interpolation_method(self, method: str) -> bool:
         """Run the selected method through the existing plugin interpolation code."""
         if self.plugin is None:
@@ -2535,6 +2581,8 @@ class FrameworkTabController(QObject):
         try:
             if m == "OK":
                 ok_ctrl, active_ok, params = self._prepare_ok_from_framework_variogram()
+                from .uncertainty_maps import framework_sd_source
+                framework_sd_source(self, m)
                 if active_ok is not None and hasattr(active_ok, "_on_interpolate_clicked"):
                     active_ok._on_interpolate_clicked()
                     self._copy_source_figure_to_framework_map(getattr(active_ok, "_krig_map_fig", None))
@@ -2566,6 +2614,7 @@ class FrameworkTabController(QObject):
                     completed = ml_ctrl.run_framework_interpolation(
                         "RF",
                         self._framework_ml_feature_names(),
+                        search_settings=current_settings(self),
                     )
                     if not completed:
                         detail = str(getattr(ml_ctrl, "_last_framework_dispatch_error", "") or "").strip()
@@ -2580,6 +2629,7 @@ class FrameworkTabController(QObject):
                     completed = ml_ctrl.run_framework_interpolation(
                         "SVM",
                         self._framework_ml_feature_names(),
+                        search_settings=current_settings(self),
                     )
                     if not completed:
                         detail = str(getattr(ml_ctrl, "_last_framework_dispatch_error", "") or "").strip()
@@ -2684,7 +2734,7 @@ class FrameworkTabController(QObject):
         model_short = self._model_code_for_ok_dialog(params.get("model", "Spherical"))
         combo = getattr(dlg, "cmbOKModel", None)
         if combo is not None and hasattr(combo, "findText"):
-            idx = combo.findText(model_short)
+            idx = _find_text(combo, model_short)
             if idx >= 0:
                 combo.setCurrentIndex(idx)
         for widget_name, key in (
@@ -2704,7 +2754,19 @@ class FrameworkTabController(QObject):
 
     def _prepare_ok_from_framework_variogram(self):
         """Initialize OK controller and inject the Framework semivariogram state."""
+        # Framework's legacy OK route always means Ordinary Kriging, independently
+        # of a Universal selection in the standalone Geostatistics panel.
+        combo = getattr(self.dlg, "cmbOKKrigingType", None)
+        if combo is not None and combo.currentIndex() != 0:
+            combo.setCurrentIndex(0)
+        output_combo = getattr(self.dlg, "cmbOKMapOutput", None)
+        if output_combo is not None:
+            output_combo.setCurrentIndex(0)
         params = self._framework_variogram_params_for_ok()
+        fit_combo = getattr(self.dlg, "cmbOKFitMethod", None)
+        if fit_combo is not None:
+            index = _find_text(fit_combo, str(params.get("fit_method") or "MoM"))
+            if index >= 0: fit_combo.setCurrentIndex(index)
         if hasattr(self.plugin, "_update_ok_context"):
             self.plugin._update_ok_context()
         self._push_ok_params_to_dialog(params)
@@ -2738,8 +2800,8 @@ class FrameworkTabController(QObject):
 
     def _run_rk_interpolation_from_framework(self, rk_ctrl: Any) -> bool:
         """Run Regression Kriging end-to-end from Framework, including RF and variogram stages."""
-        progress = QProgressDialog("Running Regression Kriging from Framework", "Cancel", 0, 100, self.dlg)
-        progress.setWindowTitle("Regression Kriging")
+        progress = _new(QProgressDialog, "Running Regression Kriging from Framework", "Cancel", 0, 100, self.dlg)
+        _ui(progress, 'setWindowTitle', "Regression Kriging")
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.show()
@@ -2747,7 +2809,7 @@ class FrameworkTabController(QObject):
 
         def _progress(done, total, label=None):
             if label:
-                progress.setLabelText(str(label))
+                _ui(progress, 'setLabelText', str(label))
             total = int(total) if total else 100
             progress.setRange(0, max(total, 1))
             progress.setValue(int(done))
@@ -2758,7 +2820,7 @@ class FrameworkTabController(QObject):
         try:
             rk_ctrl._last_interpolation_config = None
             feature_names = self._framework_ml_feature_names()
-            progress.setLabelText("Fitting RF stage for Regression Kriging")
+            _ui(progress, 'setLabelText', "Fitting RF stage for Regression Kriging")
             progress.setRange(0, 0)
             QCoreApplication.processEvents()
             rk_ctrl._fit_rf_stage(
@@ -2766,8 +2828,9 @@ class FrameworkTabController(QObject):
                 feature_names=feature_names,
                 prompt_for_predictors=False,
                 framework_mode=True,
+                search_settings=current_settings(self),
             )
-            progress.setLabelText("Fitting residual semivariogram")
+            _ui(progress, 'setLabelText', "Fitting residual semivariogram")
             progress.setRange(0, 0)
             QCoreApplication.processEvents()
             rk_ctrl._fit_variogram_stage()
@@ -2783,20 +2846,31 @@ class FrameworkTabController(QObject):
             progress.close()
 
     def _copy_source_figure_to_framework_map(self, source_fig: Optional[Figure]) -> None:
+        if getattr(self.plugin, '_bfi_interpolation_purpose', 'standalone') != 'final': return
+        if source_fig is not None and getattr(source_fig, '_bfi_output_kind', 'prediction') != 'prediction': return
+        selector = getattr(self, '_uncertainty_map_selector', None)
+        if selector is not None and selector.current not in (None, 'prediction'): return
         if source_fig is None or getattr(self.plugin,'_bfi_interpolation_purpose','final')=='comparison': return
         result=self.state.__dict__.get('executed_result')
         if result is None or getattr(source_fig,'_bfi_execution_id',None)!=result.execution_id: return
+        produced=getattr(self.plugin,'_latest_produced_result',None)
+        if produced is None or produced.execution_id!=result.execution_id: return
         from .mpl_compat import clone_figure
         from .map_controls import attach_map_controls
         old=getattr(self,'_interpolation_source_connection',None)
         if old is not None: old[0].mpl_disconnect(old[1])
         self.interpolation_fig=clone_figure(source_fig)
+        self.interpolation_fig._bfi_output_kind='prediction'
+        self._interpolation_prediction_figure=self.interpolation_fig
         self.interpolation_canvas.figure=self.interpolation_fig
         self.interpolation_fig.set_canvas(self.interpolation_canvas)
         self.plugin._last_interpolation_figure=self.interpolation_fig
         self.interpolation_canvas._bfi_display_source=True
         self.interpolation_canvas._bfi_is_map=True
+        self.interpolation_canvas._bfi_no_display_settings=False
         attach_map_controls(self.interpolation_canvas)
+        button=getattr(self.interpolation_canvas,'_bfi_settings_button',None)
+        if button is not None: button.reposition()
         source_display=getattr(source_fig.canvas,'_bfi_map_display',None)
         automatic=source_display.controls.state.automatic if source_display is not None else None
         self.interpolation_canvas._bfi_map_display.adopt_current(automatic)
@@ -2833,7 +2907,8 @@ class FrameworkTabController(QObject):
             from .compat import log_exception
             log_exception("Mirroring the Framework covariates correlation figure")
 
-    def _report_figure_block(self, title: str, fig: Optional[Figure]) -> str:
+    def _report_figure_block(self, title: str, fig: Optional[Figure], image_width: int = 620,
+                             image_class: str = 'report-figure') -> str:
         """Convert a matplotlib figure to an HTML image block for the report."""
         if fig is None or not getattr(fig, "axes", None):
             return f"<p><b>{html.escape(title)}:</b> not generated yet.</p>"
@@ -2856,7 +2931,7 @@ class FrameworkTabController(QObject):
             src = Path(path).as_posix()
             return (
                 f"<div class='figure-block' align='center'>"
-                f"<img class='report-figure' width='620' src='file:///{html.escape(src)}'>"
+                f"<img class='{html.escape(image_class)}' width='{int(image_width)}' src='file:///{html.escape(src)}'>"
                 f"<p class='figure-caption'>{html.escape(title)}</p></div>"
             )
         except Exception:
@@ -3026,7 +3101,7 @@ class FrameworkTabController(QObject):
 
         headers = ["Rank", "Method", "RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
         self.table_validation.setColumnCount(len(headers))
-        self.table_validation.setHorizontalHeaderLabels(headers)
+        _ui(self.table_validation, 'setHorizontalHeaderLabels', headers)
         self.table_validation.setRowCount(len(rows))
 
         try:
@@ -3066,13 +3141,13 @@ class FrameworkTabController(QObject):
         combo = getattr(self, "cmb_observed_plot_method", None)
         if combo is None or combo.count() == 0:
             return
-        method = str(combo.currentData() or combo.currentText() or "").strip()
+        method = str(combo.currentData() or _combo_text(combo) or "").strip()
         if method:
             self._select_validation_plot_method(method)
 
     def _on_validation_table_selection_changed(self) -> None:
         """Let a validation-table row switch the observed/predicted method."""
-        plot_type = self.cmb_validation_plot_type.currentText() if self.cmb_validation_plot_type else ""
+        plot_type = _combo_text(self.cmb_validation_plot_type) if self.cmb_validation_plot_type else ""
         if "Observed" not in plot_type and "Predicted" not in plot_type:
             return
         table = self.table_validation
@@ -3092,14 +3167,14 @@ class FrameworkTabController(QObject):
         live_combo = getattr(self, "cmb_observed_plot_method", None)
         if live_combo is not None and live_combo.isVisible() and live_combo.count():
             data = live_combo.currentData()
-            text = live_combo.currentText()
+            text = _combo_text(live_combo)
             if data not in (None, ""):
                 return str(data).strip()
             if text:
                 return str(text).strip()
         if self.cmb_validation_method and self.cmb_validation_method.count():
             data = self.cmb_validation_method.currentData()
-            text = self.cmb_validation_method.currentText()
+            text = _combo_text(self.cmb_validation_method)
             if data not in (None, ""):
                 return str(data).strip()
             if text:
@@ -3115,7 +3190,7 @@ class FrameworkTabController(QObject):
         if sync_combo and self.cmb_validation_method:
             idx = self.cmb_validation_method.findData(method)
             if idx < 0:
-                idx = self.cmb_validation_method.findText(method)
+                idx = _find_text(self.cmb_validation_method, method)
             if idx >= 0:
                 self.cmb_validation_method.blockSignals(True)
                 self.cmb_validation_method.setCurrentIndex(idx)
@@ -3124,13 +3199,13 @@ class FrameworkTabController(QObject):
         if sync_combo and live_combo is not None:
             idx = live_combo.findData(method)
             if idx < 0:
-                idx = live_combo.findText(method)
+                idx = _find_text(live_combo, method)
             if idx >= 0:
                 live_combo.blockSignals(True)
                 live_combo.setCurrentIndex(idx)
                 live_combo.blockSignals(False)
         self._set_observed_method_button_state(method)
-        plot_type = self.cmb_validation_plot_type.currentText() if self.cmb_validation_plot_type else ""
+        plot_type = _combo_text(self.cmb_validation_plot_type) if self.cmb_validation_plot_type else ""
         if "Observed" in plot_type or "Predicted" in plot_type:
             self.validation_fig.clear()
             self.validation_fig.add_subplot(111)
@@ -3160,11 +3235,11 @@ class FrameworkTabController(QObject):
                 widget.deleteLater()
         self._observed_method_buttons = {}
         current = self._current_validation_plot_method()
-        label = QLabel("Observed vs Predicted method:", panel)
+        label = _new(QLabel, "Observed vs Predicted method:", panel)
         label.setStyleSheet("font-weight: bold;")
         layout.addWidget(label)
         for method in methods:
-            button = QPushButton(str(method), panel)
+            button = _new(QPushButton, str(method), panel)
             button.setCheckable(True)
             button.setMinimumWidth(54)
             button.clicked.connect(lambda checked=False, m=method: self._select_validation_plot_method(m))
@@ -3185,12 +3260,12 @@ class FrameworkTabController(QObject):
             combo.addItem(str(method), str(method))
         idx = combo.findData(current)
         if idx < 0:
-            idx = combo.findText(current)
+            idx = _find_text(combo, current)
         if idx < 0 and combo.count():
             idx = 0
         if idx >= 0:
             combo.setCurrentIndex(idx)
-            self.state.__dict__["validation_plot_method"] = str(combo.currentData() or combo.currentText() or "")
+            self.state.__dict__["validation_plot_method"] = str(combo.currentData() or _combo_text(combo) or "")
         combo.blockSignals(False)
 
     def _observed_predicted_methods_from_results(self) -> List[str]:
@@ -3220,7 +3295,7 @@ class FrameworkTabController(QObject):
         self._sync_validation_method_controls_visibility()
 
     def _sync_validation_method_controls_visibility(self) -> None:
-        plot_type = self.cmb_validation_plot_type.currentText() if self.cmb_validation_plot_type else ""
+        plot_type = _combo_text(self.cmb_validation_plot_type) if self.cmb_validation_plot_type else ""
         show_method = "Observed" in plot_type or "Predicted" in plot_type
         self._set_validation_method_controls_visible(show_method)
 
@@ -3258,7 +3333,7 @@ class FrameworkTabController(QObject):
             self.validation_canvas.draw_idle()
             return
 
-        plot_type = self.cmb_validation_plot_type.currentText() if self.cmb_validation_plot_type else "LCCC comparison"
+        plot_type = _combo_text(self.cmb_validation_plot_type) if self.cmb_validation_plot_type else "LCCC comparison"
         if "Observed" in plot_type or "Predicted" in plot_type:
             self._draw_observed_predicted_plot(rows)
             return
@@ -3288,7 +3363,7 @@ class FrameworkTabController(QObject):
             if self.cmb_validation_method and method:
                 idx = self.cmb_validation_method.findData(method)
                 if idx < 0:
-                    idx = self.cmb_validation_method.findText(method)
+                    idx = _find_text(self.cmb_validation_method, method)
                 if idx >= 0:
                     self.cmb_validation_method.blockSignals(True)
                     self.cmb_validation_method.setCurrentIndex(idx)
@@ -3569,14 +3644,14 @@ class FrameworkTabController(QObject):
             self._show_info("Kriging model validation", "Run Framework diagnostics or validation first.")
             return
         dlg = QDialog(self.dlg)
-        dlg.setWindowTitle("Framework kriging model metrics")
+        _ui(dlg, 'setWindowTitle', "Framework kriging model metrics")
         layout = QVBoxLayout(dlg)
         table = QTableWidget(dlg)
         headers = ["RMSE", "RMSE%", "MAE", "R\u00b2", "Pearson", "LCCC"]
         table.setColumnCount(len(headers))
-        table.setHorizontalHeaderLabels(headers)
+        _ui(table, 'setHorizontalHeaderLabels', headers)
         table.setRowCount(len(rows))
-        table.setVerticalHeaderLabels([str(row.get("method", "") or "--") for row in rows])
+        _ui(table, 'setVerticalHeaderLabels', [str(row.get("method", "") or "--") for row in rows])
         for r, row in enumerate(rows):
             values = [
                 row.get("rmse", ""),
@@ -3637,6 +3712,7 @@ class FrameworkTabController(QObject):
             QCoreApplication.processEvents()
         return preds
 
+    @isolated_framework_execution
     def _run_existing_controller_cv(self, method: str, data: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         mapping = {
             "RFE": ("ml_ctrl", "_on_run_rf_cross_validation", "_last_rf_cv_result"),
@@ -3661,6 +3737,7 @@ class FrameworkTabController(QObject):
                 method,
                 feature_names=feature_names,
                 max_validation_samples=max_validation_samples,
+                search_settings=current_settings(self),
             ):
                 return None
         elif method == "RK":
@@ -3668,13 +3745,19 @@ class FrameworkTabController(QObject):
             if not callable(prepare) or not prepare(
                 feature_names=feature_names,
                 max_validation_samples=max_validation_samples,
+                search_settings=current_settings(self),
             ):
                 return None
         try:
             setattr(ctrl, result_name, None)
         except Exception:  # nosec B110
             pass
-        getattr(ctrl, runner_name)()
+        previous_purpose = getattr(self.plugin, "_bfi_framework_cv", False)
+        self.plugin._bfi_framework_cv = True
+        try:
+            getattr(ctrl, runner_name)()
+        finally:
+            self.plugin._bfi_framework_cv = previous_purpose
         result = getattr(ctrl, result_name, None)
         if not result:
             return None
@@ -3781,14 +3864,14 @@ class FrameworkTabController(QObject):
             self.cmb_validation_method.addItem(method, method)
         idx = self.cmb_validation_method.findData(current)
         if idx < 0:
-            idx = self.cmb_validation_method.findText(current)
+            idx = _find_text(self.cmb_validation_method, current)
         if idx >= 0:
             self.cmb_validation_method.setCurrentIndex(idx)
         elif methods:
             self.cmb_validation_method.setCurrentIndex(0)
         if self.cmb_validation_method.count():
             data = self.cmb_validation_method.currentData()
-            text = self.cmb_validation_method.currentText()
+            text = _combo_text(self.cmb_validation_method)
             self.state.__dict__["validation_plot_method"] = str(data or text or "")
         self.cmb_validation_method.blockSignals(False)
         self.cmb_validation_method.setEnabled(bool(methods))
@@ -3817,13 +3900,13 @@ class FrameworkTabController(QObject):
         """Refresh the final interpolation method combo."""
         if not self.cmb_final_method:
             return
-        current = self.cmb_final_method.currentText()
+        current = _combo_text(self.cmb_final_method)
         methods = self.state.validated_methods or self.state.eligible_methods or ["TPS", "IDW", "OK"]
         self.cmb_final_method.blockSignals(True)
         self.cmb_final_method.clear()
         self.cmb_final_method.addItems(methods)
         preferred = self.state.__dict__.get("selected_method") or self.state.selected_winner or current
-        idx = self.cmb_final_method.findText(preferred)
+        idx = _find_text(self.cmb_final_method, preferred)
         if idx >= 0:
             self.cmb_final_method.setCurrentIndex(idx)
         self.cmb_final_method.blockSignals(False)
@@ -3930,12 +4013,12 @@ class FrameworkTabController(QObject):
         if widget is None:
             return
         if hasattr(widget, "setText"):
-            widget.setText(value)
+            _ui(widget, 'setText', value)
 
     def _set_plain_text(self, widget: Optional[QPlainTextEdit], value: str) -> None:
         """Set plain text safely."""
         if widget is not None:
-            widget.setPlainText(value)
+            _ui(widget, 'setPlainText', value)
 
     @staticmethod
     def _safe_float(value: Any) -> Optional[float]:
@@ -3986,7 +4069,7 @@ class FrameworkTabController(QObject):
         if pixmap is not None:
             self.btn_info.setIcon(QIcon(pixmap))
             try:
-                self.btn_info.setToolTip("Framework article information")
+                _ui(self.btn_info, 'setToolTip', "Framework article information")
             except Exception:  # nosec B110
                 pass
 
@@ -4020,16 +4103,16 @@ class FrameworkTabController(QObject):
 
     def _show_info(self, title: str, message: str) -> None:
         """Show an information message safely."""
-        QMessageBox.information(self.dlg, title, message)
+        _dialog(QMessageBox.information, self.dlg, title, message)
 
     def _show_rich_info(self, title: str, html: str) -> None:
         """Show rich text information with clickable links."""
         box = QMessageBox(self.dlg)
-        box.setWindowTitle(title)
+        _ui(box, 'setWindowTitle', title)
         box.setIcon(enum_value(QMessageBox, "Icon", "Information"))
         box.setTextFormat(enum_value(Qt, "TextFormat", "RichText"))
         box.setTextInteractionFlags(enum_value(Qt, "TextInteractionFlag", "TextBrowserInteraction"))
-        box.setText(html)
+        _ui(box, 'setText', html)
         box.setStandardButtons(enum_value(QMessageBox, "StandardButton", "Ok"))
         for label in box.findChildren(QLabel):
             try:
@@ -4041,5 +4124,5 @@ class FrameworkTabController(QObject):
 
     def _show_warning(self, title: str, message: str) -> None:
         """Show a warning message safely."""
-        QMessageBox.warning(self.dlg, title, message)
+        _dialog(QMessageBox.warning, self.dlg, title, message)
 

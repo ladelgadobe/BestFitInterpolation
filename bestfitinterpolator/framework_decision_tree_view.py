@@ -11,6 +11,7 @@ source of truth for final method highlighting.
 """
 
 from __future__ import annotations
+from .localization import _dialog, _ui
 from .compat import enum_value, qt_exec
 
 import math
@@ -146,7 +147,8 @@ class FlowchartNodeItem(QGraphicsItem):
         painter.setFont(font)
         painter.setPen(QColor("#1f2937"))
         painter.setClipPath(shape_path)
-        painter.drawText(text_rect, enum_value(Qt, "AlignmentFlag", "AlignCenter") | enum_value(Qt, "TextFlag", "TextWordWrap"), self.label)
+        from .localization import tr
+        painter.drawText(text_rect, enum_value(Qt, "AlignmentFlag", "AlignCenter") | enum_value(Qt, "TextFlag", "TextWordWrap"), tr(self.label))
         painter.restore()
 
 
@@ -171,7 +173,8 @@ class SummaryStripItem(QGraphicsItem):
         font = QFont("Segoe UI", 12)
         painter.setFont(font)
         painter.setPen(QColor("#334155"))
-        painter.drawText(self.rect.adjusted(14, 6, -14, -6), enum_value(Qt, "AlignmentFlag", "AlignCenter") | enum_value(Qt, "TextFlag", "TextWordWrap"), self.text)
+        from .localization import tr
+        painter.drawText(self.rect.adjusted(14, 6, -14, -6), enum_value(Qt, "AlignmentFlag", "AlignCenter") | enum_value(Qt, "TextFlag", "TextWordWrap"), tr(self.text))
         painter.restore()
 
 
@@ -203,7 +206,7 @@ class FrameworkDecisionTreeView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(enum_value(Qt, "ScrollBarPolicy", "ScrollBarAsNeeded"))
         self.setVerticalScrollBarPolicy(enum_value(Qt, "ScrollBarPolicy", "ScrollBarAsNeeded"))
         self.setContextMenuPolicy(enum_value(Qt, "ContextMenuPolicy", "CustomContextMenu"))
-        self.setToolTip("Use the mouse wheel to zoom. Drag to pan. Right-click for zoom, export, and larger view.")
+        _ui(self, 'setToolTip', "Use the mouse wheel to zoom. Drag to pan. Right-click for zoom, export, and larger view.")
         self.customContextMenuRequested.connect(self._show_context_menu)
 
         self._nodes: List[Node] = []
@@ -597,7 +600,7 @@ class FrameworkDecisionTreeView(QGraphicsView):
         """Copy the current vector scene to the system clipboard as an image."""
         image = self._render_scene_image()
         if image is None:
-            QMessageBox.warning(self, "Copy graph", "Could not copy the decision tree image.")
+            _dialog(QMessageBox.warning, self, "Copy graph", "Could not copy the decision tree image.")
             return
         try:
             from qgis.PyQt.QtWidgets import QApplication
@@ -865,7 +868,8 @@ class FrameworkDecisionTreeView(QGraphicsView):
         self._scene.addItem(arrow)
 
     def _draw_edge_label(self, label: str, pos: QPointF, active: bool) -> None:
-        text = QGraphicsTextItem(label)
+        from .localization import tr
+        text = QGraphicsTextItem(tr(label))
         label_color = QColor(self.ACTIVE_GREEN) if active else QColor("#94a3b8")
         if not active:
             label_color.setAlpha(170)
@@ -932,13 +936,13 @@ class FrameworkDecisionTreeView(QGraphicsView):
 
     def _show_context_menu(self, pos) -> None:
         menu = QMenu(self)
-        act_zoom_in = menu.addAction("Zoom in")
-        act_zoom_out = menu.addAction("Zoom out")
-        act_fit = menu.addAction("Fit to view")
+        act_zoom_in = _ui(menu, 'addAction', "Zoom in")
+        act_zoom_out = _ui(menu, 'addAction', "Zoom out")
+        act_fit = _ui(menu, 'addAction', "Fit to view")
         menu.addSeparator()
-        act_zoom = menu.addAction("Open larger view")
-        act_copy = menu.addAction("Copy graph")
-        act_export = menu.addAction("Save graph")
+        act_zoom = _ui(menu, 'addAction', "Open larger view")
+        act_copy = _ui(menu, 'addAction', "Copy graph")
+        act_export = _ui(menu, 'addAction', "Save graph")
         chosen = qt_exec(menu, self.mapToGlobal(pos))
         if chosen == act_zoom_in:
             self.zoom_in()
@@ -949,9 +953,9 @@ class FrameworkDecisionTreeView(QGraphicsView):
             self._fit_to_view()
         elif chosen == act_export:
             suggested = os.path.join(tempfile.gettempdir(), "framework_decision_tree.png")
-            path, _ = QFileDialog.getSaveFileName(self, "Save graph", suggested, "PNG Images (*.png)")
+            path, _ = _dialog(QFileDialog.getSaveFileName, self, "Save graph", suggested, "PNG Images (*.png)")
             if path and not self.export_png(path):
-                QMessageBox.warning(self, "Save graph", "Could not export the decision tree PNG.")
+                _dialog(QMessageBox.warning, self, "Save graph", "Could not export the decision tree PNG.")
         elif chosen == act_copy:
             self.copy_graph_to_clipboard()
         elif chosen == act_zoom:
@@ -959,7 +963,7 @@ class FrameworkDecisionTreeView(QGraphicsView):
 
     def _open_larger_view(self) -> None:
         dlg = QDialog(self)
-        dlg.setWindowTitle("Framework Decision larger view")
+        _ui(dlg, 'setWindowTitle', "Framework Decision larger view")
         layout = QVBoxLayout(dlg)
         view = FrameworkDecisionTreeView(dlg)
         layout.addWidget(view)

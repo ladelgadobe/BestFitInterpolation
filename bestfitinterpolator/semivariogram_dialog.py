@@ -1,4 +1,5 @@
 """One advanced semivariogram window for ordinary and residual kriging."""
+from .localization import _new, _ui
 import numpy as np
 import hashlib
 from qgis.PyQt.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QHBoxLayout,
@@ -17,11 +18,13 @@ class SemivariogramSettingsDialog(QDialog):
         super().__init__(controller.dlg)
         self.controller,self.residual=controller,residual
         self.use_reml=bool(not residual and getattr(controller,"_use_reml",False))
+        self.trend_degree = int(controller.trend_degree()) if not residual and hasattr(controller, "trend_degree") else 0
         self.engine=SemivariogramEngine("residual" if residual else ("ok_reml" if self.use_reml else "ok_mom"))
-        self.setWindowTitle("Residual semivariogram settings" if residual else "Semivariogram model validation")
+        self.engine.trend_degree = self.trend_degree
+        _ui(self, 'setWindowTitle', "Residual semivariogram settings" if residual else "Semivariogram model validation")
         self.resize(840,680)
         root=QVBoxLayout(self); layout=QGridLayout(); root.addLayout(layout)
-        root.insertWidget(0,QLabel("Residuals of the fitted regression model" if residual else
+        root.insertWidget(0,_new(QLabel, "Residuals of the fitted regression model" if residual else
             "Selected target variable ordinary kriging | Fit: " + ("REML" if self.use_reml else "MoM")))
         prefix="RK" if residual else "OK"
         self.cutoff=QDoubleSpinBox(); self.lag=QDoubleSpinBox()
@@ -35,21 +38,21 @@ class SemivariogramSettingsDialog(QDialog):
             if lag<=0: lag=default_lag
         self.cutoff.setValue(max(.000001,cutoff))
         self.lag.setValue(max(.000001,lag))
-        self.mode=QComboBox(); self.mode.addItems(("Lag distance","Number of lags"))
+        self.mode=QComboBox(); _ui(self.mode, 'addItems', ("Lag distance","Number of lags"))
         self.count=QSpinBox(); self.count.setRange(1,10000); self.count.setValue(max(1,int(round(self.cutoff.value()/self.lag.value()))))
         for row,(label,w) in enumerate((("Maximum distance",self.cutoff),("Lag input",self.mode),("Lag distance",self.lag),("Number of lags",self.count))):
-            layout.addWidget(QLabel(label),row,0); layout.addWidget(w,row,1)
+            layout.addWidget(_new(QLabel, label),row,0); layout.addWidget(w,row,1)
         self.candidates={}
         for col,token in enumerate(("spherical","exponential","gaussian")):
-            chk=QCheckBox(token.capitalize()); chk.setChecked(token in getattr(controller,"_candidate_overrides",("spherical","exponential","gaussian")))
+            chk=_new(QCheckBox, token.capitalize()); chk.setChecked(token in getattr(controller,"_candidate_overrides",("spherical","exponential","gaussian")))
             layout.addWidget(chk,0,col+2); self.candidates[token]=chk
-        self.status=QLabel("Existing automatic selection policy is preserved: " + ("RMSE, then SSE." if residual else "LCCC, then RMSE, then R².")); self.status.setWordWrap(True); root.addWidget(self.status)
+        self.status=_new(QLabel, "Existing automatic selection policy is preserved: " + ("RMSE, then SSE." if residual else "LCCC, then RMSE, then R².")); self.status.setWordWrap(True); root.addWidget(self.status)
         self.fig=Figure(figsize=(7,3)); self.canvas=FigureCanvas(self.fig); root.addWidget(self.canvas,1)
         from .map_controls import disable_display_settings
         disable_display_settings(self.canvas)
-        self.table=QTableWidget(0,7); self.table.setHorizontalHeaderLabels(("Model","RMSE","RMSE%","MAE","R²","Pearson","LCCC")); root.addWidget(self.table)
+        self.table=QTableWidget(0,7); _ui(self.table, 'setHorizontalHeaderLabels', ("Model","RMSE","RMSE%","MAE","R²","Pearson","LCCC")); root.addWidget(self.table)
         actions=QHBoxLayout(); root.addLayout(actions)
-        self.preview=QPushButton("Update preview"); self.validate=QPushButton("Validate models"); self.apply=QPushButton("Apply selected model")
+        self.preview=_new(QPushButton, "Update preview"); self.validate=_new(QPushButton, "Validate models"); self.apply=_new(QPushButton, "Apply selected model")
         for b in (self.preview,self.validate,self.apply): actions.addWidget(b)
         self.preview.clicked.connect(self.update_preview); self.validate.clicked.connect(self.run_validation); self.apply.clicked.connect(self.apply_settings)
         self.mode.currentIndexChanged.connect(self.sync_lag); self.count.valueChanged.connect(self.sync_lag); self.cutoff.valueChanged.connect(self.sync_lag)
@@ -77,7 +80,7 @@ class SemivariogramSettingsDialog(QDialog):
     def invalidate(self, *args):
         self._revision += 1
         self.rows=[]; self.payload=None; self.table.setRowCount(0)
-        self.status.setText("Settings changed. Update preview or run automatic validation.")
+        _ui(self.status, 'setText', "Settings changed. Update preview or run automatic validation.")
 
     @staticmethod
     def fingerprint(arrays):
@@ -97,17 +100,21 @@ class SemivariogramSettingsDialog(QDialog):
     def calculate(self,validation=False):
         if getattr(self,"_bfi_jobs",set()): return
         try: x,y,z=self.arrays()
-        except Exception as exc: self.status.setText(str(exc)); return
+        except Exception as exc: _ui(self.status, 'setText', str(exc)); return
         cutoff,lag=self.cutoff.value(),self.lag.value()
         candidates=tuple(k for k,v in self.candidates.items() if v.isChecked())
-        if not candidates: self.status.setText("Select at least one candidate model."); return
+        if not candidates: _ui(self.status, 'setText', "Select at least one candidate model."); return
         revision=self._revision; fingerprint=self.fingerprint((x,y,z))
         engine=self.engine
         self.preview.setEnabled(False); self.validate.setEnabled(False); self.apply.setEnabled(False)
-        self.status.setText("Calculating residual semivariogram" if self.residual else "Calculating semivariogram")
+        _ui(self.status, 'setText', "Calculating residual semivariogram" if self.residual else "Calculating semivariogram")
         from .variogram_utils import bin_experimental_variogram
         def work(cancel):
-            lags,gamma=bin_experimental_variogram(x,y,z,cutoff,lag)
+            variogram_values = z
+            if self.trend_degree:
+                from .kriging_universal import detrend_linear
+                variogram_values = detrend_linear(x, y, z)[0]
+            lags,gamma=bin_experimental_variogram(x,y,variogram_values,cutoff,lag)
             if not len(lags) and not self.use_reml: raise ValueError("No positive-distance pairs within the selected maximum distance.")
             rows=engine.validate(x,y,z,cutoff,lag,candidates,cancel) if validation else []
             if self.residual:
@@ -119,23 +126,24 @@ class SemivariogramSettingsDialog(QDialog):
                 if self.use_reml and not validation:
                     from .reml_bridge import fit_ok_reml_interface
                     fit=fit_ok_reml_interface(np.column_stack((x,y,z)),engine._model_text_from_token(candidates[0]),
-                        init_from_mom=dict(zip(("nugget","psill","range"),params)),random_state=123)
+                        init_from_mom=dict(zip(("nugget","psill","range"),params)),random_state=123,
+                        trend_degree=self.trend_degree)
                     params=tuple(float(fit[key]) for key in ("nugget","psill","range"))
             return lags,gamma,rows,params,candidates[0],cutoff,lag,candidates
         def completed(error,result):
             for b in (self.preview,self.validate,self.apply): b.setEnabled(True)
-            if error: self.status.setText(str(error)); return
+            if error: _ui(self.status, 'setText', str(error)); return
             try: unchanged=self.fingerprint(self.arrays()) == fingerprint
             except ValueError: unchanged=False
             if revision != self._revision or not unchanged:
-                self.status.setText("Inputs changed during calculation. Run again with the current data and settings."); return
+                _ui(self.status, 'setText', "Inputs changed during calculation. Run again with the current data and settings."); return
             self._validated_fingerprint=fingerprint
             self.payload=result; lags,gamma,rows,params,token,cutoff,lag,candidates=result
             self.rows=rows
             if rows and all(row.get("error") for row in rows):
                 self.apply.setEnabled(False)
                 self.fig.clear(); self.canvas.draw_idle()
-                self.status.setText("No model passed validation. " + "; ".join(row["model"]+": "+row["error"] for row in rows))
+                _ui(self.status, 'setText', "No model passed validation. " + "; ".join(row["model"]+": "+row["error"] for row in rows))
                 return
             if rows and "error" not in rows[0]:
                 best=rows[0]; token=best["model_key"]
@@ -152,11 +160,11 @@ class SemivariogramSettingsDialog(QDialog):
                 for j,key in enumerate(("model","rmse","rmse_pct","mae","r2","pearson","lccc")):
                     value=row.get(key,"—"); self.table.setItem(i,j,QTableWidgetItem(str(value) if isinstance(value,str) else "{:.5g}".format(value)))
             self.table.resizeColumnsToContents()
-            self.status.setText("Selected: " + token.capitalize() + (". Lowest RMSE; SSE breaks ties." if self.residual else
+            _ui(self.status, 'setText', "Selected: " + token.capitalize() + (". Lowest RMSE; SSE breaks ties." if self.residual else
                 ". Highest LCCC; lower RMSE, then higher R² break ties.") + " Select a validation row to apply a different model." if rows else
                 "Preview updated. Validate models to compare their cross validation metrics.")
             failures=[row["model"]+": "+row["error"] for row in rows if row.get("error")]
-            if failures: self.status.setText(self.status.text()+" | "+"; ".join(failures))
+            if failures: _ui(self.status, 'setText', self.status.text()+" | "+"; ".join(failures))
         submit(self,"Semivariogram model validation" if validation else "Semivariogram preview",work,completed)
 
     def update_preview(self): self.calculate(False)
@@ -165,14 +173,14 @@ class SemivariogramSettingsDialog(QDialog):
     def apply_settings(self):
         c=self.controller; prefix="RK" if self.residual else "OK"
         candidates=tuple(k for k,v in self.candidates.items() if v.isChecked())
-        if not candidates: self.status.setText("Select at least one model."); return
+        if not candidates: _ui(self.status, 'setText', "Select at least one model."); return
         if self.rows and self.rows[max(0,self.table.currentRow())].get("error"):
-            self.status.setText("The selected model failed validation. Select a successful model before applying."); return
+            _ui(self.status, 'setText', "The selected model failed validation. Select a successful model before applying."); return
         if self.payload:
             try: current=self.fingerprint(self.arrays())
-            except ValueError as exc: self.status.setText(str(exc)); return
+            except ValueError as exc: _ui(self.status, 'setText', str(exc)); return
             if current != self._validated_fingerprint:
-                self.invalidate(); self.status.setText("Data changed. Run validation again before applying a model."); return
+                self.invalidate(); _ui(self.status, 'setText', "Data changed. Run validation again before applying a model."); return
         c._candidate_overrides=candidates
         c._programmatic_variogram_update=True
         try:
@@ -205,7 +213,7 @@ class SemivariogramSettingsDialog(QDialog):
             c._rebin_timer.stop(); c._recalculate_stale()
             if self.rows:
                 c._model_validation_results=self.rows
-        self.status.setText("Settings applied. Existing fitting and validation criteria are retained.")
+        _ui(self.status, 'setText', "Settings applied. Existing fitting and validation criteria are retained.")
 
     def reject(self):
         for task in tuple(getattr(self,"_bfi_jobs",())): task.cancel()
@@ -216,7 +224,7 @@ def install_advanced_button(controller,residual=False):
     dlg=controller.dlg; name="btnRKAdvancedSemivariogram" if residual else "btnOKAdvancedSemivariogram"
     button=getattr(dlg,name,None)
     if not is_alive(button):
-        button=QPushButton("Advanced semivariogram settings",dlg); button.setObjectName(name); setattr(dlg,name,button)
+        button=_new(QPushButton, "Advanced semivariogram settings",dlg); button.setObjectName(name); setattr(dlg,name,button)
         widget=getattr(dlg,"spinRKCutoff" if residual else "spinOKCutoff",None)
         parent=widget.parentWidget() if widget is not None else None
         layout=parent.layout() if parent is not None else None

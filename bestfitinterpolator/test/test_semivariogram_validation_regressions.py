@@ -1,6 +1,5 @@
 """Numerical regressions for displayed REML fits and Framework model metrics."""
 import numpy as np
-from .test_development_numerical_baseline import legacy_policy
 from bestfitinterpolator import semivariogram_engine as engine
 from bestfitinterpolator.framework_tab import FrameworkTabController
 from bestfitinterpolator.variogram_utils import max_pairwise_distance,nearest_neighbor_distance,safe_lag_width
@@ -11,8 +10,10 @@ def test_reml_validation_returns_optimized_parameters_for_the_displayed_curve():
     for token in ('spherical','exponential','gaussian'):
         current=engine.SemivariogramEngine('ok_reml')
         row=current._evaluate_model_cv(token,xy[:,0],xy[:,1],z,10.,2.)
+        lags,gamma=current._bin_variogram(xy[:,0],xy[:,1],z,10.,2.)
+        seeds=current._guess_initial_params(lags,gamma,10.,token)
         fit=engine.fit_ok_reml_interface(np.column_stack((xy,z)),current._model_text_from_token(token),
-            init_from_mom={key:row[key] for key in ('nugget','psill','range')},random_state=123)
+            init_from_mom=dict(zip(('nugget','psill','range'),seeds)),random_state=123)
         assert row['selection']=='reml_cv'
         np.testing.assert_allclose(row['fitted_params'],[fit[key] for key in ('nugget','psill','range')],rtol=0,atol=0)
 
@@ -20,7 +21,10 @@ def test_reml_validation_returns_optimized_parameters_for_the_displayed_curve():
 def test_framework_popup_cv_preserves_framework_metrics_and_ranking():
     names=('_run_ok_framework_cv','_guess_initial_params','_normalize_model_token','_model_func','_validation_row_from_predictions',
         '_pearson_r','_lccc','_ok_model_code_for_reml')
-    old=legacy_policy('framework_tab.py','FrameworkTabController',names)
+    # Compare the popup against the current Framework route. Historical v1.2
+    # exact-fit expectations no longer describe the intentional v2.1 WLS change.
+    old=type('FrameworkPolicy',(),{name:FrameworkTabController.__dict__[name] for name in names})()
+    old._bin_variogram=engine.bin_experimental_variogram
     rng=np.random.default_rng(3); xy=rng.uniform(0,20,(8,2)); z=np.sin(xy[:,0]/3)+.15*xy[:,1]
     x,y=xy.T; cutoff=.5*max_pairwise_distance(x,y); lag=safe_lag_width(x,y,cutoff,nearest_neighbor_distance(x,y))
     old.state=type('State',(),{'variogram_model':'Spherical'})()

@@ -1,4 +1,5 @@
 """Snapshot report model and single HTML source for preview and PDF."""
+from .localization import _combo_text
 from dataclasses import dataclass,field
 import html
 import re
@@ -23,7 +24,8 @@ class ReportTable:
             elif isinstance(value,(tuple,list)):
                 return "("+", ".join(esc(item) for item in value)+")"
             return html.escape(str(value))
-        return "<table><thead><tr>"+"".join("<th>"+esc(v)+"</th>" for v in self.headers)+"</tr></thead><tbody>"+"".join("<tr>"+"".join("<td>"+esc(v)+"</td>" for v in row)+"</tr>" for row in self.rows)+"</tbody></table>"
+        cell_style = ' style="padding:3px"' if self.headers == ('Setting', 'Executed value') else ''
+        return "<table><thead><tr>"+"".join("<th"+cell_style+">"+esc(v)+"</th>" for v in self.headers)+"</tr></thead><tbody>"+"".join("<tr>"+"".join("<td"+cell_style+">"+esc(v)+"</td>" for v in row)+"</tr>" for row in self.rows)+"</tbody></table>"
 
 
 @dataclass
@@ -48,6 +50,7 @@ class ReportState:
 
 
 def report_html(state):
+    from .localization import translate_html
     c=COLORS; esc=html.escape
     css="""body { font-family: Arial; font-size: 10pt; color: %(text_primary)s; }
     h1 { font-size: 19pt; color: %(primary_dark)s; }
@@ -59,12 +62,13 @@ def report_html(state):
     .figure-block { page-break-inside: avoid; text-align:center; margin: 12px 0; }
     .figure-caption { font-size: 9pt; color: %(text_secondary)s; }
     img.report-figure { width: 590px; } img.decision-tree-figure { width: 650px; }
+    img.comparison-figure { width: 680px; }
     """ % c
     from pathlib import Path
     icon=Path(os.path.join(os.path.dirname(__file__),"icon.png")).as_uri()
     body="<p><img width='30' height='30' src='"+icon+"'></p><h1>"+esc(state.title)+"</h1>"
     for label,value in (("Study",state.study_name),("Author",state.author),("Notes",state.notes)):
-        if value: body+="<p><b>"+label+":</b> "+esc(value)+"</p>"
+        if value: body+="<p><b>"+label+":</b> <span data-bfi-user>"+esc(value)+"</span></p>"
     number=0
     previous = None
     for section in state.sections:
@@ -81,7 +85,7 @@ def report_html(state):
         body+="".join(table.html() for table in section.tables)
         body+="".join(figure.image_html for figure in section.figures)
         previous = section
-    return "<html><head><style>"+css+"</style></head><body>"+body+"</body></html>"
+    return translate_html("<html><head><style>"+css+"</style></head><body>"+body+"</body></html>")
 
 
 def snapshot_framework_report(framework):
@@ -106,8 +110,8 @@ def snapshot_framework_report(framework):
     plugin=framework.plugin
     if plugin is not None:
         from qgis.core import QgsProject
-        layers=QgsProject.instance().mapLayersByName(plugin.dlg.Points.currentText())
-        ds=plugin.diagnostics_states.get((layers[0].id(),plugin.dlg.Points_2.currentText())) if layers else None
+        layers=QgsProject.instance().mapLayersByName(_combo_text(plugin.dlg.Points))
+        ds=plugin.diagnostics_states.get((layers[0].id(),_combo_text(plugin.dlg.Points_2))) if layers else None
         if ds is not None and ds.result:
             r=ds.result
             summary=ReportTable(("Statistic","Value"),tuple(r["summary"].items()))
@@ -129,10 +133,53 @@ def snapshot_framework_report(framework):
         if ds is not None:
             state.sections.append(ReportSection("decisions","Analysis mask and user decisions",
                 body="<p>Original observations: {}; analysis observations: {}; excluded by user: {}. The source layer remains unchanged.</p>".format(len(ds.ids),int(ds.analysis_mask.sum()),sum(v=="Exclude" for v in ds.decisions.values())),mandatory=True))
+    from .search_provenance import search_details
+    selections = []
+    for row in framework.state.validation_results or []:
+        method = str(row.get("method", "")).upper()
+        if method in ("RF", "RFE", "RK", "SVM"):
+            name = "RF" if method == "RFE" else method
+            selections.append((name + " - Framework performance validation", row.get("configuration", {})))
+    executed = framework.state.__dict__.get("executed_result")
+    if executed is not None and executed.method in ("RF", "RFE", "RK", "SVM"):
+        selections.append((executed.method + " - Final interpolation", executed.parameters))
+    if selections:
+        section = ReportSection("ml_hyperparameters", "Machine learning hyperparameter selection",
+            body="<p>These settings describe completed executions. Search cross-validation selects hyperparameters; the predictive validation results are used to compare interpolation methods. For RK, hyperparameter search refers to its RF trend component.</p>",
+            mandatory=True)
+        for label, configuration in selections:
+            section.tables.append(ReportTable(("Setting", "Executed value"),
+                tuple([("Method and execution", label)] + search_details(configuration))))
+        state.sections.append(section)
+    executed=framework.state.__dict__.get('executed_result')
+    parameters=executed.parameters if executed is not None else {}
+    from .uncertainty_maps import result_uncertainty_paths, result_output_definition, result_target
+    paths=result_uncertainty_paths(executed)
+    if paths:
+        from .uncertainty_maps import output_label, ordered_output_keys, output_value_label, uncertainty_layer
+        from qgis.core import QgsProject
+        definitions=list(dict.fromkeys(result_output_definition(executed, key) for key in paths))
+        section=ReportSection('prediction_uncertainty', 'Prediction uncertainty components',
+            body=''.join('<p>'+html.escape(value)+'</p>' for value in definitions),
+            tables=[ReportTable(('Output','Raster'),tuple((output_label(key, executed.method),path) for key,path in paths.items()))])
+        for key in ordered_output_keys(executed.method, paths):
+            path=paths[key]
+            if not key.endswith('std'): continue
+            layer=uncertainty_layer(path, output_label(key, executed.method))
+            if layer is None: continue
+            title=output_label(key, executed.method)
+            figure=framework._make_raster_preview_figure(layer, title)
+            if figure is not None:
+                if len(figure.axes)>1:
+                    figure.axes[-1].set_ylabel(output_value_label(result_target(executed), key), fontsize=8)
+                    figure.tight_layout()
+                section.figures.append(ReportFigure(title, framework._report_figure_block(title,figure)))
+        state.sections.append(section)
     comparison=framework.state.__dict__.get("map_comparison")
     widget=getattr(framework,"comparison_widget",None)
     if comparison is not None and comparison.include_report and widget is not None and comparison.previews:
-        block=framework._report_figure_block("{} / {} / signed difference".format(comparison.method_a,comparison.method_b),widget.fig)
+        block=framework._report_figure_block("{} / {} / signed difference".format(comparison.method_a,comparison.method_b),
+            widget.fig,image_width=680,image_class='report-figure comparison-figure')
         table=ReportTable(("Item","Value"),tuple(comparison.statistics.items())+(("Method A",comparison.method_a),("Method B",comparison.method_b),("Palette A",comparison.palette_a),("Palette B",comparison.palette_b),("Value range A",str(comparison.value_range)),("Value range B",str(comparison.value_range_b)),("Display scale",comparison.scale or "Fit to layer"),("View extent",comparison.view_extent),("Difference raster",comparison.difference_path)))
         state.sections.append(ReportSection("map_comparison","Map comparison and signed difference",figures=[ReportFigure("Map comparison",block)],tables=[table]))
     state.assets=list(getattr(framework,"_report_image_paths",[]))
@@ -146,6 +193,7 @@ def export_report_html(state,path):
     from pathlib import Path
     from urllib.parse import unquote,urlparse
     from urllib.request import url2pathname
+    from .localization import translate_html, language
     esc=html.escape
     sections=[section for section in state.sections if section.enabled or section.mandatory]
     def embedded(match):
@@ -157,7 +205,7 @@ def export_report_html(state,path):
         return 'src="data:{};base64,{}"'.format(mime,data)
     body='<header><h1>'+esc(clean_display_name(state.title))+'</h1>'
     for label,value in (('Study',state.study_name),('Author',state.author),('Notes',state.notes)):
-        if value: body+='<p><b>'+label+':</b> '+esc(value)+'</p>'
+        if value: body+='<p><b>'+label+':</b> <span data-bfi-user>'+esc(value)+'</span></p>'
     body+='</header><div class="tools"><button type="button" data-sections="open">Expand all</button><button type="button" data-sections="close">Collapse all</button></div><nav aria-label="Report sections">'
     body+=' · '.join('<a href="#section-{}">{}</a>'.format(i,esc(clean_display_name(section.title))) for i,section in enumerate(sections))+'</nav>'
     for i,section in enumerate(sections):
@@ -179,6 +227,7 @@ def export_report_html(state,path):
     table{border-collapse:collapse;width:100%;margin:12px 0}td,th{border:1px solid #cad8df;padding:7px;text-align:left}
     th{background:#e5f2f5}.section-body{overflow:auto;padding-bottom:14px}.figure-block{text-align:center}
     img{max-width:100%;height:auto}.figure-caption{color:#536a7d;font-size:.9em}
+    img.comparison-figure{width:100%;max-width:100%;height:auto}
     @media print{nav,.tools{display:none}details{break-inside:avoid}}'''
     script='''document.querySelectorAll('[data-sections]').forEach(function(button){button.addEventListener('click',function(){document.querySelectorAll('details').forEach(function(section){section.open=button.dataset.sections==='open';});});});
     function reveal(id){var section=document.getElementById(id);if(section){section.open=true;section.scrollIntoView({block:'start'});}}
@@ -188,6 +237,7 @@ def export_report_html(state,path):
     var printStates=[];window.addEventListener('beforeprint',function(){printStates=[];document.querySelectorAll('details').forEach(function(section){printStates.push(section.open);section.open=true;});});
     window.addEventListener('afterprint',function(){document.querySelectorAll('details').forEach(function(section,i){section.open=printStates[i];});});'''
     output='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'"><title>'+esc(state.title)+'</title><style>'+css+'</style></head><body>'+body+'<script>'+script+'</script></body></html>'
+    output=translate_html(output).replace('<html lang="en">','<html lang="'+language().replace('_','-')+'">',1)
     Path(path).write_text(output,encoding='utf-8')
     return str(path)
 

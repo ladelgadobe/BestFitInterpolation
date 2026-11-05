@@ -82,10 +82,10 @@ def test_palette_and_range_do_not_change_pixels():
 
 
 def test_optional_sections_and_same_report_source():
-    state=ReportState(sections=[ReportSection("required","Validation",mandatory=True,tables=[ReportTable(("Method","RMSE"),(("IDW",1.),))]),ReportSection("optional","Comparison",body="comparison",enabled=False)])
-    assert "IDW" in report_html(state) and "comparison" not in report_html(state)
+    state=ReportState(sections=[ReportSection("required","Validation",mandatory=True,tables=[ReportTable(("Method","RMSE"),(("IDW",1.),))]),ReportSection("optional","Comparison",body="OPTIONAL_COMPARISON_BODY",enabled=False)])
+    assert "IDW" in report_html(state) and "OPTIONAL_COMPARISON_BODY" not in report_html(state)
     state.sections[1].enabled=True
-    assert "comparison" in report_html(state)
+    assert "OPTIONAL_COMPARISON_BODY" in report_html(state)
     with tempfile.TemporaryDirectory() as folder:
         for i in range(2):
             path=str(Path(folder)/("report"+str(i)+".pdf"));export_report_pdf(state,path)

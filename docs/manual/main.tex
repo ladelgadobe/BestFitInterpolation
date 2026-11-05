@@ -48,7 +48,7 @@
 % --------------------------------------------------
 % Document metadata
 % --------------------------------------------------
-\newcommand{\manualreviewdate}{6 October 2026}
+\newcommand{\manualreviewdate}{5 November 2026}
 \newcommand{\testedqgisversion}{3.44.8}
 \newcommand{\minimumqgisversion}{3.14}
 
@@ -68,7 +68,7 @@
 \newcommand{\tutorialstep}[2]{%
     \refstepcounter{tutorialstep}%
     \par\medskip
-    \noindent{\large\bfseries\color{mainblue}Step \thetutorialstep: #1}\par
+    \noindent{\large\bfseries\color{mainblue}Step \thetutorialstep: #1}\par\nobreak
     \vspace{0.15cm}
     \noindent #2\par
     \medskip
@@ -156,10 +156,12 @@ A QGIS plugin for spatial mapping, interpolation method comparison, validation, 
 \begin{tabular}{>{\bfseries}P{5.2cm} P{7.2cm}}
 \toprule
 Document: & User manual \\
+Plugin version: & 2.1 \\
 Last reviewed: & \manualreviewdate{} \\
 QGIS compatibility: & QGIS \minimumqgisversion{} onward, including QGIS 4 \\
 Software type: & QGIS Plugin \\
-Language: & English \\
+Manual language: & English \\
+Interface languages: & English, Spanish and Brazilian Portuguese \\
 Scientific basis: & Framework article for interpolation method selection \\
 \bottomrule
 \end{tabular}
@@ -290,7 +292,7 @@ DELGADO BEJARANO, L.; OLIVEIRA, A. L. G.; POZZUTO, J. V. F.; SÁNCHEZ, D. C.; AM
 
 The minimum declared QGIS version is \minimumqgisversion{}. The updated plugin supports the Qt 5 environment used by QGIS 3 and the Qt 6 environment used by QGIS 4. The same workflow is used across these environments; operating-system fonts, window borders, and individual QGIS controls may differ.
 
-Compatibility checks cover each stable QGIS 3 minor series from 3.14 through 3.44, together with QGIS 4.0 and 4.2. Native Windows checks also cover QGIS 3.14 in 32-bit mode, QGIS 3.44.8 in 64-bit mode, and QGIS 4.2.3. Future releases are added to the compatibility checks as they become available; this is an ongoing verification process.
+This manual describes plugin version 2.1, whose current workflows have been checked on Windows with QGIS 3.44.8 and 4.2.3. Declared compatibility begins at QGIS 3.14. Use Python packages compatible with the Python version and architecture of the installed QGIS.
 
 \begin{table}[H]
 \centering
@@ -309,7 +311,7 @@ Documentation & User guide for the current interface and analysis workflows \\
 \end{table}
 
 \begin{infobox}
-The examples describe the updated interface. Older packaged releases may not include all of these controls. Record the installed plugin version from \texttt{About}, the QGIS version, and the operating system for reproducible work.
+This guide describes the v2.1 controls. Some screenshots illustrate the earlier layout and may not show every added selector; follow the current control names and instructions. Older packaged releases may not include these features. Record the installed plugin version from \texttt{About}, the QGIS version, and the operating system for reproducible work.
 \end{infobox}
 
 \section{Input Data Requirements}
@@ -597,6 +599,15 @@ After saving the project, open Best Fit Interpolator again from the Plugins menu
     \label{fig:about}
 \end{figure}
 
+\subsection{Interface Language}
+\label{sec:interface-language}
+
+Use the \texttt{Language} selector in the upper-right corner of the plugin window to choose \texttt{English}, \texttt{Espa\~nol}, or \texttt{Portugu\^es}. Portuguese uses Brazilian terminology. On the first opening, the plugin follows a supported QGIS language and otherwise uses English. A manual choice is saved for later plugin sessions; it does not change the language of QGIS itself.
+
+The interface, help dialogs, plot labels, Framework diagram, and newly generated reports use the selected language. Translations are included with the plugin and work offline. A language change requested during a calculation is applied when the active calculation finishes.
+
+Changing language preserves loaded inputs, selected methods, parameters, validation values, and generated rasters. Layer names, field names, file paths, numerical values, and scientific symbols retain their meaning. Previously exported reports keep their original language; regenerate a report to obtain it in another language. Bibliographic references and messages supplied by external components may retain their original language. The instructions in this manual use the English control names.
+
 \section{Loading Core Data}
 
 The \texttt{Data} tab defines the common configuration shared by both independent workflows: manual interpolation and framework guidance. Before starting, load the point and polygon layers into the QGIS project. Figure~\ref{fig:main-interface-data} shows the common inputs to review before analysis.
@@ -797,9 +808,24 @@ Manual IDW, optimized IDW, and TPS cannot run simultaneously. Selecting one opti
 % --------------------------------------------------
 % Ordinary Kriging
 % --------------------------------------------------
-\section{Ordinary Kriging: MoM and REML}
+\section{Geostatistical Interpolation: Ordinary and Universal Kriging}
 
-After loading the common inputs, open the \texttt{Geostatistics} tab. The plugin applies Ordinary Kriging and provides two approaches for estimating the semivariogram or covariance parameters: the Method of Moments (MoM) and Residual Maximum Likelihood (REML). The interpolated surface is always produced for the same variable, polygon, pixel size, and export configuration loaded in the \texttt{Data} tab.
+After loading the common inputs, open the \texttt{Geostatistics} tab. The \texttt{Type} selector offers \texttt{Ordinary Kriging} and \texttt{Universal Kriging (linear)}. Both use the variable, polygon, pixel size, and export configuration loaded in \texttt{Data}. The fitting method, MoM or REML, controls estimation of the spatial covariance parameters; it is separate from the choice between ordinary and universal kriging.
+
+\subsection{Choosing Ordinary or Universal Kriging}
+\label{sec:universal-kriging}
+
+Ordinary Kriging assumes an unknown constant mean over the prediction neighborhood. Universal Kriging represents a linear spatial mean,
+\[
+    m(x,y)=\beta_0+\beta_x x+\beta_y y,
+\]
+and models the remaining spatial dependence. In this implementation, the drift uses the coordinates \texttt{x} and \texttt{y}; it does not use the environmental raster predictors of the RF-based Regression Kriging workflow. The sample locations must support estimation of this plane: collinear locations cannot identify a two-dimensional linear trend.
+
+Select the kriging type before calculating or fitting the variogram. With Universal Kriging, the MoM experimental semivariogram describes residuals after removing the fitted linear trend; REML accounts for the linear trend in covariance estimation. MoM shows experimental points and the fitted curve, while REML shows the theoretical curve. Review the parameters and click \texttt{Interpolate}. Changing the type clears the dependent geostatistical results, so refit and rerun validation for the new choice.
+
+The standalone Geostatistics validation supports the selected Universal Kriging model and refits its trend and covariance within each training partition. Inspect its predictive metrics before choosing it over Ordinary Kriging. The Framework decision tree retains its original \texttt{OK} alternative, which means Ordinary Kriging; choosing Universal Kriging in the standalone tab does not change the Framework method.
+
+Prediction, conditional standard deviation, and variance outputs are described in Section~\ref{sec:uncertainty-maps}.
 
 \subsection{Automatic Choice Between MoM and REML}
 
@@ -830,9 +856,37 @@ Under \texttt{Model Adjust}, the plugin can evaluate three theoretical semivario
 
 With \texttt{Model} set to \texttt{Automatic}, the plugin evaluates the Spherical, Exponential, and Gaussian models by leave-one-out cross-validation. In Geostatistics, it ranks the candidates by the highest Lin's concordance correlation coefficient (LCCC), then the lowest root mean square error (RMSE), and then the highest $R^2$ if a further tie remains. Click \texttt{View validation} to inspect RMSE, RMSE\%, MAE, $R^2$, Pearson correlation, and Lin's concordance correlation coefficient for the three candidate models. Select a successful model row when another candidate is preferable. The Framework semivariogram popup uses its own $R^2$/RMSE ranking, described later in this manual.
 
-The model can also be selected manually. The user may adjust \texttt{Nugget (C0)}, \texttt{Partial Sill (C1)}, and \texttt{Range (a)} before interpolating. The nugget represents unresolved short-range variation and measurement error; the partial sill represents the spatially structured variance; and the range indicates the distance over which spatial dependence is expressed. Manual values should be used only when they are supported by the experimental semivariogram and subject-matter knowledge.
+The automatic MoM procedure jointly fits the nugget, partial sill, and model scale by constrained weighted least squares. For each candidate scale, nugget and partial sill are estimated together, and a bounded iterative search refines the scale. The distance-class weights are
+\[
+    w_j=\frac{\operatorname{median}(h)}{\operatorname{median}(h)+h_j},
+\]
+where $h_j$ is the representative distance of lag class $j$, and the median uses the lag-class distances included in the fit. Shorter distances receive greater weight. The nugget is nonnegative; the partial sill and scale are positive. These are variogram-fitting weights, separate from the spatial prediction weights used by kriging.
+
+The model can also be selected manually. Adjust \texttt{Nugget (C0)}, \texttt{Partial Sill (C1)}, and \texttt{Range (a)} only when the experimental semivariogram and subject-matter knowledge support the values. The nugget represents unresolved variation at short positive separation, and the partial sill is the spatially structured variance. The exact-observation convention and its uncertainty interpretation are described in Section~\ref{sec:uncertainty-kriging}.
 
 The blue points in the left plot are the experimental semivariances calculated from sample pairs, and the black curve is the fitted theoretical model. The right plot previews the Ordinary Kriging surface inside the selected polygon. After reviewing the model, click \texttt{Interpolate} to create the final raster.
+
+\subsection{Model Scale and Practical Range}
+\label{sec:model-range}
+
+For both MoM and REML, \texttt{Range (a)} is the raw model-scale parameter in the distance units of the layer CRS. It is not the same numerical distance for every covariance model. The interface and reports also identify the conventional practical range:
+
+\begin{table}[H]
+\centering
+\caption{Relation between the model scale $a$ and the conventional practical range.}
+\label{tab:practical-range}
+\begin{tabularx}{0.96\textwidth}{P{2.8cm}P{3.2cm}Y}
+\toprule
+\textbf{Model} & \textbf{Practical range} & \textbf{Interpretation} \\
+\midrule
+Spherical & $a$ & The full sill is reached at this distance. \\
+Exponential & $3a$ & Approximately 95\% of the structured semivariance is reached. \\
+Gaussian & $\sqrt{3}\,a$ & Approximately 95\% of the structured semivariance is reached. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+For example, an exponential model with \texttt{Range (a)} equal to 100 m has a conventional practical range of approximately 300 m. Enter the model scale in the parameter box; do not enter 300 m when the intended exponential scale is 100 m. The exponential and Gaussian curves approach the sill asymptotically, so their practical ranges are conventional distances rather than exact cutoffs. This convention also applies to the Framework semivariogram and the residual variogram in RK.
 
 \subsection{Spatial Dependence Index}
 
@@ -861,9 +915,9 @@ The plugin calculates the Spatial Dependence Index (SDI) from the fitted nugget 
 
 A low SDI indicates that the nugget accounts for a large share of the total fitted variance. A high SDI indicates that the spatially structured component is dominant. SDI describes the fitted spatial-dependence structure; it is not, by itself, a measure of predictive accuracy. In Figure~\ref{fig:geostatistics-mom}, the displayed SDI describes this teaching dataset and should be read from the current fitted parameters.
 
-\subsection{Residual Maximum Likelihood (REML)}
+\subsection{Restricted Maximum Likelihood (REML)}
 
-REML estimates the covariance parameters by maximizing a residual likelihood rather than first calculating and fitting experimental semivariogram points. Consequently, the REML view does not display an experimental semivariogram. It reports the estimated model parameters and uses them directly for Ordinary Kriging.
+Restricted maximum likelihood (REML) estimates covariance parameters directly from the observations by maximizing a restricted likelihood. It does not require fitting experimental semivariogram points. Consequently, the REML view displays the fitted theoretical curve and parameter estimates, without experimental points, for the selected kriging type.
 
 REML can be advantageous for smaller datasets because it accounts for parameter estimation through a likelihood-based procedure, but its numerical optimization is more demanding than MoM. For this reason, the plugin recommends REML automatically only below 100 valid samples when its backend is available, permits manual REML below 500 samples, and avoids it for larger datasets.
 
@@ -955,7 +1009,7 @@ The first time the plugin is installed, or the first time a machine learning met
 In the plugin, Random Forest (RF) is implemented as a spatial machine learning interpolation method. The model can use the point coordinates, represented by \texttt{x} and \texttt{y}, together with the raster covariates loaded in the \texttt{Covariates} tab. In this way, RF can learn from both the spatial position of the samples and the environmental predictors prepared in QGIS.
 
 
-Before running RF, complete the \texttt{Covariates} workflow: load the predictor rasters, resample or standardize them when needed, and extract covariate values to the sample points. When RF interpolation or RF hyperparameter search starts, the plugin opens a predictor-selection dialog. This dialog allows the user to choose the final variables that will be used by the model, including \texttt{x}, \texttt{y}, and any loaded raster covariates. Only the selected predictors are used for training, hyperparameter search, and map prediction.
+Before running RF, load and review the predictor rasters in \texttt{Covariates}, including their coverage, alignment, and any resampling or standardization. The extraction tool lets the user inspect predictor values at sample locations; the interpolation workflow also reads these values when building its training table. When a standalone RF interpolation or hyperparameter search starts, the predictor-selection dialog allows the user to include or omit \texttt{x}, \texttt{y}, and the loaded raster covariates. Only the selected predictors are used for training, search, and map prediction.
 
 
 Figure~\ref{fig:rf-interpolation} shows the RF interpolation window. The upper panel contains the manual and Grid Search controls, while the lower panels show the variable-importance plot and the RF interpolation map produced after the model is fitted.
@@ -1001,7 +1055,7 @@ After the model is fitted, the lower panels of Figure~\ref{fig:rf-interpolation}
 
 
 \begin{infobox}
-RF results depend on the quality and relevance of the selected predictors. Including \texttt{x} and \texttt{y} can help the model represent broad spatial trends, but the final predictor set should still be checked carefully. Weak, redundant, poorly aligned, or incomplete covariates can reduce model performance even when the interpolation runs successfully.
+RF results depend on predictor quality and relevance. Coordinates can represent location-related variation, but raw \texttt{x} and \texttt{y} can also produce orthogonal artifacts in RF maps. Inspect both validation performance and the resulting spatial patterns. The standalone workflow lets the user omit coordinates. Weak, redundant, poorly aligned, or incomplete covariates can reduce performance. RF tree-dispersion outputs are explained in Section~\ref{sec:uncertainty-rf}.
 \end{infobox}
 
 
@@ -1102,7 +1156,7 @@ The residual kriging controls in Figure~\ref{fig:rk-interpolation} describe the 
     \item \texttt{Partial sill (C1)}: structured residual variance explained by spatial dependence.
 
 
-    \item \texttt{Range (a)}: distance at which residual spatial correlation becomes weak or negligible.
+    \item \texttt{Range (a)}: model scale of the residual variogram. Its relation to the practical range depends on the model, as shown in Section~\ref{sec:model-range}.
 \end{itemize}
 
 
@@ -1131,6 +1185,48 @@ Click \texttt{Update preview} after changing distance or lag settings. Click \te
 
 Return to the RK workspace and click \texttt{Interpolate} to generate the sum of the RF trend and kriged residual prediction. Run RK validation from its \texttt{Validation} subtab. After changing the predictors, RF fit, or residual settings, recalculate the dependent stages rather than accepting an earlier result.
 
+
+\section{Prediction and Uncertainty Maps}
+\label{sec:uncertainty-maps}
+
+After interpolation, the map selector provides the prediction and the available diagnostic components. Geostatistics labels this selector \texttt{Map}; RF, RK, and Framework use \texttt{Map output}. Standard deviations (SD) use the response units, and variances use squared response units. The meaning of an SD depends on the method; the maps below are not interchangeable measures of predictive error.
+
+\subsection{Conditional Kriging Uncertainty}
+\label{sec:uncertainty-kriging}
+
+Ordinary and linear Universal Kriging produce a prediction, \texttt{Kriging standard deviation}, and \texttt{Kriging variance}. The variance is the conditional kriging prediction-error variance at point support, and SD is its square root. It includes estimation of the unknown mean or linear trend but treats the fitted covariance parameters and drift specification as fixed. It does not account for variogram-parameter uncertainty or all sources of data and model error.
+
+The implementation treats sampled observations as exact: the semivariogram is zero at zero separation, while the nugget contributes at positive separation. A prediction at an observed sample location therefore reproduces the observation, with conditional variance zero there up to numerical precision. Measurement error is not modeled separately. A positive nugget does not turn these outputs into uncertainty for a noisy observation or a future measurement. Interpret SD with the fitted model, sampling geometry, and validation results; it is not a calibrated prediction interval.
+
+\subsection{Random Forest Tree Dispersion}
+\label{sec:uncertainty-rf}
+
+RF adds \texttt{RF tree standard deviation} and \texttt{RF tree variance}. At a prediction location, these summarize disagreement among the individual fitted trees. With $T$ trees and tree predictions $\hat z_t$, the sample variance is
+\[
+    s^2_{\mathrm{tree}}=\frac{1}{T-1}\sum_{t=1}^{T}
+        (\hat z_t-\overline{\hat z})^2,
+    \qquad s_{\mathrm{tree}}=\sqrt{s^2_{\mathrm{tree}}}.
+\]
+At least two trees are required. Tree SD is not the standard error of the forest mean or a calibrated prediction interval. It excludes outcome noise and model bias; a low or zero value does not demonstrate that a prediction is accurate. Use it as a diagnostic alongside validation and predictor coverage. The forest prediction continues to use the fitted model's usual prediction routine.
+
+\subsection{Regression Kriging Components}
+\label{sec:uncertainty-rk}
+
+RK provides \texttt{Residual kriging standard deviation}, \texttt{Residual kriging variance}, \texttt{RF trend tree standard deviation}, and \texttt{RF trend tree variance}, in addition to the final RK prediction. Residual kriging SD is conditional uncertainty for kriging of the RF residuals, holding the fitted RF trend and residual variogram fixed. It excludes uncertainty in the RF trend, variogram parameters, and covariates. The RF trend tree outputs describe tree disagreement separately, using the RF definition above.
+
+These components are not combined into a total RK predictive variance. Do not add the RF tree variance to residual kriging variance or interpret either component as a calibrated interval for the final RK prediction. They describe different aspects of the fitted workflow.
+
+\clearpage
+\subsection{Displaying, Adding, and Saving Outputs}
+
+\begin{enumerate}
+    \item Before interpolation, set \texttt{Add SD layer}. It is checked by default in Geostatistics, RF, and RK. It controls whether the next run adds the primary SD layer to the QGIS layer tree and map canvas, alongside the prediction. The primary SD is kriging SD for OK/UK, tree SD for RF, and residual kriging SD for RK.
+    \item Run interpolation. The prediction is added to QGIS. Available SD and variance rasters are calculated even when \texttt{Add SD layer} is unchecked; the checkbox controls addition to QGIS, not their calculation. Variance and RK trend-dispersion layers are not added automatically.
+    \item Use the map selector to inspect each available output in the plugin. Prediction and diagnostic maps retain independent palette, value limits, and view settings. Switching the preview does not rerun the model or change its prediction values.
+    \item Preserve outputs using the export setting in \texttt{Data}. Prediction and component GeoTIFFs share the prediction grid, CRS, extent, and NoData mask. With temporary outputs, export required files before closing QGIS. Unchecking \texttt{Add SD layer} after a run does not remove a layer already added.
+\end{enumerate}
+
+Framework has its own \texttt{Add SD layer} choice, independent of the standalone tabs. It is enabled for selected OK, RF/RFE, and RK methods. Diagnostic choices become available after a successful matching Framework interpolation. IDW, TPS, and SVM do not provide uncertainty maps in v2.1. The Framework prediction remains the prediction shown in the report when another diagnostic map is being previewed; available uncertainty components appear in their own report section.
 
 \section{Validation of the Selected Interpolator}
 
@@ -1239,11 +1335,24 @@ The Validation plot tab provides graphical support for interpreting the results.
 The method suggested by the framework is the method expected to be suitable according to the framework criteria, but the final decision should also consider the validation metrics and plots obtained for the current dataset.
 \end{infobox}
 
+\subsubsection{Automatic Machine Learning Search in Framework}
+\label{sec:framework-search}
+
+Framework automatically tunes RF, SVM, and the RF trend of RK. It uses the same effective default ranges, candidate construction, and bounded search routines as the individual windows. Opening or configuring a standalone method is not required, and a standalone \texttt{Manual parameters} choice does not disable Framework search. RF may be labeled \texttt{RFE} in the original Framework diagrams; both labels refer to Random Forest here.
+
+Click \texttt{ML grid search} in Framework Validation to review or change each method's ranges, search folds, and maximum sampled combinations. \texttt{Restore Defaults} changes the dialog controls; accept to apply them or cancel to discard edits. The default budgets are three search folds with at most 10 combinations for RF, 12 for SVM, and 10 for the RK trend. Dense and massive profiles can reduce these budgets as described in Section~\ref{sec:dense-massive}.
+
+The control name \texttt{Grid search} denotes reproducible sampling from a finite candidate grid, bounded by the iteration limit, rather than an exhaustive evaluation of every possible combination. RF and RK tuning prioritize search-CV MAE; SVM tuning prioritizes search-CV RMSE. The selected model is then fitted on all eligible training rows for that run. Inspect the report for the effective candidate values and selected parameters.
+
+A completed search can be reused within the same plugin session only when its training values, predictor order, target, and search configuration match. The final model is fitted again; reuse and the original search record are identified in the report. Changed inputs or search settings require a new search. Standard performance-validation scores follow parameter selection and are not a nested-CV estimate. Automatic CV and K-Fold do not create separated spatial validation blocks; spatial block validation is not implemented in v2.1.
+
 \subsection{Final Decision and Interpolation}
 
 The \texttt{Interpolation} page uses the best validated method by default while \texttt{Use best validated method} is active. Disable this option to select another available validated method. Changing the selection prepares the next run; it does not change a raster already generated.
 
-Click \texttt{Run interpolation} to generate the final Framework map. The summary distinguishes the framework recommendation, validation winner, selection for the next run, and the method actually interpolated. The Report describes the executed interpolation. For example, choosing IDW after running TPS leaves the report's executed method as TPS until a new IDW interpolation finishes successfully.
+Click \texttt{Run interpolation} to generate the final Framework map. Its canvas remains empty until a Framework interpolation succeeds; standalone maps and validation alone do not populate it. Framework interpolation, validation, and comparison use private result workspaces, so they do not populate or overwrite maps, models, parameter values, or validation results in the individual tabs. Standalone reruns likewise do not replace a completed Framework map. Shared input changes still invalidate results that no longer match the data.
+
+The summary distinguishes the initial framework recommendation, validation winner, selection for the next run, and method actually interpolated. The Report describes the executed interpolation. For example, choosing IDW after running TPS leaves the report's executed method as TPS until a new IDW interpolation finishes successfully. Set Framework's own \texttt{Add SD layer} option before running a supported method; see Section~\ref{sec:uncertainty-maps}.
 
 
 \begin{figure}[H]
@@ -1255,7 +1364,7 @@ Click \texttt{Run interpolation} to generate the final Framework map. The summar
 
 \subsection{Validating Models in Framework Semivariogram Settings}
 
-From \texttt{Overview}, click \texttt{Semivariogram settings}. Review the fitting method, maximum distance, lag distance or lag count, model, nugget, partial sill, and range. \texttt{MoM} shows experimental semivariances and a theoretical curve; \texttt{REML} shows the theoretical curve only.
+From \texttt{Overview}, click \texttt{Semivariogram settings}. Review the fitting method, maximum distance, lag distance or lag count, model, nugget, partial sill, and range. \texttt{MoM} shows experimental semivariances and a theoretical curve; \texttt{REML} shows the theoretical curve only. Automatic MoM uses the joint constrained weighted fit described in Geostatistics. \texttt{Range (a)} is the model scale, with the model-specific practical range defined in Section~\ref{sec:model-range}.
 
 
 \begin{figure}[H]
@@ -1336,7 +1445,9 @@ Open \texttt{View larger view} from the plot context menu when a larger map is u
 \section{Interactive Reports and Export}
 \label{sec:reports}
 
-The Framework \texttt{Report} page provides an interactive summary of the current session. Use the section list to review the overview, validation, interpolation, and diagnostics available for that session. The summary distinguishes a recommendation from the method actually executed and links back to the relevant analysis pages.
+The Framework \texttt{Report} page provides an interactive summary of the current session. Use the section list to review the overview, validation, interpolation, and diagnostics available for that session. The initial recommended method set is reported separately from the validation winner, next selected method, and executed interpolation. Links return to the relevant analysis pages.
+
+The report records completed ML searches and selected parameters, including the effective search settings, folds, criterion, score, evaluated combinations, and training population. Reused searches retain their original provenance; later control changes do not rewrite an earlier execution. Available uncertainty components and their definitions are reported separately from prediction maps. When a map comparison is included, its full A/B/signed-difference figure is kept together. Newly generated report text follows the selected interface language.
 
 
 \begin{figure}[H]
@@ -1448,6 +1559,10 @@ Unavailable comparison & Validate both candidate methods and resolve missing cov
 Report shows an earlier method & The report describes the successful executed interpolation. Changing the next-run selection requires Run interpolation before the executed method changes. \\
 Dense run takes too long & Inspect grid-cell count, predictors, neighborhood, and requested validation; begin with a coarser grid and the automatic profile. \\
 Missing ML dependency & Use the plugin's compatible dependency setup for the current QGIS Python and architecture. Do not copy compiled packages from another 32-bit or 64-bit installation. \\
+Incomplete predictor coverage & Check the source raster paths, each raster CRS, extent, and explicit NoData settings. The run stops if fewer than half of eligible observations or inside-polygon grid cells have complete predictors; it does not fill missing values automatically. \\
+Map output or SD unavailable & Select OK, RF/RFE, or RK in Framework and complete its interpolation. For standalone Geostatistics, select OK or UK. IDW, TPS, and SVM have no uncertainty output. \\
+Different range values & Distinguish the entered model scale from the practical range: $a$ for spherical, $3a$ for exponential, and $\sqrt{3}a$ for Gaussian. \\
+Language change delayed & Wait until the active calculation finishes. Regenerate a report to export it in the newly selected language. \\
 Need to retain the session & Export the raster and report and record exclusions and settings before closing; reopening intentionally starts a clean session. \\
 \bottomrule
 \end{longtable}

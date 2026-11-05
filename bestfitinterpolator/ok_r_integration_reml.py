@@ -14,6 +14,8 @@ What this file does:
 Note:
 - The "MoM/REML" label in the UI is informational only. No REML fit is executed here.
 """
+from .localization import _message
+from .localization import _combo_text, _dialog, _item_text, _new, _tab_text, _ui
 from .theme import save_figure
 from .compat import enum_value, qt_exec
 from .theme import COLORS
@@ -22,6 +24,7 @@ from .compat import ControllerConnections, is_alive, log_exception
 import math
 import os
 from .semivariogram_engine import SemivariogramEngine
+from .semivariogram_fit import update_range_widgets
 from .diagnostics_ui import feature_in_analysis
 from .compat import geometry_type, enum_value
 import numpy as np
@@ -160,7 +163,7 @@ class OKTabController(ControllerConnections):
         if cmb is None or not hasattr(cmb, "count"):
             return
         try:
-            has_auto = any(str(cmb.itemText(i)).strip().lower().startswith("auto") for i in range(cmb.count()))
+            has_auto = any(str(_item_text(cmb, i)).strip().lower().startswith("auto") for i in range(cmb.count()))
             if not has_auto:
                 cmb.insertItem(0, "Automatic")
                 cmb.setCurrentIndex(0)
@@ -171,7 +174,7 @@ class OKTabController(ControllerConnections):
         cmb = getattr(self.dlg, "cmbOKModel", None)
         if cmb is None or not hasattr(cmb, "currentText"):
             return False
-        return str(cmb.currentText() or "").strip().lower().startswith("auto")
+        return str(_combo_text(cmb) or "").strip().lower().startswith("auto")
 
     @staticmethod
     def _validation_metrics(obs, pred):
@@ -244,7 +247,7 @@ class OKTabController(ControllerConnections):
                 f"LCCC={self._fmt_metric(best.get('lccc'))}; "
                 f"RMSE={self._fmt_metric(best.get('rmse'))}"
             )
-            btn.setToolTip(
+            _ui(btn, 'setToolTip', 
                 f"Best automatic model: {self._model_text_from_token(self._auto_selected_model)} "
                 f"({metric_text}). Click to view all model validation results."
             )
@@ -354,12 +357,12 @@ class OKTabController(ControllerConnections):
         if layout is None or not hasattr(layout, "addWidget"):
             return
         try:
-            mode_label = QLabel("Lag input:", parent)
+            mode_label = _new(QLabel, "Lag input:", parent)
             mode_label.setObjectName("lblOKLagMode")
             mode_combo = QComboBox(parent)
             mode_combo.setObjectName("cmbOKLagMode")
-            mode_combo.addItems(["Lag distance", "Number of lags"])
-            count_label = QLabel("Number of lags:", parent)
+            _ui(mode_combo, 'addItems', ["Lag distance", "Number of lags"])
+            count_label = _new(QLabel, "Number of lags:", parent)
             count_label.setObjectName("lblOKLagCount")
             count_spin = QSpinBox(parent)
             count_spin.setObjectName("spinOKLagCount")
@@ -387,7 +390,7 @@ class OKTabController(ControllerConnections):
     def _lag_mode_is_count(self) -> bool:
         cmb = getattr(self.dlg, "cmbOKLagMode", None)
         try:
-            return cmb is not None and "number" in str(cmb.currentText() or "").strip().lower()
+            return cmb is not None and "number" in str(_combo_text(cmb) or "").strip().lower()
         except Exception:
             return False
 
@@ -616,7 +619,7 @@ class OKTabController(ControllerConnections):
             tab_text = ""
             tabs = getattr(self.dlg, "mainTabs", None)
             if tabs is not None and hasattr(tabs, "tabText"):
-                tab_text = str(tabs.tabText(index) or "").strip().lower()
+                tab_text = str(_tab_text(tabs, index) or "").strip().lower()
             if "regression" in tab_text or (tab_text and not any(token in tab_text for token in ("geo", "krig", "geostat"))):
                 return
             self._ensure_inputs_from_ui()
@@ -632,9 +635,9 @@ class OKTabController(ControllerConnections):
     def _get_selected_model(self) -> str:
         cmb = getattr(self.dlg, "cmbOKModel", None)
         if cmb is not None and hasattr(cmb, "currentText"):
-            if str(cmb.currentText() or "").strip().lower().startswith("auto"):
+            if str(_combo_text(cmb) or "").strip().lower().startswith("auto"):
                 return str(getattr(self, "_auto_selected_model", "exponential") or "exponential")
-            return self._normalize_model_token(cmb.currentText())
+            return self._normalize_model_token(_combo_text(cmb))
         return "exponential"
 
     def _set_model_combo_by_token(self, token: str):
@@ -644,11 +647,11 @@ class OKTabController(ControllerConnections):
         try:
             if str(token or "").strip().lower().startswith("auto"):
                 for i in range(cmb.count()):
-                    if str(cmb.itemText(i)).strip().lower().startswith("auto"):
+                    if str(_item_text(cmb, i)).strip().lower().startswith("auto"):
                         cmb.setCurrentIndex(i)
                         return
             for i in range(cmb.count()):
-                itxt = cmb.itemText(i)
+                itxt = _item_text(cmb, i)
                 if str(itxt).strip().lower().startswith("auto"):
                     continue
                 if self._normalize_model_token(itxt) == token:
@@ -661,7 +664,7 @@ class OKTabController(ControllerConnections):
         for name in ("cmbZField", "cmbField", "cmbVariable", "cmbOKField", "Points_2"):
             w = getattr(self.dlg, name, None)
             if w is not None and hasattr(w, "currentText"):
-                txt = w.currentText()
+                txt = _combo_text(w)
                 if txt:
                     self.z_field = txt
                     return
@@ -687,7 +690,7 @@ class OKTabController(ControllerConnections):
                 self._ensure_variogram_ready()
                 self.run_ok_cv_function()
             except Exception as e:
-                self.iface.messageBar().pushCritical("Kriging CV", f"Failed to trigger CV run: {e}")
+                _message(self.iface.messageBar().pushCritical, "Kriging CV", f"Failed to trigger CV run: {e}")
 
     def _on_recalculate_clicked(self):
         if not self.is_dispatcher_active():
@@ -936,9 +939,9 @@ class OKTabController(ControllerConnections):
             def _show_menu(pos):
                 try:
                     menu = QMenu(self.dlg)
-                    act_view = menu.addAction("View larger view")
-                    act_copy = menu.addAction("Copy graph")
-                    act_save = menu.addAction("Save graph")
+                    act_view = _ui(menu, 'addAction', "View larger view")
+                    act_copy = _ui(menu, 'addAction', "Copy graph")
+                    act_save = _ui(menu, 'addAction', "Save graph")
                     chosen = qt_exec(menu, canvas.mapToGlobal(pos))
                     if chosen == act_view:
                         self._show_larger_graph(fig, default_prefix)
@@ -947,11 +950,11 @@ class OKTabController(ControllerConnections):
                     elif chosen == act_save:
                         suggested_dir = os.path.expanduser("~")
                         suggested = os.path.join(suggested_dir, f"{default_prefix}.png")
-                        path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
+                        path, _ = _dialog(QFileDialog.getSaveFileName, self.dlg, "Save graph", suggested, "PNG Images (*.png)")
                         if path:
                             save_figure(fig, path, dpi=300, bbox_inches='tight')
                             try:
-                                self.iface.messageBar().pushMessage("Saved", f"PNG saved to: {path}", level=0)
+                                _message(self.iface.messageBar().pushMessage, "Saved", f"PNG saved to: {path}", level=0)
                             except Exception:  # nosec B110
                                 pass
                 except Exception:  # nosec B110
@@ -985,11 +988,11 @@ class OKTabController(ControllerConnections):
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
             try:
-                self.iface.messageBar().pushMessage("Copied", "Graph copied to clipboard.", level=0)
+                _message(self.iface.messageBar().pushMessage, "Copied", "Graph copied to clipboard.", level=0)
             except Exception:  # nosec B110
                 pass
         except Exception as exc:
-            QMessageBox.warning(self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
+            _dialog(QMessageBox.warning, self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
 
     def _show_larger_graph(self, source_fig, title_prefix: str):
         from .larger_view import show_larger_view
@@ -999,15 +1002,15 @@ class OKTabController(ControllerConnections):
         """Update small UI labels/fields regarding the current context."""
         if hasattr(self.dlg, "valOKZName") and hasattr(self.dlg, "valOKSamples"):
             try:
-                self.dlg.valOKZName.setText(str(var_name))
-                self.dlg.valOKSamples.setText(str(n))
+                _ui(self.dlg.valOKZName, 'setText', str(var_name))
+                _ui(self.dlg.valOKSamples, 'setText', str(n))
             except Exception:  # nosec B110
                 pass
         # Display which fitting method is active (value label in UI is 'valOKModel')
         label_val = getattr(self.dlg, "valOKModel", None)
         if label_val is not None and hasattr(label_val, "setText"):
             try:
-                label_val.setText(self._ok_fit_method)
+                _ui(label_val, 'setText', self._ok_fit_method)
             except Exception:  # nosec B110
                 pass
         else:
@@ -1015,7 +1018,7 @@ class OKTabController(ControllerConnections):
             label_compat = getattr(self.dlg, "lblFitTitle", None) or getattr(self.dlg, "lblOKModel", None)
             if label_compat is not None and hasattr(label_compat, "setText"):
                 try:
-                    label_compat.setText(self._ok_fit_method)
+                    _ui(label_compat, 'setText', self._ok_fit_method)
                 except Exception:  # nosec B110
                     pass
         if hasattr(self.dlg, "spinOKCutoff") and hasattr(self.dlg, "spinOKLag"):
@@ -1047,7 +1050,7 @@ class OKTabController(ControllerConnections):
             ax = self._krig_vario_fig.add_subplot(111)
             ax.text(.5, .5, "At least five valid observations are required", ha="center")
             self._krig_vario_canvas.draw_idle()
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Kriging",
                 "Select point layer and variable in the Data tab",
                 level=1
@@ -1203,15 +1206,16 @@ class OKTabController(ControllerConnections):
 
     def _update_sdi_label(self):
         try:
+            update_range_widgets(self.dlg, self._get_selected_model(), self.dlg.spinOKRange.value())
             lbl = getattr(self.dlg, "lblSDI_value", None)
             if lbl is None:
                 return
             nugget = float(self.dlg.spinOKNugget.value()) if hasattr(self.dlg, "spinOKNugget") else None
             psill = float(self.dlg.spinOKPsill.value()) if hasattr(self.dlg, "spinOKPsill") else None
             if nugget is None or psill is None:
-                lbl.setText("—")
+                _ui(lbl, 'setText', "—")
                 return
-            lbl.setText(self._compute_sdi_text(nugget, psill))
+            _ui(lbl, 'setText', self._compute_sdi_text(nugget, psill))
         except Exception:  # nosec B110
             pass
 
@@ -1361,14 +1365,14 @@ class OKTabController(ControllerConnections):
             ax = self._krig_vario_fig.add_subplot(111)
             ax.text(.5, .5, "At least five valid observations are required", ha="center")
             self._krig_vario_canvas.draw_idle()
-            self.iface.messageBar().pushMessage("Kriging", "There are no valid points/variables.", level=2)
+            _message(self.iface.messageBar().pushMessage, "Kriging", "There are no valid points/variables.", level=2)
             return
         self._active_dense_notice = ""
         if is_dense_dataset(len(z)):
             self._active_dense_notice = dense_method_notice(len(z), "Ordinary Kriging")
         poly_layer = self._resolve_polygon_layer()
         if poly_layer is None:
-            self.iface.messageBar().pushMessage("Kriging", "Select a polygon layer.", level=2)
+            _message(self.iface.messageBar().pushMessage, "Kriging", "Select a polygon layer.", level=2)
             return
         plugin = getattr(self, "parent_plugin", None)
         if (
@@ -1398,16 +1402,16 @@ class OKTabController(ControllerConnections):
             lambda points: self._points_inside_polygon_mask(points, poly_layer),
         )
         if inside_idx.size == 0:
-            self.iface.messageBar().pushMessage("Kriging", "The grid does not fall within the polygon.", level=1)
+            _message(self.iface.messageBar().pushMessage, "Kriging", "The grid does not fall within the polygon.", level=1)
             return
         n_pred = inside_pts.shape[0]
 
         # Warn and auto-guard very large grids
         if n_pred > 800_000:
-            self.iface.messageBar().pushWarning("Kriging",
+            _message(self.iface.messageBar().pushWarning, "Kriging",
                 f"Many cells to predict ({n_pred:,}). Consider increasing the pixel size.")
         # Setup progress dialog (modal, closes automatically)
-        prog = QProgressDialog("Running kriging", "Cancel", 0, n_pred, self.dlg)
+        prog = _new(QProgressDialog, "Running kriging", "Cancel", 0, n_pred, self.dlg)
         prog.setWindowModality(enum_value(Qt, "WindowModality", "ApplicationModal"))
         prog.setMinimumDuration(0)
         prog.setValue(0)
@@ -1433,11 +1437,11 @@ class OKTabController(ControllerConnections):
             )
         except KeyboardInterrupt:
             prog.cancel()
-            self.iface.messageBar().pushMessage("Kriging", "Canceled for the user.", level=1)
+            _message(self.iface.messageBar().pushMessage, "Kriging", "Canceled for the user.", level=1)
             return
         except Exception as e:
             prog.cancel()
-            self.iface.messageBar().pushMessage("Kriging", f"Kriging failed: {e}", level=2)
+            _message(self.iface.messageBar().pushMessage, "Kriging", f"Kriging failed: {e}", level=2)
             return
         finally:
             prog.close()
@@ -1555,17 +1559,17 @@ class OKTabController(ControllerConnections):
         try:
             out_path = self._write_ok_raster(array, xmin, xmax, ymin, ymax, pixel, polygon_layer, variable_label, model_token)
         except Exception as exc:
-            self.iface.messageBar().pushWarning("Kriging REML", f"Failed to export raster: {exc}")
+            _message(self.iface.messageBar().pushWarning, "Kriging REML", f"Failed to export raster: {exc}")
             return
         layer_name = f"OK REML {model_token.capitalize()} ({variable_label})"
         layer = self._create_output_raster_layer(out_path, layer_name)
         if not layer.isValid():
-            self.iface.messageBar().pushWarning("Kriging REML", "Raster created but is invalid for QGIS.")
+            _message(self.iface.messageBar().pushWarning, "Kriging REML", "Raster created but is invalid for QGIS.")
             return
         self._mark_temporary_layer(layer, out_path)
         QgsProject.instance().addMapLayer(layer)
         self._last_output_path=out_path
-        self.iface.messageBar().pushMessage("Kriging REML", f"Raster added to QGIS: {out_path}", level=0)
+        _message(self.iface.messageBar().pushMessage, "Kriging REML", f"Raster added to QGIS: {out_path}", level=0)
 
 
     def _resolve_polygon_layer(self):
@@ -1575,7 +1579,7 @@ class OKTabController(ControllerConnections):
         for nm in cand_names:
             w = getattr(self.dlg, nm, None)
             if w is not None and hasattr(w, "currentText"):
-                txt = w.currentText()
+                txt = _combo_text(w)
                 if txt:
                     layer_name = txt
                     break
@@ -1691,7 +1695,7 @@ class OKTabController(ControllerConnections):
             )
             return np.asarray(pred, dtype=float)
         except Exception as e:
-            self.iface.messageBar().pushMessage("Kriging", f"Python kriging failed: {e}", level=2)
+            _message(self.iface.messageBar().pushMessage, "Kriging", f"Python kriging failed: {e}", level=2)
             return None
 
     # ------------------------------ Map plotting ------------------------------
@@ -1702,7 +1706,7 @@ class OKTabController(ControllerConnections):
             # Ensure canvas
             container_m = getattr(self.dlg, "canvasOKInterpolation", None) or getattr(self.dlg, "CanvasOKInterpolation", None)
             if container_m is None:
-                self.iface.messageBar().pushMessage("Kriging", "There is no canvas for the kriging map.", level=1)
+                _message(self.iface.messageBar().pushMessage, "Kriging", "There is no canvas for the kriging map.", level=1)
                 return
             self._krig_map_fig = Figure(figsize=(5, 4), tight_layout=True)
             self._krig_map_canvas = FigureCanvas(self._krig_map_fig)
@@ -1815,7 +1819,7 @@ class OKTabController(ControllerConnections):
                                 return
                 except Exception:  # nosec B110
                     pass
-                lname = w.currentText()
+                lname = _combo_text(w)
                 if lname:
                     layers = QgsProject.instance().mapLayersByName(lname)
                     if layers:
@@ -1840,7 +1844,7 @@ class OKTabController(ControllerConnections):
             for name in ("cmbZField", "cmbField", "cmbVariable", "cmbOKField", "Points_2"):
                 w = getattr(self.dlg, name, None)
                 if w is not None and hasattr(w, "currentText"):
-                    text = str(w.currentText() or "").strip()
+                    text = str(_combo_text(w) or "").strip()
                     if text:
                         current_field = text
                         break

@@ -12,6 +12,7 @@ import subprocess  # nosec B404
 import importlib
 from pathlib import Path
 import sysconfig
+from .windows_process import hidden_process_options, quiet_windows_cpu_probe
 
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QMessageBox, QApplication
@@ -163,7 +164,8 @@ def _run_subprocess(command, parent=None):
             command,
             capture_output=True,
             text=True,
-            check=False
+            check=False,
+            **hidden_process_options()
         )
         return process.returncode == 0, process.stdout, process.stderr
     finally:
@@ -200,6 +202,7 @@ def _is_sklearn_available():
     try:
         import sklearn  # noqa: F401
         from sklearn.ensemble import RandomForestRegressor  # noqa: F401
+        quiet_windows_cpu_probe()
         return True, ""
     except Exception as exc:
         return False, str(exc)

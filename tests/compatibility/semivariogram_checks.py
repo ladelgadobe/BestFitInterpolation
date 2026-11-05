@@ -91,6 +91,9 @@ def check_framework_validation(plugin,output,events,wait_jobs):
         window.apply.click(); events()
         assert parent.cmb_model.currentText()==row['model']
         np.testing.assert_allclose(parent._read_params_from_controls(),row['fitted_params'],rtol=0,atol=6e-7)
+        from bestfitinterpolator.semivariogram_fit import practical_range
+        assert parent.lbl_practical_range.text() == '{:.6g}'.format(practical_range(parent.cmb_model.currentText(), parent.spin_range.value()))
+        parent.grab().save(str(output/('framework-sdi-{}-v2_1.png'.format(mode))))
         labels=[line.get_label() for line in parent.fig.axes[0].lines]
         assert ('Experimental' in labels)==(mode=='MoM')
         parent.spin_lag_width.setValue(parent.spin_lag_width.value()*.95); events()

@@ -7,9 +7,10 @@ All code comments are in English.
 from __future__ import annotations
 
 from .ok_r_integration_MoM import OKTabController as _MoMBaseController
+from .geostatistics_options import GeostatisticsOptions
 
 
-class OKMoMController(_MoMBaseController):
+class OKMoMController(GeostatisticsOptions, _MoMBaseController):
     """Thin wrapper around the stable MoM controller."""
 
     strategy_name = "MoM"

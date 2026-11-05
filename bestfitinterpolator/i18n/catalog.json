@@ -1,0 +1,4474 @@
+{
+  "Language": {
+    "es": "Idioma",
+    "pt_BR": "Idioma"
+  },
+  "Language change pending until calculation finishes": {
+    "es": "Cambio de idioma pendiente hasta finalizar el cálculo",
+    "pt_BR": "Mudança de idioma pendente até o cálculo terminar"
+  },
+  "Interface, plots and newly generated reports. Calculations and user data are unchanged.": {
+    "es": "Interfaz, gráficos e informes nuevos. Se conservan los cálculos y los datos del usuario.",
+    "pt_BR": "Interface, gráficos e novos relatórios. Os cálculos e os dados do usuário são preservados."
+  },
+  "About": {
+    "es": "Acerca de",
+    "pt_BR": "Sobre"
+  },
+  "Actions": {
+    "es": "Acciones",
+    "pt_BR": "Ações"
+  },
+  "Add SD layer": {
+    "es": "Añadir capa de desviación estándar",
+    "pt_BR": "Adicionar camada de desvio padrão"
+  },
+  "Adjust semivariogram": {
+    "es": "Ajustar semivariograma",
+    "pt_BR": "Ajustar semivariograma"
+  },
+  "Advanced semivariogram settings": {
+    "es": "Configuración avanzada del semivariograma",
+    "pt_BR": "Configurações avançadas do semivariograma"
+  },
+  "All": {
+    "es": "Todos",
+    "pt_BR": "Todos"
+  },
+  "Analysis settings": {
+    "es": "Configuración del análisis",
+    "pt_BR": "Configurações da análise"
+  },
+  "Any": {
+    "es": "Cualquiera",
+    "pt_BR": "Qualquer"
+  },
+  "Apply SDI to Framework overview": {
+    "es": "Aplicar IDE al resumen de Framework",
+    "pt_BR": "Aplicar IDE ao resumo do Framework"
+  },
+  "Apply covariates to Framework": {
+    "es": "Aplicar covariables a Framework",
+    "pt_BR": "Aplicar covariáveis ao Framework"
+  },
+  "Apply selected model": {
+    "es": "Aplicar modelo seleccionado",
+    "pt_BR": "Aplicar modelo selecionado"
+  },
+  "Are you sure you want to close Best Fit Interpolator? Any unsaved progress in the plugin window will be lost.": {
+    "es": "¿Desea cerrar Best Fit Interpolator? Se perderá el progreso no guardado en la ventana del plugin.",
+    "pt_BR": "Deseja fechar o Best Fit Interpolator? O progresso não salvo na janela do plugin será perdido."
+  },
+  "At least N": {
+    "es": "Al menos N",
+    "pt_BR": "Pelo menos N"
+  },
+  "At least five valid observations are required": {
+    "es": "Se requieren al menos cinco observaciones válidas",
+    "pt_BR": "São necessárias pelo menos cinco observações válidas"
+  },
+  "Authors:": {
+    "es": "Autores:",
+    "pt_BR": "Autores:"
+  },
+  "Auto": {
+    "es": "Automático",
+    "pt_BR": "Automático"
+  },
+  "Autofill from geostatistics": {
+    "es": "Completar desde Geoestadística",
+    "pt_BR": "Preencher a partir de Geoestatística"
+  },
+  "Automatic": {
+    "es": "Automático",
+    "pt_BR": "Automático"
+  },
+  "Automatic (training fold)": {
+    "es": "Automático (partición de entrenamiento)",
+    "pt_BR": "Automático (partição de treinamento)"
+  },
+  "Automatic CV": {
+    "es": "Validación automática",
+    "pt_BR": "Validação automática"
+  },
+  "Automatic value range": {
+    "es": "Intervalo de valores automático",
+    "pt_BR": "Intervalo de valores automático"
+  },
+  "Best RF params: --": {
+    "es": "Mejores parámetros RF: --",
+    "pt_BR": "Melhores parâmetros RF: --"
+  },
+  "Best RF params: ntree={p0}, mtry={p1}, nodesize={p2}": {
+    "es": "Mejores parámetros RF: ntree={p0}, mtry={p1}, nodesize={p2}",
+    "pt_BR": "Melhores parâmetros RF: ntree={p0}, mtry={p1}, nodesize={p2}"
+  },
+  "Best automatic model: {p0} ({p1}). Click to view all model validation results.": {
+    "es": "Mejor modelo automático: {p0} ({p1}). Haga clic para ver la validación de todos los modelos.",
+    "pt_BR": "Melhor modelo automático: {p0} ({p1}). Clique para ver a validação de todos os modelos."
+  },
+  "CRS mismatch": {
+    "es": "Sistemas de referencia distintos",
+    "pt_BR": "Sistemas de referência diferentes"
+  },
+  "CRS warning": {
+    "es": "Aviso del sistema de referencia",
+    "pt_BR": "Aviso do sistema de referência"
+  },
+  "CRS:": {
+    "es": "SRC:",
+    "pt_BR": "SRC:"
+  },
+  "CRS: {p0}": {
+    "es": "SRC: {p0}",
+    "pt_BR": "SRC: {p0}"
+  },
+  "Calculate": {
+    "es": "Calcular",
+    "pt_BR": "Calcular"
+  },
+  "Calculating A − B on all aligned pixels": {
+    "es": "Calculando A − B en todos los píxeles alineados",
+    "pt_BR": "Calculando A − B em todos os pixels alinhados"
+  },
+  "Calculating cross validation for Spherical, Exponential and Gaussian": {
+    "es": "Calculando validación cruzada de los modelos esférico, exponencial y gaussiano",
+    "pt_BR": "Calculando validação cruzada dos modelos esférico, exponencial e gaussiano"
+  },
+  "Calculating diagnostics": {
+    "es": "Calculando diagnósticos",
+    "pt_BR": "Calculando diagnósticos"
+  },
+  "Cancel": {
+    "es": "Cancelar",
+    "pt_BR": "Cancelar"
+  },
+  "Cancel calculation": {
+    "es": "Cancelar cálculo",
+    "pt_BR": "Cancelar cálculo"
+  },
+  "Choose two different evaluated methods.": {
+    "es": "Seleccione dos métodos evaluados distintos.",
+    "pt_BR": "Selecione dois métodos avaliados diferentes."
+  },
+  "Choose two evaluated methods. Compare generates any missing maps on the current grid.": {
+    "es": "Seleccione dos métodos evaluados. Comparar genera los mapas faltantes en la malla actual.",
+    "pt_BR": "Selecione dois métodos avaliados. Comparar gera os mapas ausentes na grade atual."
+  },
+  "Clear": {
+    "es": "Limpiar",
+    "pt_BR": "Limpar"
+  },
+  "Clear all": {
+    "es": "Limpiar todo",
+    "pt_BR": "Limpar tudo"
+  },
+  "Close": {
+    "es": "Cerrar",
+    "pt_BR": "Fechar"
+  },
+  "Close Best Fit Interpolator": {
+    "es": "Cerrar Best Fit Interpolator",
+    "pt_BR": "Fechar Best Fit Interpolator"
+  },
+  "Compare maps": {
+    "es": "Comparar mapas",
+    "pt_BR": "Comparar mapas"
+  },
+  "Comparison": {
+    "es": "Comparación",
+    "pt_BR": "Comparação"
+  },
+  "Comparison visualization settings": {
+    "es": "Configuración visual de la comparación",
+    "pt_BR": "Configurações visuais da comparação"
+  },
+  "Complete reference:": {
+    "es": "Referencia completa:",
+    "pt_BR": "Referência completa:"
+  },
+  "Compute correlation": {
+    "es": "Calcular correlación",
+    "pt_BR": "Calcular correlação"
+  },
+  "Compute correlations": {
+    "es": "Calcular correlaciones",
+    "pt_BR": "Calcular correlações"
+  },
+  "Computing RF validation metrics": {
+    "es": "Calculando métricas de validación de RF",
+    "pt_BR": "Calculando métricas de validação do RF"
+  },
+  "Computing RK validation metrics": {
+    "es": "Calculando métricas de validación de RK",
+    "pt_BR": "Calculando métricas de validação do RK"
+  },
+  "Contact:": {
+    "es": "Contacto:",
+    "pt_BR": "Contato:"
+  },
+  "Copied": {
+    "es": "Copiado",
+    "pt_BR": "Copiado"
+  },
+  "Copy error": {
+    "es": "Error al copiar",
+    "pt_BR": "Erro ao copiar"
+  },
+  "Copy graph": {
+    "es": "Copiar gráfico",
+    "pt_BR": "Copiar gráfico"
+  },
+  "Correlation Matrix": {
+    "es": "Matriz de correlación",
+    "pt_BR": "Matriz de correlação"
+  },
+  "Correlation plot": {
+    "es": "Gráfico de correlación",
+    "pt_BR": "Gráfico de correlação"
+  },
+  "Correlation plot placeholder": {
+    "es": "Vista del gráfico de correlación",
+    "pt_BR": "Área do gráfico de correlação"
+  },
+  "Could not copy graph:\n{p0}": {
+    "es": "No se pudo copiar el gráfico:\n{p0}",
+    "pt_BR": "Não foi possível copiar o gráfico:\n{p0}"
+  },
+  "Could not copy the decision tree image.": {
+    "es": "No se pudo copiar la imagen del árbol de decisión.",
+    "pt_BR": "Não foi possível copiar a imagem da árvore de decisão."
+  },
+  "Could not export the decision tree PNG.": {
+    "es": "No se pudo exportar el árbol de decisión a PNG.",
+    "pt_BR": "Não foi possível exportar a árvore de decisão para PNG."
+  },
+  "Could not generate {p0}. {p1} The final interpolation result is unchanged.": {
+    "es": "No se pudo generar {p0}. {p1} Se conserva el resultado de la interpolación final.",
+    "pt_BR": "Não foi possível gerar {p0}. {p1} O resultado da interpolação final foi preservado."
+  },
+  "Could not open larger view:\n{p0}": {
+    "es": "No se pudo ampliar la vista:\n{p0}",
+    "pt_BR": "Não foi possível ampliar a visualização:\n{p0}"
+  },
+  "Could not save PNG:\n{p0}": {
+    "es": "No se pudo guardar el PNG:\n{p0}",
+    "pt_BR": "Não foi possível salvar o PNG:\n{p0}"
+  },
+  "Could not save graph:\n{p0}": {
+    "es": "No se pudo guardar el gráfico:\n{p0}",
+    "pt_BR": "Não foi possível salvar o gráfico:\n{p0}"
+  },
+  "Covariate list": {
+    "es": "Lista de covariables",
+    "pt_BR": "Lista de covariáveis"
+  },
+  "Covariate map preview placeholder": {
+    "es": "Vista previa del mapa de covariables",
+    "pt_BR": "Área de prévia do mapa de covariáveis"
+  },
+  "Covariate maps": {
+    "es": "Mapas de covariables",
+    "pt_BR": "Mapas de covariáveis"
+  },
+  "Covariate options": {
+    "es": "Opciones de covariables",
+    "pt_BR": "Opções de covariáveis"
+  },
+  "Covariate rasters": {
+    "es": "Rásteres de covariables",
+    "pt_BR": "Rasters de covariáveis"
+  },
+  "Covariates": {
+    "es": "Covariables",
+    "pt_BR": "Covariáveis"
+  },
+  "Covariates  preprocessing": {
+    "es": "Preprocesamiento de covariables",
+    "pt_BR": "Pré-processamento de covariáveis"
+  },
+  "Data": {
+    "es": "Datos",
+    "pt_BR": "Dados"
+  },
+  "Data changed. Run validation again before applying a model.": {
+    "es": "Los datos cambiaron. Repita la validación antes de aplicar un modelo.",
+    "pt_BR": "Os dados mudaram. Repita a validação antes de aplicar um modelo."
+  },
+  "Data or settings changed. Open validation again before applying a model.": {
+    "es": "Los datos o la configuración cambiaron. Abra de nuevo la validación antes de aplicar un modelo.",
+    "pt_BR": "Os dados ou as configurações mudaram. Abra novamente a validação antes de aplicar um modelo."
+  },
+  "Data or settings changed. Open validation again for the current settings.": {
+    "es": "Los datos o la configuración cambiaron. Abra de nuevo la validación con la configuración actual.",
+    "pt_BR": "Os dados ou as configurações mudaram. Abra novamente a validação com as configurações atuais."
+  },
+  "Data profile classification": {
+    "es": "Clasificación del volumen de datos",
+    "pt_BR": "Classificação do volume de dados"
+  },
+  "Dataset": {
+    "es": "Conjunto de datos",
+    "pt_BR": "Conjunto de dados"
+  },
+  "Decision summary": {
+    "es": "Resumen de la decisión",
+    "pt_BR": "Resumo da decisão"
+  },
+  "Deterministics": {
+    "es": "Deterministas",
+    "pt_BR": "Determinísticos"
+  },
+  "Diagnostics": {
+    "es": "Diagnósticos",
+    "pt_BR": "Diagnósticos"
+  },
+  "Distance threshold": {
+    "es": "Umbral de distancia",
+    "pt_BR": "Limiar de distância"
+  },
+  "Documentation and support": {
+    "es": "Documentación y soporte",
+    "pt_BR": "Documentação e suporte"
+  },
+  "Done": {
+    "es": "Finalizado",
+    "pt_BR": "Concluído"
+  },
+  "Evaluate available methods": {
+    "es": "Evaluar métodos disponibles",
+    "pt_BR": "Avaliar métodos disponíveis"
+  },
+  "Exhaustive grid search": {
+    "es": "Búsqueda exhaustiva en malla",
+    "pt_BR": "Busca exaustiva em grade"
+  },
+  "Exponential": {
+    "es": "Exponencial",
+    "pt_BR": "Exponencial"
+  },
+  "Export PDF": {
+    "es": "Exportar PDF",
+    "pt_BR": "Exportar PDF"
+  },
+  "Export PDF report": {
+    "es": "Exportar informe PDF",
+    "pt_BR": "Exportar relatório PDF"
+  },
+  "Export Rasters to project folder": {
+    "es": "Exportar rásteres a la carpeta del proyecto",
+    "pt_BR": "Exportar rasters para a pasta do projeto"
+  },
+  "Export correlations CSV": {
+    "es": "Exportar correlaciones a CSV",
+    "pt_BR": "Exportar correlações para CSV"
+  },
+  "Export extractions CSV": {
+    "es": "Exportar extracciones a CSV",
+    "pt_BR": "Exportar extrações para CSV"
+  },
+  "Export spatial results…": {
+    "es": "Exportar resultados espaciales…",
+    "pt_BR": "Exportar resultados espaciais…"
+  },
+  "Extract covariates to sample points": {
+    "es": "Extraer covariables en los puntos de muestreo",
+    "pt_BR": "Extrair covariáveis nos pontos amostrais"
+  },
+  "Extracted covariate values": {
+    "es": "Valores de covariables extraídos",
+    "pt_BR": "Valores de covariáveis extraídos"
+  },
+  "Failed to read current data\n{p0}": {
+    "es": "No se pudieron leer los datos actuales\n{p0}",
+    "pt_BR": "Não foi possível ler os dados atuais\n{p0}"
+  },
+  "Failed to update Framework overview\n{p0}": {
+    "es": "No se pudo actualizar el resumen de Framework\n{p0}",
+    "pt_BR": "Não foi possível atualizar o resumo do Framework\n{p0}"
+  },
+  "Final method": {
+    "es": "Método final",
+    "pt_BR": "Método final"
+  },
+  "Final summary": {
+    "es": "Resumen final",
+    "pt_BR": "Resumo final"
+  },
+  "Fit RF parameters": {
+    "es": "Ajustar parámetros de RF",
+    "pt_BR": "Ajustar parâmetros do RF"
+  },
+  "Fit method": {
+    "es": "Método de ajuste",
+    "pt_BR": "Método de ajuste"
+  },
+  "Fit method:": {
+    "es": "Método de ajuste:",
+    "pt_BR": "Método de ajuste:"
+  },
+  "Fit residual semivariogram": {
+    "es": "Ajustar semivariograma residual",
+    "pt_BR": "Ajustar semivariograma residual"
+  },
+  "Fit to layer": {
+    "es": "Ajustar a la capa",
+    "pt_BR": "Ajustar à camada"
+  },
+  "Fit:": {
+    "es": "Ajuste:",
+    "pt_BR": "Ajuste:"
+  },
+  "Fitting RF parameters": {
+    "es": "Ajustando parámetros de RF",
+    "pt_BR": "Ajustando parâmetros do RF"
+  },
+  "Fitting RF stage for Regression Kriging": {
+    "es": "Ajustando la etapa RF de regresión kriging",
+    "pt_BR": "Ajustando a etapa RF da regressão krigagem"
+  },
+  "Fitting residual semivariogram": {
+    "es": "Ajustando semivariograma residual",
+    "pt_BR": "Ajustando semivariograma residual"
+  },
+  "Framework Decision larger view": {
+    "es": "Vista ampliada de la decisión de Framework",
+    "pt_BR": "Vista ampliada da decisão do Framework"
+  },
+  "Framework SDI": {
+    "es": "IDE de Framework",
+    "pt_BR": "IDE do Framework"
+  },
+  "Framework SDI / Semivariogram": {
+    "es": "IDE / Semivariograma de Framework",
+    "pt_BR": "IDE / Semivariograma do Framework"
+  },
+  "Framework article information": {
+    "es": "Información del artículo de Framework",
+    "pt_BR": "Informações do artigo do Framework"
+  },
+  "Framework automatic ML search": {
+    "es": "Búsqueda automática de aprendizaje automático en Framework",
+    "pt_BR": "Busca automática de aprendizado de máquina no Framework"
+  },
+  "Framework decision": {
+    "es": "Decisión de Framework",
+    "pt_BR": "Decisão do Framework"
+  },
+  "Framework figure": {
+    "es": "Figura de Framework",
+    "pt_BR": "Figura do Framework"
+  },
+  "Framework full Covariates": {
+    "es": "Framework completo con covariables",
+    "pt_BR": "Framework completo com covariáveis"
+  },
+  "Framework guidance": {
+    "es": "Orientación de Framework",
+    "pt_BR": "Orientação do Framework"
+  },
+  "Framework image from the article will be displayed here according to the selected mode.": {
+    "es": "Aquí se mostrará la figura de Framework del artículo según el modo seleccionado.",
+    "pt_BR": "A figura do Framework do artigo será exibida aqui conforme o modo selecionado."
+  },
+  "Framework interpolation": {
+    "es": "Interpolación de Framework",
+    "pt_BR": "Interpolação do Framework"
+  },
+  "Framework is not available.": {
+    "es": "Framework no está disponible.",
+    "pt_BR": "O Framework não está disponível."
+  },
+  "Framework kriging model metrics": {
+    "es": "Métricas de los modelos de kriging en Framework",
+    "pt_BR": "Métricas dos modelos de krigagem no Framework"
+  },
+  "Framework mode": {
+    "es": "Modo de Framework",
+    "pt_BR": "Modo do Framework"
+  },
+  "Framework semivariogram validation": {
+    "es": "Validación del semivariograma de Framework",
+    "pt_BR": "Validação do semivariograma do Framework"
+  },
+  "Framework validation": {
+    "es": "Validación de Framework",
+    "pt_BR": "Validação do Framework"
+  },
+  "From Data": {
+    "es": "Desde Datos",
+    "pt_BR": "A partir de Dados"
+  },
+  "Full framework": {
+    "es": "Framework completo",
+    "pt_BR": "Framework completo"
+  },
+  "Gaussian": {
+    "es": "Gaussiano",
+    "pt_BR": "Gaussiano"
+  },
+  "Generating {p0} for comparison": {
+    "es": "Generando {p0} para comparar",
+    "pt_BR": "Gerando {p0} para comparação"
+  },
+  "Geostatistics": {
+    "es": "Geoestadística",
+    "pt_BR": "Geoestatística"
+  },
+  "Global Moran · Local Moran / LISA · statistical outliers": {
+    "es": "Moran global · Moran local / LISA · valores atípicos estadísticos",
+    "pt_BR": "Moran global · Moran local / LISA · valores atípicos estatísticos"
+  },
+  "Global Moran, Anselin Local Moran / LISA, IQR, MAD and Z score; review points and choose Keep / Exclude / Reset.": {
+    "es": "Moran global, Moran local de Anselin / LISA, IQR, MAD y puntuación Z; revise los puntos y elija Conservar / Excluir / Restablecer.",
+    "pt_BR": "Moran global, Moran local de Anselin / LISA, IQR, MAD e escore Z; revise os pontos e escolha Manter / Excluir / Redefinir."
+  },
+  "Go to validation": {
+    "es": "Ir a validación",
+    "pt_BR": "Ir para validação"
+  },
+  "Graph": {
+    "es": "Gráfico",
+    "pt_BR": "Gráfico"
+  },
+  "Graph copied to clipboard.": {
+    "es": "Gráfico copiado al portapapeles.",
+    "pt_BR": "Gráfico copiado para a área de transferência."
+  },
+  "Graph saved to:\n{p0}": {
+    "es": "Gráfico guardado en:\n{p0}",
+    "pt_BR": "Gráfico salvo em:\n{p0}"
+  },
+  "Grid Search": {
+    "es": "Grid Search",
+    "pt_BR": "Grid Search"
+  },
+  "Grid max": {
+    "es": "Máximo de la malla",
+    "pt_BR": "Máximo da grade"
+  },
+  "Grid min": {
+    "es": "Mínimo de la malla",
+    "pt_BR": "Mínimo da grade"
+  },
+  "Grid search": {
+    "es": "Búsqueda en malla",
+    "pt_BR": "Busca em grade"
+  },
+  "Hyperparameter optimization": {
+    "es": "Optimización de hiperparámetros",
+    "pt_BR": "Otimização de hiperparâmetros"
+  },
+  "If checked, n and p will be estimated automatically; manual inputs will be ignored.": {
+    "es": "Al activarlo, n y p se estiman automáticamente y se omiten los valores manuales.",
+    "pt_BR": "Quando ativado, n e p são estimados automaticamente e os valores manuais são ignorados."
+  },
+  "If you use this plugin in academic work, please cite the reference article.": {
+    "es": "Si utiliza este plugin en un trabajo académico, cite el artículo de referencia.",
+    "pt_BR": "Se utilizar este plugin em um trabalho acadêmico, cite o artigo de referência."
+  },
+  "Importance": {
+    "es": "Importancia",
+    "pt_BR": "Importância"
+  },
+  "Include LCCC plot": {
+    "es": "Incluir gráfico de LCCC",
+    "pt_BR": "Incluir gráfico de LCCC"
+  },
+  "Include correlation plot": {
+    "es": "Incluir gráfico de correlación",
+    "pt_BR": "Incluir gráfico de correlação"
+  },
+  "Include covariate list": {
+    "es": "Incluir lista de covariables",
+    "pt_BR": "Incluir lista de covariáveis"
+  },
+  "Include covariate maps": {
+    "es": "Incluir mapas de covariables",
+    "pt_BR": "Incluir mapas de covariáveis"
+  },
+  "Include final interpolation map": {
+    "es": "Incluir mapa de interpolación final",
+    "pt_BR": "Incluir mapa de interpolação final"
+  },
+  "Include framework decision tree": {
+    "es": "Incluir árbol de decisión de Framework",
+    "pt_BR": "Incluir árvore de decisão do Framework"
+  },
+  "Include metrics table": {
+    "es": "Incluir tabla de métricas",
+    "pt_BR": "Incluir tabela de métricas"
+  },
+  "Include observed vs predicted plots": {
+    "es": "Incluir gráficos de observados y predichos",
+    "pt_BR": "Incluir gráficos de observados e preditos"
+  },
+  "Include point map": {
+    "es": "Incluir mapa de puntos",
+    "pt_BR": "Incluir mapa de pontos"
+  },
+  "Include semivariogram": {
+    "es": "Incluir semivariograma",
+    "pt_BR": "Incluir semivariograma"
+  },
+  "Include the dynamic Framework Decision flowchart in the exported PDF report.": {
+    "es": "Incluir el diagrama dinámico de decisión de Framework en el informe PDF.",
+    "pt_BR": "Incluir o fluxograma dinâmico de decisão do Framework no relatório PDF."
+  },
+  "Include this comparison in report": {
+    "es": "Incluir esta comparación en el informe",
+    "pt_BR": "Incluir esta comparação no relatório"
+  },
+  "Inputs changed during calculation. Run again with the current data and settings.": {
+    "es": "Las entradas cambiaron durante el cálculo. Ejecute de nuevo con los datos y la configuración actuales.",
+    "pt_BR": "As entradas mudaram durante o cálculo. Execute novamente com os dados e as configurações atuais."
+  },
+  "Inputs changed. Run validation again.": {
+    "es": "Las entradas cambiaron. Repita la validación.",
+    "pt_BR": "As entradas mudaram. Repita a validação."
+  },
+  "Interpolate": {
+    "es": "Interpolar",
+    "pt_BR": "Interpolar"
+  },
+  "Interpolate RK": {
+    "es": "Interpolar RK",
+    "pt_BR": "Interpolar RK"
+  },
+  "Interpolated": {
+    "es": "Interpolado",
+    "pt_BR": "Interpolado"
+  },
+  "Interpolating (IDW)": {
+    "es": "Interpolando (IDW)",
+    "pt_BR": "Interpolando (IDW)"
+  },
+  "Interpolating (Ordinary Kriging)": {
+    "es": "Interpolando (kriging ordinario)",
+    "pt_BR": "Interpolando (krigagem ordinária)"
+  },
+  "Interpolating (TPS)": {
+    "es": "Interpolando (TPS)",
+    "pt_BR": "Interpolando (TPS)"
+  },
+  "Interpolation": {
+    "es": "Interpolación",
+    "pt_BR": "Interpolação"
+  },
+  "Interpolation & Report": {
+    "es": "Interpolación e informe",
+    "pt_BR": "Interpolação e relatório"
+  },
+  "Interpolation map": {
+    "es": "Mapa de interpolación",
+    "pt_BR": "Mapa de interpolação"
+  },
+  "Interpolation map placeholder": {
+    "es": "Vista del mapa de interpolación",
+    "pt_BR": "Área do mapa de interpolação"
+  },
+  "Interpolation options": {
+    "es": "Opciones de interpolación",
+    "pt_BR": "Opções de interpolação"
+  },
+  "Invalid polygon": {
+    "es": "Polígono no válido",
+    "pt_BR": "Polígono inválido"
+  },
+  "K Fold": {
+    "es": "K particiones",
+    "pt_BR": "K partições"
+  },
+  "KNN neighbors": {
+    "es": "Vecinos KNN",
+    "pt_BR": "Vizinhos KNN"
+  },
+  "Kriging standard deviation": {
+    "es": "Desviación estándar de kriging",
+    "pt_BR": "Desvio padrão da krigagem"
+  },
+  "Kriging variance": {
+    "es": "Varianza de kriging",
+    "pt_BR": "Variância da krigagem"
+  },
+  "LCCC comparison": {
+    "es": "Comparación de LCCC",
+    "pt_BR": "Comparação de LCCC"
+  },
+  "LISA classes": {
+    "es": "Clases LISA",
+    "pt_BR": "Classes LISA"
+  },
+  "Lag (h):": {
+    "es": "Distancia de clase (h):",
+    "pt_BR": "Distância de classe (h):"
+  },
+  "Lag distance": {
+    "es": "Distancia de clase",
+    "pt_BR": "Distância de classe"
+  },
+  "Lag distance (h)": {
+    "es": "Distancia de clase (h)",
+    "pt_BR": "Distância de classe (h)"
+  },
+  "Lag input:": {
+    "es": "Definición de clases:",
+    "pt_BR": "Definição de classes:"
+  },
+  "Lag width": {
+    "es": "Ancho de clase",
+    "pt_BR": "Largura de classe"
+  },
+  "Lag(h) width": {
+    "es": "Ancho de clase (h)",
+    "pt_BR": "Largura de classe (h)"
+  },
+  "Lag(h) width must be smaller than max distance.": {
+    "es": "El ancho de clase (h) debe ser menor que la distancia máxima.",
+    "pt_BR": "A largura de classe (h) deve ser menor que a distância máxima."
+  },
+  "Lags": {
+    "es": "Clases de distancia",
+    "pt_BR": "Classes de distância"
+  },
+  "Leave One Out (LOOCV)": {
+    "es": "Dejar uno fuera (LOOCV)",
+    "pt_BR": "Deixar um de fora (LOOCV)"
+  },
+  "Load": {
+    "es": "Cargar",
+    "pt_BR": "Carregar"
+  },
+  "Load covariates": {
+    "es": "Cargar covariables",
+    "pt_BR": "Carregar covariáveis"
+  },
+  "Load data points": {
+    "es": "Cargar puntos de datos",
+    "pt_BR": "Carregar pontos de dados"
+  },
+  "Load the point dataset in Data first.": {
+    "es": "Cargue primero los puntos en Datos.",
+    "pt_BR": "Carregue primeiro os pontos em Dados."
+  },
+  "Loaded covariates:": {
+    "es": "Covariables cargadas:",
+    "pt_BR": "Covariáveis carregadas:"
+  },
+  "Machine Learning": {
+    "es": "Aprendizaje automático",
+    "pt_BR": "Aprendizado de máquina"
+  },
+  "Machine learning dependencies were installed successfully.\nThe process will continue now.": {
+    "es": "Las dependencias de aprendizaje automático se instalaron correctamente.\nEl proceso continuará ahora.",
+    "pt_BR": "As dependências de aprendizado de máquina foram instaladas com sucesso.\nO processo continuará agora."
+  },
+  "Manual": {
+    "es": "Manual",
+    "pt_BR": "Manual"
+  },
+  "Manual / Selected": {
+    "es": "Manual / Seleccionado",
+    "pt_BR": "Manual / Selecionado"
+  },
+  "Manual parameters": {
+    "es": "Parámetros manuales",
+    "pt_BR": "Parâmetros manuais"
+  },
+  "Manual/Selected": {
+    "es": "Manual/Seleccionado",
+    "pt_BR": "Manual/Selecionado"
+  },
+  "Map A / shared": {
+    "es": "Mapa A / compartido",
+    "pt_BR": "Mapa A / compartilhado"
+  },
+  "Map B": {
+    "es": "Mapa B",
+    "pt_BR": "Mapa B"
+  },
+  "Map output": {
+    "es": "Tipo de mapa",
+    "pt_BR": "Tipo de mapa"
+  },
+  "Map:": {
+    "es": "Mapa:",
+    "pt_BR": "Mapa:"
+  },
+  "Max": {
+    "es": "Máximo",
+    "pt_BR": "Máximo"
+  },
+  "Max distance": {
+    "es": "Distancia máxima",
+    "pt_BR": "Distância máxima"
+  },
+  "Max distance / cutoff": {
+    "es": "Distancia máxima / corte",
+    "pt_BR": "Distância máxima / corte"
+  },
+  "Max distance must be greater than zero.": {
+    "es": "La distancia máxima debe ser mayor que cero.",
+    "pt_BR": "A distância máxima deve ser maior que zero."
+  },
+  "Max iterations": {
+    "es": "Máximo de iteraciones",
+    "pt_BR": "Máximo de iterações"
+  },
+  "Max pair distance": {
+    "es": "Distancia máxima entre pares",
+    "pt_BR": "Distância máxima entre pares"
+  },
+  "Max search iterations": {
+    "es": "Máximo de iteraciones de búsqueda",
+    "pt_BR": "Máximo de iterações da busca"
+  },
+  "Maximum distance:": {
+    "es": "Distancia máxima:",
+    "pt_BR": "Distância máxima:"
+  },
+  "Maximum sampled combinations": {
+    "es": "Máximo de combinaciones muestreadas",
+    "pt_BR": "Máximo de combinações amostradas"
+  },
+  "Method": {
+    "es": "Método",
+    "pt_BR": "Método"
+  },
+  "Method selection": {
+    "es": "Selección del método",
+    "pt_BR": "Seleção do método"
+  },
+  "Methods changed. Compare the current maps before including them in the report.": {
+    "es": "Los métodos cambiaron. Compare los mapas actuales antes de incluirlos en el informe.",
+    "pt_BR": "Os métodos mudaram. Compare os mapas atuais antes de incluí-los no relatório."
+  },
+  "Metric CRS required": {
+    "es": "Se requiere un SRC métrico",
+    "pt_BR": "É necessário um SRC métrico"
+  },
+  "Metrics": {
+    "es": "Métricas",
+    "pt_BR": "Métricas"
+  },
+  "Min": {
+    "es": "Mínimo",
+    "pt_BR": "Mínimo"
+  },
+  "Minimum flags (N)": {
+    "es": "Mínimo de indicadores (N)",
+    "pt_BR": "Mínimo de indicadores (N)"
+  },
+  "Minimum must be smaller than maximum.": {
+    "es": "El mínimo debe ser menor que el máximo.",
+    "pt_BR": "O mínimo deve ser menor que o máximo."
+  },
+  "Minimum node size (nodesize)": {
+    "es": "Tamaño mínimo del nodo (nodesize)",
+    "pt_BR": "Tamanho mínimo do nó (nodesize)"
+  },
+  "Mode": {
+    "es": "Modo",
+    "pt_BR": "Modo"
+  },
+  "Model": {
+    "es": "Modelo",
+    "pt_BR": "Modelo"
+  },
+  "Model Adjust": {
+    "es": "Ajuste del modelo",
+    "pt_BR": "Ajuste do modelo"
+  },
+  "Model used": {
+    "es": "Modelo utilizado",
+    "pt_BR": "Modelo utilizado"
+  },
+  "Model:": {
+    "es": "Modelo:",
+    "pt_BR": "Modelo:"
+  },
+  "Moran's I": {
+    "es": "I de Moran",
+    "pt_BR": "I de Moran"
+  },
+  "Neighborhood": {
+    "es": "Vecindad",
+    "pt_BR": "Vizinhança"
+  },
+  "Neighbors (n)": {
+    "es": "Vecinos (n)",
+    "pt_BR": "Vizinhos (n)"
+  },
+  "No active geostatistics controller is available. Open the Geostatistics tab once and try again.": {
+    "es": "No hay un controlador de geoestadística activo. Abra la pestaña Geoestadística e inténtelo de nuevo.",
+    "pt_BR": "Não há um controlador de geoestatística ativo. Abra a aba Geoestatística e tente novamente."
+  },
+  "No finite grid predictions": {
+    "es": "No hay predicciones finitas en la malla",
+    "pt_BR": "Não há predições finitas na grade"
+  },
+  "No methods evaluated yet.": {
+    "es": "Todavía no se han evaluado métodos.",
+    "pt_BR": "Nenhum método foi avaliado ainda."
+  },
+  "No observed/predicted data": {
+    "es": "No hay datos observados/predichos",
+    "pt_BR": "Não há dados observados/preditos"
+  },
+  "No observed/predicted data for {p0}\nAvailable: {p1}": {
+    "es": "No hay datos observados/predichos para {p0}\nDisponibles: {p1}",
+    "pt_BR": "Não há dados observados/preditos para {p0}\nDisponíveis: {p1}"
+  },
+  "No valid SDI result is available.": {
+    "es": "No hay un resultado válido del IDE.",
+    "pt_BR": "Não há um resultado válido do IDE."
+  },
+  "No valid coordinates were found in the selected polygon layer.": {
+    "es": "No se encontraron coordenadas válidas en la capa de polígonos seleccionada.",
+    "pt_BR": "Não foram encontradas coordenadas válidas na camada de polígonos selecionada."
+  },
+  "No valid point dataset is currently available.\nLoad the data first in the Data tab and then reopen this window.": {
+    "es": "No hay un conjunto de puntos válido.\nCargue primero los datos en la pestaña Datos y vuelva a abrir esta ventana.",
+    "pt_BR": "Não há um conjunto de pontos válido.\nCarregue primeiro os dados na aba Dados e reabra esta janela."
+  },
+  "No validation results": {
+    "es": "No hay resultados de validación",
+    "pt_BR": "Não há resultados de validação"
+  },
+  "None": {
+    "es": "Ninguno",
+    "pt_BR": "Nenhum"
+  },
+  "Normal, dense, and massive profiles used by the plugin.": {
+    "es": "Perfiles normal, denso y masivo utilizados por el plugin.",
+    "pt_BR": "Perfis normal, denso e massivo utilizados pelo plugin."
+  },
+  "Not calculated": {
+    "es": "Sin calcular",
+    "pt_BR": "Não calculado"
+  },
+  "Nugget (Co)": {
+    "es": "Efecto pepita (Co)",
+    "pt_BR": "Efeito pepita (Co)"
+  },
+  "Number of lags": {
+    "es": "Número de clases de distancia",
+    "pt_BR": "Número de classes de distância"
+  },
+  "Number of lags:": {
+    "es": "Número de clases:",
+    "pt_BR": "Número de classes:"
+  },
+  "Number of samples": {
+    "es": "Número de muestras",
+    "pt_BR": "Número de amostras"
+  },
+  "Number of trees (ntree)": {
+    "es": "Número de árboles (ntree)",
+    "pt_BR": "Número de árvores (ntree)"
+  },
+  "Number of variables at each split (mtry)": {
+    "es": "Número de variables por división (mtry)",
+    "pt_BR": "Número de variáveis por divisão (mtry)"
+  },
+  "Numeric map scale applies only to spatial maps.": {
+    "es": "La escala numérica solo se aplica a mapas espaciales.",
+    "pt_BR": "A escala numérica se aplica apenas a mapas espaciais."
+  },
+  "Numeric scale requires a projected CRS with known linear units.": {
+    "es": "La escala numérica requiere un SRC proyectado con unidades lineales conocidas.",
+    "pt_BR": "A escala numérica exige um SRC projetado com unidades lineares conhecidas."
+  },
+  "Numeric scale requires a projected CRS.": {
+    "es": "La escala numérica requiere un SRC proyectado.",
+    "pt_BR": "A escala numérica exige um SRC projetado."
+  },
+  "Observed": {
+    "es": "Observado",
+    "pt_BR": "Observado"
+  },
+  "Observed vs Predicted": {
+    "es": "Observados y predichos",
+    "pt_BR": "Observados e preditos"
+  },
+  "Observed vs Predicted - {p0}": {
+    "es": "Observados y predichos - {p0}",
+    "pt_BR": "Observados e preditos - {p0}"
+  },
+  "Observed vs Predicted method:": {
+    "es": "Método de observados y predichos:",
+    "pt_BR": "Método de observados e preditos:"
+  },
+  "Observed/predicted method": {
+    "es": "Método de observados/predichos",
+    "pt_BR": "Método de observados/preditos"
+  },
+  "Open reference article": {
+    "es": "Abrir artículo de referencia",
+    "pt_BR": "Abrir artigo de referência"
+  },
+  "Optimize IDW (p, n)": {
+    "es": "Optimizar IDW (p, n)",
+    "pt_BR": "Otimizar IDW (p, n)"
+  },
+  "Optimizing IDW parameters": {
+    "es": "Optimizando parámetros de IDW",
+    "pt_BR": "Otimizando parâmetros do IDW"
+  },
+  "Options": {
+    "es": "Opciones",
+    "pt_BR": "Opções"
+  },
+  "Ordinary Kriging": {
+    "es": "Kriging ordinario",
+    "pt_BR": "Krigagem ordinária"
+  },
+  "Outlier diagnostic": {
+    "es": "Diagnóstico de valores atípicos",
+    "pt_BR": "Diagnóstico de valores atípicos"
+  },
+  "Outlier diagnostic information": {
+    "es": "Información del diagnóstico de valores atípicos",
+    "pt_BR": "Informações do diagnóstico de valores atípicos"
+  },
+  "Outlier diagnostic settings": {
+    "es": "Configuración del diagnóstico de valores atípicos",
+    "pt_BR": "Configurações do diagnóstico de valores atípicos"
+  },
+  "Overview": {
+    "es": "Resumen",
+    "pt_BR": "Visão geral"
+  },
+  "PDF preview / options": {
+    "es": "Vista previa / Opciones PDF",
+    "pt_BR": "Prévia / Opções PDF"
+  },
+  "PDF report": {
+    "es": "Informe PDF",
+    "pt_BR": "Relatório PDF"
+  },
+  "Palette": {
+    "es": "Paleta",
+    "pt_BR": "Paleta"
+  },
+  "Parameter": {
+    "es": "Parámetro",
+    "pt_BR": "Parâmetro"
+  },
+  "Partial Sill (C1)": {
+    "es": "Meseta parcial (C1)",
+    "pt_BR": "Patamar parcial (C1)"
+  },
+  "Partial sill (C1)": {
+    "es": "Meseta parcial (C1)",
+    "pt_BR": "Patamar parcial (C1)"
+  },
+  "Pearson correlation": {
+    "es": "Correlación de Pearson",
+    "pt_BR": "Correlação de Pearson"
+  },
+  "Pending": {
+    "es": "Pendiente",
+    "pt_BR": "Pendente"
+  },
+  "Permutations": {
+    "es": "Permutaciones",
+    "pt_BR": "Permutações"
+  },
+  "Pixel size": {
+    "es": "Tamaño del píxel",
+    "pt_BR": "Tamanho do pixel"
+  },
+  "Pixel size:": {
+    "es": "Tamaño del píxel:",
+    "pt_BR": "Tamanho do pixel:"
+  },
+  "Pixel size: (from Data)": {
+    "es": "Píxel (Datos):",
+    "pt_BR": "Pixel (Dados):"
+  },
+  "Please load and select a polygon layer in the Data tab.": {
+    "es": "Cargue y seleccione una capa de polígonos en la pestaña Datos.",
+    "pt_BR": "Carregue e selecione uma camada de polígonos na aba Dados."
+  },
+  "Please save the QGIS project before using the plugin.\n\nThe output folder will be created next to the project file.": {
+    "es": "Guarde el proyecto QGIS antes de utilizar el plugin.\n\nLa carpeta de salida se creará junto al archivo del proyecto.",
+    "pt_BR": "Salve o projeto QGIS antes de utilizar o plugin.\n\nA pasta de saída será criada junto ao arquivo do projeto."
+  },
+  "Plot controls": {
+    "es": "Controles del gráfico",
+    "pt_BR": "Controles do gráfico"
+  },
+  "Plot type": {
+    "es": "Tipo de gráfico",
+    "pt_BR": "Tipo de gráfico"
+  },
+  "Plugin information": {
+    "es": "Información del plugin",
+    "pt_BR": "Informações do plugin"
+  },
+  "Point map": {
+    "es": "Mapa de puntos",
+    "pt_BR": "Mapa de pontos"
+  },
+  "Point map preview placeholder": {
+    "es": "Vista previa del mapa de puntos",
+    "pt_BR": "Área de prévia do mapa de pontos"
+  },
+  "Points & Polygon (Data tab)": {
+    "es": "Puntos y polígono (pestaña Datos)",
+    "pt_BR": "Pontos e polígono (aba Dados)"
+  },
+  "Points & Polygon (Data tab) hexbin view of {p0} points": {
+    "es": "Puntos y polígono (Datos): vista hexagonal de {p0} puntos",
+    "pt_BR": "Pontos e polígono (Dados): vista hexagonal de {p0} pontos"
+  },
+  "Points & Polygon (Data tab) rasterized view of {p0} points": {
+    "es": "Puntos y polígono (Datos): vista rasterizada de {p0} puntos",
+    "pt_BR": "Pontos e polígono (Dados): vista rasterizada de {p0} pontos"
+  },
+  "Points outside polygon": {
+    "es": "Puntos fuera del polígono",
+    "pt_BR": "Pontos fora do polígono"
+  },
+  "Polygon": {
+    "es": "Polígono",
+    "pt_BR": "Polígono"
+  },
+  "Polygon required": {
+    "es": "Se requiere un polígono",
+    "pt_BR": "É necessário um polígono"
+  },
+  "Power (p)": {
+    "es": "Potencia (p)",
+    "pt_BR": "Potência (p)"
+  },
+  "Practical range": {
+    "es": "Alcance práctico",
+    "pt_BR": "Alcance prático"
+  },
+  "Practical range: —": {
+    "es": "Alcance práctico: —",
+    "pt_BR": "Alcance prático: —"
+  },
+  "Predicted": {
+    "es": "Predicho",
+    "pt_BR": "Predito"
+  },
+  "Prediction": {
+    "es": "Predicción",
+    "pt_BR": "Predição"
+  },
+  "Preparing RF cross validation": {
+    "es": "Preparando validación cruzada de RF",
+    "pt_BR": "Preparando validação cruzada do RF"
+  },
+  "Preparing RK cross validation": {
+    "es": "Preparando validación cruzada de RK",
+    "pt_BR": "Preparando validação cruzada do RK"
+  },
+  "Preparing Regression Kriging for Framework validation": {
+    "es": "Preparando regresión kriging para la validación de Framework",
+    "pt_BR": "Preparando regressão krigagem para a validação do Framework"
+  },
+  "Preparing SVM cross validation": {
+    "es": "Preparando validación cruzada de SVM",
+    "pt_BR": "Preparando validação cruzada do SVM"
+  },
+  "Preparing data": {
+    "es": "Preparando datos",
+    "pt_BR": "Preparando dados"
+  },
+  "Preparing interpolation grid": {
+    "es": "Preparando malla de interpolación",
+    "pt_BR": "Preparando grade de interpolação"
+  },
+  "Preparing training data": {
+    "es": "Preparando datos de entrenamiento",
+    "pt_BR": "Preparando dados de treinamento"
+  },
+  "Preparing {p0} for Framework validation": {
+    "es": "Preparando {p0} para la validación de Framework",
+    "pt_BR": "Preparando {p0} para a validação do Framework"
+  },
+  "Preview": {
+    "es": "Vista previa",
+    "pt_BR": "Prévia"
+  },
+  "Preview report structure": {
+    "es": "Ver estructura del informe",
+    "pt_BR": "Ver estrutura do relatório"
+  },
+  "Project must be saved": {
+    "es": "Se debe guardar el proyecto",
+    "pt_BR": "É necessário salvar o projeto"
+  },
+  "Project not saved": {
+    "es": "Proyecto sin guardar",
+    "pt_BR": "Projeto não salvo"
+  },
+  "RF cross validation": {
+    "es": "Validación cruzada de RF",
+    "pt_BR": "Validação cruzada do RF"
+  },
+  "RF interpolation map": {
+    "es": "Mapa de interpolación RF",
+    "pt_BR": "Mapa de interpolação RF"
+  },
+  "RF not fitted": {
+    "es": "RF sin ajustar",
+    "pt_BR": "RF não ajustado"
+  },
+  "RF variable importance": {
+    "es": "Importancia de variables de RF",
+    "pt_BR": "Importância das variáveis do RF"
+  },
+  "RMSE comparison": {
+    "es": "Comparación de RMSE",
+    "pt_BR": "Comparação de RMSE"
+  },
+  "Random Forest parameters": {
+    "es": "Parámetros de Random Forest",
+    "pt_BR": "Parâmetros do Random Forest"
+  },
+  "Random Forest trend": {
+    "es": "Tendencia de Random Forest",
+    "pt_BR": "Tendência do Random Forest"
+  },
+  "Randomized grid search": {
+    "es": "Búsqueda aleatoria en malla",
+    "pt_BR": "Busca aleatória em grade"
+  },
+  "Range (a)": {
+    "es": "Alcance (a)",
+    "pt_BR": "Alcance (a)"
+  },
+  "Range (a, scale)": {
+    "es": "Alcance (a, escala)",
+    "pt_BR": "Alcance (a, escala)"
+  },
+  "Range [-1,1]": {
+    "es": "Intervalo [-1,1]",
+    "pt_BR": "Intervalo [-1,1]"
+  },
+  "Rank": {
+    "es": "Posición",
+    "pt_BR": "Posição"
+  },
+  "Raster:": {
+    "es": "Ráster:",
+    "pt_BR": "Raster:"
+  },
+  "Recompute semivariogram": {
+    "es": "Recalcular semivariograma",
+    "pt_BR": "Recalcular semivariograma"
+  },
+  "Reference publication": {
+    "es": "Publicación de referencia",
+    "pt_BR": "Publicação de referência"
+  },
+  "Refresh preview": {
+    "es": "Actualizar vista previa",
+    "pt_BR": "Atualizar prévia"
+  },
+  "Refresh summary": {
+    "es": "Actualizar resumen",
+    "pt_BR": "Atualizar resumo"
+  },
+  "Regression Kriging": {
+    "es": "Regresión kriging",
+    "pt_BR": "Regressão krigagem"
+  },
+  "Regression Kriging CV": {
+    "es": "Validación cruzada de regresión kriging",
+    "pt_BR": "Validação cruzada da regressão krigagem"
+  },
+  "Regression Kriging map": {
+    "es": "Mapa de regresión kriging",
+    "pt_BR": "Mapa de regressão krigagem"
+  },
+  "Regression Kriging parameters": {
+    "es": "Parámetros de regresión kriging",
+    "pt_BR": "Parâmetros da regressão krigagem"
+  },
+  "Remove selected": {
+    "es": "Eliminar seleccionados",
+    "pt_BR": "Remover selecionados"
+  },
+  "Report": {
+    "es": "Informe",
+    "pt_BR": "Relatório"
+  },
+  "Report Builder": {
+    "es": "Editor de informes",
+    "pt_BR": "Editor de relatórios"
+  },
+  "Report export": {
+    "es": "Exportación del informe",
+    "pt_BR": "Exportação do relatório"
+  },
+  "Report preview": {
+    "es": "Vista previa del informe",
+    "pt_BR": "Prévia do relatório"
+  },
+  "Resample all covariate rasters to a common pixel size.": {
+    "es": "Remuestrear todos los rásteres de covariables a un tamaño de píxel común.",
+    "pt_BR": "Reamostrar todos os rasters de covariáveis para um tamanho de pixel comum."
+  },
+  "Resample covariates": {
+    "es": "Remuestrear covariables",
+    "pt_BR": "Reamostrar covariáveis"
+  },
+  "Resampled {p0} covariate(s) to {p1} pixel size (bilinear).": {
+    "es": "Se remuestrearon {p0} covariables a un tamaño de píxel de {p1} (bilineal).",
+    "pt_BR": "Foram reamostradas {p0} covariáveis para um tamanho de pixel de {p1} (bilinear)."
+  },
+  "Resampling": {
+    "es": "Remuestreo",
+    "pt_BR": "Reamostragem"
+  },
+  "Resampling covariates": {
+    "es": "Remuestreando covariables",
+    "pt_BR": "Reamostrando covariáveis"
+  },
+  "Resampling failed or no valid covariates were found.": {
+    "es": "El remuestreo falló o no se encontraron covariables válidas.",
+    "pt_BR": "A reamostragem falhou ou não foram encontradas covariáveis válidas."
+  },
+  "Reset": {
+    "es": "Restablecer",
+    "pt_BR": "Redefinir"
+  },
+  "Residual kriging": {
+    "es": "Kriging residual",
+    "pt_BR": "Krigagem residual"
+  },
+  "Residual semivariogram": {
+    "es": "Semivariograma residual",
+    "pt_BR": "Semivariograma residual"
+  },
+  "Residual variogram model": {
+    "es": "Modelo del variograma residual",
+    "pt_BR": "Modelo do variograma residual"
+  },
+  "Residual variogram model validation will appear here.": {
+    "es": "Aquí se mostrará la validación del modelo del variograma residual.",
+    "pt_BR": "A validação do modelo do variograma residual aparecerá aqui."
+  },
+  "Residual variogram not fitted": {
+    "es": "Variograma residual sin ajustar",
+    "pt_BR": "Variograma residual não ajustado"
+  },
+  "Result": {
+    "es": "Resultado",
+    "pt_BR": "Resultado"
+  },
+  "Reuse from ML": {
+    "es": "Reutilizar desde aprendizaje automático",
+    "pt_BR": "Reutilizar do aprendizado de máquina"
+  },
+  "Review extremes, spatial outliers and clusters. Only Exclude affects subsequent analysis.": {
+    "es": "Revise extremos, valores atípicos espaciales y agrupaciones. Solo Excluir afecta al análisis posterior.",
+    "pt_BR": "Revise extremos, valores atípicos espaciais e agrupamentos. Apenas Excluir afeta a análise posterior."
+  },
+  "Review the current dataset here. The point map and semivariogram below provide a quick visual diagnosis before moving to the framework decision.": {
+    "es": "Revise aquí el conjunto de datos. El mapa de puntos y el semivariograma permiten un diagnóstico visual rápido antes de pasar a la decisión de Framework.",
+    "pt_BR": "Revise aqui o conjunto de dados. O mapa de pontos e o semivariograma permitem um diagnóstico visual rápido antes de passar à decisão do Framework."
+  },
+  "Run / update diagnostics": {
+    "es": "Ejecutar / Actualizar diagnósticos",
+    "pt_BR": "Executar / Atualizar diagnósticos"
+  },
+  "Run Cross Validation": {
+    "es": "Ejecutar validación cruzada",
+    "pt_BR": "Executar validação cruzada"
+  },
+  "Run RK cross validation": {
+    "es": "Ejecutar validación cruzada de RK",
+    "pt_BR": "Executar validação cruzada do RK"
+  },
+  "Run Random Forest interpolation": {
+    "es": "Interpolar con Random Forest",
+    "pt_BR": "Interpolar com Random Forest"
+  },
+  "Run SVM": {
+    "es": "Ejecutar SVM",
+    "pt_BR": "Executar SVM"
+  },
+  "Run cross validation": {
+    "es": "Ejecutar validación cruzada",
+    "pt_BR": "Executar validação cruzada"
+  },
+  "Run interpolation": {
+    "es": "Ejecutar interpolación",
+    "pt_BR": "Executar interpolação"
+  },
+  "Run interpolation to produce map outputs.": {
+    "es": "Ejecute la interpolación para generar los mapas.",
+    "pt_BR": "Execute a interpolação para gerar os mapas."
+  },
+  "Run spatial validation in this window first.": {
+    "es": "Ejecute primero la validación espacial en esta ventana.",
+    "pt_BR": "Execute primeiro a validação espacial nesta janela."
+  },
+  "Run the existing validation button with spatial blocks and training-fold refitting.": {
+    "es": "Use el botón de validación con bloques espaciales y reajuste en cada partición de entrenamiento.",
+    "pt_BR": "Use o botão de validação com blocos espaciais e reajuste em cada partição de treinamento."
+  },
+  "Run validation": {
+    "es": "Ejecutar validación",
+    "pt_BR": "Executar validação"
+  },
+  "Running Kriging CV": {
+    "es": "Ejecutando validación cruzada de kriging",
+    "pt_BR": "Executando validação cruzada da krigagem"
+  },
+  "Running Regression Kriging": {
+    "es": "Ejecutando regresión kriging",
+    "pt_BR": "Executando regressão krigagem"
+  },
+  "Running Regression Kriging from Framework": {
+    "es": "Ejecutando regresión kriging desde Framework",
+    "pt_BR": "Executando regressão krigagem a partir do Framework"
+  },
+  "Running kriging": {
+    "es": "Ejecutando kriging",
+    "pt_BR": "Executando krigagem"
+  },
+  "Running {p0} fold {p1}/{p2}": {
+    "es": "Ejecutando {p0}, partición {p1}/{p2}",
+    "pt_BR": "Executando {p0}, partição {p1}/{p2}"
+  },
+  "Running {p0} from Framework": {
+    "es": "Ejecutando {p0} desde Framework",
+    "pt_BR": "Executando {p0} a partir do Framework"
+  },
+  "SDI": {
+    "es": "IDE",
+    "pt_BR": "IDE"
+  },
+  "SDI (%)": {
+    "es": "IDE (%)",
+    "pt_BR": "IDE (%)"
+  },
+  "SDI class": {
+    "es": "Clase del IDE",
+    "pt_BR": "Classe do IDE"
+  },
+  "SDI status": {
+    "es": "Estado del IDE",
+    "pt_BR": "Estado do IDE"
+  },
+  "SDI values were sent to the Framework overview.": {
+    "es": "Los valores del IDE se enviaron al resumen de Framework.",
+    "pt_BR": "Os valores do IDE foram enviados ao resumo do Framework."
+  },
+  "SVM cross validation": {
+    "es": "Validación cruzada de SVM",
+    "pt_BR": "Validação cruzada do SVM"
+  },
+  "SVM interpolation": {
+    "es": "Interpolación SVM",
+    "pt_BR": "Interpolação SVM"
+  },
+  "SVM interpolation ({p0})": {
+    "es": "Interpolación SVM ({p0})",
+    "pt_BR": "Interpolação SVM ({p0})"
+  },
+  "SVM parameters": {
+    "es": "Parámetros de SVM",
+    "pt_BR": "Parâmetros do SVM"
+  },
+  "Samples:": {
+    "es": "Muestras:",
+    "pt_BR": "Amostras:"
+  },
+  "Save error": {
+    "es": "Error al guardar",
+    "pt_BR": "Erro ao salvar"
+  },
+  "Save graph": {
+    "es": "Guardar gráfico",
+    "pt_BR": "Salvar gráfico"
+  },
+  "Saved": {
+    "es": "Guardado",
+    "pt_BR": "Salvo"
+  },
+  "Scale 1 :": {
+    "es": "Escala 1 :",
+    "pt_BR": "Escala 1 :"
+  },
+  "Search CV folds": {
+    "es": "Particiones de validación de la búsqueda",
+    "pt_BR": "Partições de validação da busca"
+  },
+  "Search folds": {
+    "es": "Particiones de búsqueda",
+    "pt_BR": "Partições da busca"
+  },
+  "Search folds (k)": {
+    "es": "Particiones de búsqueda (k)",
+    "pt_BR": "Partições da busca (k)"
+  },
+  "Search settings": {
+    "es": "Configuración de búsqueda",
+    "pt_BR": "Configurações da busca"
+  },
+  "Search type": {
+    "es": "Tipo de búsqueda",
+    "pt_BR": "Tipo de busca"
+  },
+  "Seed": {
+    "es": "Semilla",
+    "pt_BR": "Semente"
+  },
+  "Select at least one candidate model.": {
+    "es": "Seleccione al menos un modelo candidato.",
+    "pt_BR": "Selecione pelo menos um modelo candidato."
+  },
+  "Select at least one model.": {
+    "es": "Seleccione al menos un modelo.",
+    "pt_BR": "Selecione pelo menos um modelo."
+  },
+  "Select suggested": {
+    "es": "Seleccionar sugeridos",
+    "pt_BR": "Selecionar sugeridos"
+  },
+  "Select two validated results.": {
+    "es": "Seleccione dos resultados validados.",
+    "pt_BR": "Selecione dois resultados validados."
+  },
+  "Selected": {
+    "es": "Seleccionado",
+    "pt_BR": "Selecionado"
+  },
+  "Selected maps changed during calculation. Compare again.": {
+    "es": "Los mapas seleccionados cambiaron durante el cálculo. Compare de nuevo.",
+    "pt_BR": "Os mapas selecionados mudaram durante o cálculo. Compare novamente."
+  },
+  "Semivariance $\\gamma$(h)": {
+    "es": "Semivarianza $\\gamma$(h)",
+    "pt_BR": "Semivariância $\\gamma$(h)"
+  },
+  "Semivariance γ(h)": {
+    "es": "Semivarianza γ(h)",
+    "pt_BR": "Semivariância γ(h)"
+  },
+  "Semivariogram": {
+    "es": "Semivariograma",
+    "pt_BR": "Semivariograma"
+  },
+  "Semivariogram (REML model)": {
+    "es": "Semivariograma (modelo REML)",
+    "pt_BR": "Semivariograma (modelo REML)"
+  },
+  "Semivariogram preview": {
+    "es": "Vista previa del semivariograma",
+    "pt_BR": "Prévia do semivariograma"
+  },
+  "Semivariogram preview placeholder": {
+    "es": "Vista del semivariograma",
+    "pt_BR": "Área do semivariograma"
+  },
+  "Semivariogram settings": {
+    "es": "Configuración del semivariograma",
+    "pt_BR": "Configurações do semivariograma"
+  },
+  "Set scale": {
+    "es": "Definir escala",
+    "pt_BR": "Definir escala"
+  },
+  "Settings applied. Existing fitting and validation criteria are retained.": {
+    "es": "Configuración aplicada. Se conservan los criterios de ajuste y validación.",
+    "pt_BR": "Configurações aplicadas. Os critérios de ajuste e validação são preservados."
+  },
+  "Settings changed. Update preview or run automatic validation.": {
+    "es": "La configuración cambió. Actualice la vista previa o ejecute la validación automática.",
+    "pt_BR": "As configurações mudaram. Atualize a prévia ou execute a validação automática."
+  },
+  "Show the sample-count profile classes used by the plugin.": {
+    "es": "Mostrar las clases por número de muestras utilizadas por el plugin.",
+    "pt_BR": "Mostrar as classes por número de amostras utilizadas pelo plugin."
+  },
+  "Sill (Co + C1)": {
+    "es": "Meseta (Co + C1)",
+    "pt_BR": "Patamar (Co + C1)"
+  },
+  "Spatial Dependence Index (SDI)": {
+    "es": "Índice de dependencia espacial (IDE)",
+    "pt_BR": "Índice de dependência espacial (IDE)"
+  },
+  "Spatial blocks": {
+    "es": "Bloques espaciales",
+    "pt_BR": "Blocos espaciais"
+  },
+  "Spatial coverage check": {
+    "es": "Verificación de cobertura espacial",
+    "pt_BR": "Verificação da cobertura espacial"
+  },
+  "Spatial coverage could not be verified, so interpolation was stopped to prevent an invalid output.\n\n{p0}": {
+    "es": "No se pudo verificar la cobertura espacial. Se detuvo la interpolación para evitar un resultado no válido.\n\n{p0}",
+    "pt_BR": "Não foi possível verificar a cobertura espacial. A interpolação foi interrompida para evitar um resultado inválido.\n\n{p0}"
+  },
+  "Spatial pattern": {
+    "es": "Patrón espacial",
+    "pt_BR": "Padrão espacial"
+  },
+  "Spatial settings…": {
+    "es": "Configuración espacial…",
+    "pt_BR": "Configurações espaciais…"
+  },
+  "Spatial structure": {
+    "es": "Estructura espacial",
+    "pt_BR": "Estrutura espacial"
+  },
+  "Spatial validation": {
+    "es": "Validación espacial",
+    "pt_BR": "Validação espacial"
+  },
+  "Spherical": {
+    "es": "Esférico",
+    "pt_BR": "Esférico"
+  },
+  "Standardization": {
+    "es": "Estandarización",
+    "pt_BR": "Padronização"
+  },
+  "Standardization:": {
+    "es": "Estandarización:",
+    "pt_BR": "Padronização:"
+  },
+  "Standardize covariates": {
+    "es": "Estandarizar covariables",
+    "pt_BR": "Padronizar covariáveis"
+  },
+  "Standardizing covariates": {
+    "es": "Estandarizando covariables",
+    "pt_BR": "Padronizando covariáveis"
+  },
+  "Statistical consensus": {
+    "es": "Consenso estadístico",
+    "pt_BR": "Consenso estatístico"
+  },
+  "Status": {
+    "es": "Estado",
+    "pt_BR": "Estado"
+  },
+  "Step": {
+    "es": "Paso",
+    "pt_BR": "Passo"
+  },
+  "Suggested methods": {
+    "es": "Métodos sugeridos",
+    "pt_BR": "Métodos sugeridos"
+  },
+  "Summary will show the active mode, branch selected, spatial diagnosis, suggested methods, and the next recommended action.": {
+    "es": "El resumen mostrará el modo activo, la rama seleccionada, el diagnóstico espacial, los métodos sugeridos y la siguiente acción recomendada.",
+    "pt_BR": "O resumo mostrará o modo ativo, o ramo selecionado, o diagnóstico espacial, os métodos sugeridos e a próxima ação recomendada."
+  },
+  "TPS duplicate locations": {
+    "es": "Ubicaciones duplicadas en TPS",
+    "pt_BR": "Localizações duplicadas no TPS"
+  },
+  "TPS requires one sample per coordinate.\n\n{p0} repeated samples were found in {p1} duplicated locations.\nContinue using only the first sample at each repeated coordinate?\n\nThe original layer will not be modified.": {
+    "es": "TPS requiere una muestra por coordenada.\n\nSe encontraron {p0} muestras repetidas en {p1} ubicaciones duplicadas.\n¿Desea continuar usando solo la primera muestra de cada coordenada repetida?\n\nSe conservará la capa original.",
+    "pt_BR": "TPS exige uma amostra por coordenada.\n\nForam encontradas {p0} amostras repetidas em {p1} localizações duplicadas.\nDeseja continuar usando apenas a primeira amostra de cada coordenada repetida?\n\nA camada original será preservada."
+  },
+  "Target pixel size:": {
+    "es": "Tamaño de píxel de destino:",
+    "pt_BR": "Tamanho de pixel de destino:"
+  },
+  "Target values": {
+    "es": "Valores de la variable objetivo",
+    "pt_BR": "Valores da variável alvo"
+  },
+  "The QGIS project is still not saved. Please save the project before using the plugin.": {
+    "es": "El proyecto QGIS aún no está guardado. Guárdelo antes de utilizar el plugin.",
+    "pt_BR": "O projeto QGIS ainda não foi salvo. Salve-o antes de utilizar o plugin."
+  },
+  "The best method and alternatives within the threshold will be summarized here.": {
+    "es": "Aquí se resumirán el mejor método y las alternativas dentro del umbral.",
+    "pt_BR": "O melhor método e as alternativas dentro do limiar serão resumidos aqui."
+  },
+  "The input population changed. Run validation again.": {
+    "es": "La población de entrada cambió. Repita la validación.",
+    "pt_BR": "A população de entrada mudou. Repita a validação."
+  },
+  "The link could not be opened:\n{p0}": {
+    "es": "No se pudo abrir el enlace:\n{p0}",
+    "pt_BR": "Não foi possível abrir o link:\n{p0}"
+  },
+  "The point and polygon layers use different coordinate reference systems.": {
+    "es": "Las capas de puntos y polígonos utilizan sistemas de referencia distintos.",
+    "pt_BR": "As camadas de pontos e polígonos utilizam sistemas de referência diferentes."
+  },
+  "The point dataset changed. Reload Framework data and reopen semivariogram settings before validating.": {
+    "es": "Los puntos cambiaron. Recargue los datos de Framework y vuelva a abrir la configuración del semivariograma antes de validar.",
+    "pt_BR": "Os pontos mudaram. Recarregue os dados do Framework e reabra as configurações do semivariograma antes de validar."
+  },
+  "The saved interpolation data are unavailable. Run interpolation again.\n\n{p0}": {
+    "es": "Los datos guardados de interpolación no están disponibles. Ejecute la interpolación de nuevo.\n\n{p0}",
+    "pt_BR": "Os dados salvos de interpolação não estão disponíveis. Execute a interpolação novamente.\n\n{p0}"
+  },
+  "The selected model failed validation. Select a successful model before applying.": {
+    "es": "El modelo seleccionado falló en la validación. Seleccione un modelo validado antes de aplicar.",
+    "pt_BR": "O modelo selecionado falhou na validação. Selecione um modelo validado antes de aplicar."
+  },
+  "The selected point layer CRS does not use meter units.\n\nCurrent CRS: {p0}\n\nDistance-based interpolation and Moran's Index should be run with a projected CRS in meters.": {
+    "es": "El SRC de la capa de puntos seleccionada no utiliza metros.\n\nSRC actual: {p0}\n\nLa interpolación basada en distancias y el índice de Moran deben usar un SRC proyectado en metros.",
+    "pt_BR": "O SRC da camada de pontos selecionada não utiliza metros.\n\nSRC atual: {p0}\n\nA interpolação baseada em distâncias e o índice de Moran devem usar um SRC projetado em metros."
+  },
+  "The selected polygon layer is not loaded in QGIS. Please load it and try again.": {
+    "es": "La capa de polígonos seleccionada no está cargada en QGIS. Cárguela e inténtelo de nuevo.",
+    "pt_BR": "A camada de polígonos selecionada não está carregada no QGIS. Carregue-a e tente novamente."
+  },
+  "The spatial relationship between the sample points and polygon could not be verified.\n\n{p0}": {
+    "es": "No se pudo verificar la relación espacial entre los puntos y el polígono.\n\n{p0}",
+    "pt_BR": "Não foi possível verificar a relação espacial entre os pontos e o polígono.\n\n{p0}"
+  },
+  "Thin plate spline": {
+    "es": "Spline de placa delgada",
+    "pt_BR": "Spline de placa fina"
+  },
+  "This page mirrors the Machine Learning covariates workflow when the full framework requires multivariate methods.": {
+    "es": "Esta página reproduce el flujo de covariables de Aprendizaje automático cuando Framework completo requiere métodos multivariados.",
+    "pt_BR": "Esta página reproduz o fluxo de covariáveis do Aprendizado de máquina quando o Framework completo exige métodos multivariados."
+  },
+  "This section guides method selection using the framework. Inputs are inherited from the Data tab, while SDI can be calculated here when needed.": {
+    "es": "Esta sección orienta la selección del método mediante Framework. Las entradas proceden de Datos y el IDE puede calcularse aquí cuando sea necesario.",
+    "pt_BR": "Esta seção orienta a seleção do método pelo Framework. As entradas vêm de Dados e o IDE pode ser calculado aqui quando necessário."
+  },
+  "Tune parameters in nested spatial training folds": {
+    "es": "Ajustar parámetros en particiones espaciales internas de entrenamiento",
+    "pt_BR": "Ajustar parâmetros em partições espaciais internas de treinamento"
+  },
+  "Type:": {
+    "es": "Tipo:",
+    "pt_BR": "Tipo:"
+  },
+  "Unable to open link": {
+    "es": "No se pudo abrir el enlace",
+    "pt_BR": "Não foi possível abrir o link"
+  },
+  "Univariate framework": {
+    "es": "Framework univariado",
+    "pt_BR": "Framework univariado"
+  },
+  "Universal Kriging (linear)": {
+    "es": "Kriging universal (lineal)",
+    "pt_BR": "Krigagem universal (linear)"
+  },
+  "Universal Kriging validation": {
+    "es": "Validación de kriging universal",
+    "pt_BR": "Validação da krigagem universal"
+  },
+  "Update observed/predicted plot": {
+    "es": "Actualizar gráfico de observados/predichos",
+    "pt_BR": "Atualizar gráfico de observados/preditos"
+  },
+  "Update preview": {
+    "es": "Actualizar vista previa",
+    "pt_BR": "Atualizar prévia"
+  },
+  "Use best validated method": {
+    "es": "Usar el mejor método validado",
+    "pt_BR": "Usar o melhor método validado"
+  },
+  "Use same extent": {
+    "es": "Usar la misma extensión",
+    "pt_BR": "Usar a mesma extensão"
+  },
+  "Use same palette": {
+    "es": "Usar la misma paleta",
+    "pt_BR": "Usar a mesma paleta"
+  },
+  "Use same value range": {
+    "es": "Usar el mismo intervalo de valores",
+    "pt_BR": "Usar o mesmo intervalo de valores"
+  },
+  "Use the manual values currently defined for C, gamma and epsilon.": {
+    "es": "Usar los valores manuales actuales de C, gamma y epsilon.",
+    "pt_BR": "Usar os valores manuais atuais de C, gamma e epsilon."
+  },
+  "Use the mouse wheel to zoom. Drag to pan. Right-click for zoom, export, and larger view.": {
+    "es": "Use la rueda del ratón para ampliar. Arrastre para desplazar. Haga clic derecho para ampliar, exportar o abrir una vista mayor.",
+    "pt_BR": "Use a roda do mouse para ampliar. Arraste para deslocar. Clique com o botão direito para ampliar, exportar ou abrir uma vista maior."
+  },
+  "Valid samples": {
+    "es": "Muestras válidas",
+    "pt_BR": "Amostras válidas"
+  },
+  "Validate 3 models": {
+    "es": "Validar 3 modelos",
+    "pt_BR": "Validar 3 modelos"
+  },
+  "Validate models": {
+    "es": "Validar modelos",
+    "pt_BR": "Validar modelos"
+  },
+  "Validated methods": {
+    "es": "Métodos validados",
+    "pt_BR": "Métodos validados"
+  },
+  "Validating Universal Kriging (training-fold refit)": {
+    "es": "Validando kriging universal (reajuste por partición)",
+    "pt_BR": "Validando krigagem universal (reajuste por partição)"
+  },
+  "Validating interpolation methods": {
+    "es": "Validando métodos de interpolación",
+    "pt_BR": "Validando métodos de interpolação"
+  },
+  "Validation": {
+    "es": "Validación",
+    "pt_BR": "Validação"
+  },
+  "Validation metrics": {
+    "es": "Métricas de validación",
+    "pt_BR": "Métricas de validação"
+  },
+  "Validation pending for the current dataset.": {
+    "es": "Validación pendiente para el conjunto de datos actual.",
+    "pt_BR": "Validação pendente para o conjunto de dados atual."
+  },
+  "Validation plot": {
+    "es": "Gráfico de validación",
+    "pt_BR": "Gráfico de validação"
+  },
+  "Validation plot placeholder": {
+    "es": "Vista del gráfico de validación",
+    "pt_BR": "Área do gráfico de validação"
+  },
+  "Validation results": {
+    "es": "Resultados de validación",
+    "pt_BR": "Resultados da validação"
+  },
+  "Validation summary": {
+    "es": "Resumen de validación",
+    "pt_BR": "Resumo da validação"
+  },
+  "Variable": {
+    "es": "Variable",
+    "pt_BR": "Variável"
+  },
+  "Variable importance": {
+    "es": "Importancia de variables",
+    "pt_BR": "Importância das variáveis"
+  },
+  "Version {p0}": {
+    "es": "Versión {p0}",
+    "pt_BR": "Versão {p0}"
+  },
+  "Version:": {
+    "es": "Versión:",
+    "pt_BR": "Versão:"
+  },
+  "View HTML": {
+    "es": "Ver HTML",
+    "pt_BR": "Ver HTML"
+  },
+  "View covariates": {
+    "es": "Ver covariables",
+    "pt_BR": "Ver covariáveis"
+  },
+  "View data with extractions ": {
+    "es": "Ver datos con extracciones ",
+    "pt_BR": "Ver dados com extrações "
+  },
+  "View validation": {
+    "es": "Ver validación",
+    "pt_BR": "Ver validação"
+  },
+  "Visualization settings": {
+    "es": "Configuración de visualización",
+    "pt_BR": "Configurações de visualização"
+  },
+  "Winner: {p0} | Methods validated: {p1}{p2}": {
+    "es": "Ganador: {p0} | Métodos validados: {p1}{p2}",
+    "pt_BR": "Vencedor: {p0} | Métodos validados: {p1}{p2}"
+  },
+  "Winner: {p0} | Spatial {p1}-fold CV | n={p2}": {
+    "es": "Ganador: {p0} | Validación espacial de {p1} particiones | n={p2}",
+    "pt_BR": "Vencedor: {p0} | Validação espacial com {p1} partições | n={p2}"
+  },
+  "Writing RF raster": {
+    "es": "Escribiendo ráster RF",
+    "pt_BR": "Gravando raster RF"
+  },
+  "Writing SVM raster": {
+    "es": "Escribiendo ráster SVM",
+    "pt_BR": "Gravando raster SVM"
+  },
+  "X (CRS units)": {
+    "es": "X (unidades del SRC)",
+    "pt_BR": "X (unidades do SRC)"
+  },
+  "Y (CRS units)": {
+    "es": "Y (unidades del SRC)",
+    "pt_BR": "Y (unidades do SRC)"
+  },
+  "Z score": {
+    "es": "Puntuación Z",
+    "pt_BR": "Escore Z"
+  },
+  "Zoom error": {
+    "es": "Error de ampliación",
+    "pt_BR": "Erro de ampliação"
+  },
+  "exhaustive": {
+    "es": "exhaustiva",
+    "pt_BR": "exaustiva"
+  },
+  "randomized": {
+    "es": "aleatoria",
+    "pt_BR": "aleatória"
+  },
+  "prediction": {
+    "es": "predicción",
+    "pt_BR": "predição"
+  },
+  "p value": {
+    "es": "valor p",
+    "pt_BR": "valor p"
+  },
+  "{p0} (not enough data for fit)": {
+    "es": "{p0} (datos insuficientes para ajustar)",
+    "pt_BR": "{p0} (dados insuficientes para ajustar)"
+  },
+  "{p0} blocked": {
+    "es": "{p0} bloqueado",
+    "pt_BR": "{p0} bloqueado"
+  },
+  "{p0} comparison": {
+    "es": "Comparación de {p0}",
+    "pt_BR": "Comparação de {p0}"
+  },
+  "{p0} interpolation preview ({p1})": {
+    "es": "Vista previa de interpolación {p0} ({p1})",
+    "pt_BR": "Prévia da interpolação {p0} ({p1})"
+  },
+  "{p0} needs additional Python packages the first time it runs.\n\nDo you want the plugin to install them automatically now?": {
+    "es": "{p0} necesita paquetes adicionales de Python en su primera ejecución.\n\n¿Desea que el plugin los instale automáticamente ahora?",
+    "pt_BR": "{p0} precisa de pacotes adicionais do Python na primeira execução.\n\nDeseja que o plugin os instale automaticamente agora?"
+  },
+  "{p0} ready": {
+    "es": "{p0} listo",
+    "pt_BR": "{p0} pronto"
+  },
+  "{p0} setup": {
+    "es": "Configuración de {p0}",
+    "pt_BR": "Configuração de {p0}"
+  },
+  "{p0} setup error": {
+    "es": "Error de configuración de {p0}",
+    "pt_BR": "Erro de configuração de {p0}"
+  },
+  "Yes": {
+    "es": "Sí",
+    "pt_BR": "Sim"
+  },
+  "No": {
+    "es": "No",
+    "pt_BR": "Não"
+  },
+  "OK": {
+    "es": "OK",
+    "pt_BR": "OK"
+  },
+  "Apply": {
+    "es": "Aplicar",
+    "pt_BR": "Aplicar"
+  },
+  "Help": {
+    "es": "Ayuda",
+    "pt_BR": "Ajuda"
+  },
+  "Keep": {
+    "es": "Conservar",
+    "pt_BR": "Manter"
+  },
+  "Exclude": {
+    "es": "Excluir",
+    "pt_BR": "Excluir"
+  },
+  "Excluded": {
+    "es": "Excluido",
+    "pt_BR": "Excluído"
+  },
+  "Selected parameters": {
+    "es": "Parámetros seleccionados",
+    "pt_BR": "Parâmetros selecionados"
+  },
+  "Setting": {
+    "es": "Configuración",
+    "pt_BR": "Configuração"
+  },
+  "Value": {
+    "es": "Valor",
+    "pt_BR": "Valor"
+  },
+  "Output": {
+    "es": "Salida",
+    "pt_BR": "Saída"
+  },
+  "Raster": {
+    "es": "Ráster",
+    "pt_BR": "Raster"
+  },
+  "Study": {
+    "es": "Estudio",
+    "pt_BR": "Estudo"
+  },
+  "Author": {
+    "es": "Autor",
+    "pt_BR": "Autor"
+  },
+  "Notes": {
+    "es": "Notas",
+    "pt_BR": "Notas"
+  },
+  "Study:": {
+    "es": "Estudio:",
+    "pt_BR": "Estudo:"
+  },
+  "Author:": {
+    "es": "Autor:",
+    "pt_BR": "Autor:"
+  },
+  "Notes:": {
+    "es": "Notas:",
+    "pt_BR": "Notas:"
+  },
+  "Expand all": {
+    "es": "Expandir todo",
+    "pt_BR": "Expandir tudo"
+  },
+  "Collapse all": {
+    "es": "Contraer todo",
+    "pt_BR": "Recolher tudo"
+  },
+  "Best Fit Interpolator Technical Report": {
+    "es": "Informe técnico de Best Fit Interpolator",
+    "pt_BR": "Relatório técnico do Best Fit Interpolator"
+  },
+  "Validation Results": {
+    "es": "Resultados de validación",
+    "pt_BR": "Resultados da validação"
+  },
+  "ML search: {p0}": {
+    "es": "Búsqueda ML: {p0}",
+    "pt_BR": "Busca ML: {p0}"
+  },
+  "RF tree standard deviation": {
+    "es": "Desviación estándar entre árboles de RF",
+    "pt_BR": "Desvio padrão entre árvores do RF"
+  },
+  "RF tree variance": {
+    "es": "Varianza entre árboles de RF",
+    "pt_BR": "Variância entre árvores do RF"
+  },
+  "RF trend tree standard deviation": {
+    "es": "Desviación estándar entre árboles de la tendencia RF",
+    "pt_BR": "Desvio padrão entre árvores da tendência RF"
+  },
+  "RF trend tree variance": {
+    "es": "Varianza entre árboles de la tendencia RF",
+    "pt_BR": "Variância entre árvores da tendência RF"
+  },
+  "Residual kriging standard deviation": {
+    "es": "Desviación estándar del kriging residual",
+    "pt_BR": "Desvio padrão da krigagem residual"
+  },
+  "Residual kriging variance": {
+    "es": "Varianza del kriging residual",
+    "pt_BR": "Variância da krigagem residual"
+  },
+  "Prediction from the fitted model.": {
+    "es": "Predicción del modelo ajustado.",
+    "pt_BR": "Predição do modelo ajustado."
+  },
+  "Adjust maximum distance, lag distance or count; preview, validate and apply residual models.": {
+    "es": "Ajuste la distancia máxima y la distancia o el número de clases; visualice, valide y aplique los modelos residuales.",
+    "pt_BR": "Ajuste a distância máxima e a distância ou o número de classes; visualize, valide e aplique os modelos residuais."
+  },
+  "Automatic RF, SVM and RK hyperparameter search for Framework validation and interpolation. Configure it here without opening individual method tabs. Execution details are recorded in the report.": {
+    "es": "Búsqueda automática de hiperparámetros de RF, SVM y RK para validar e interpolar en Framework. Configúrela aquí sin abrir las pestañas individuales. El informe registra los detalles de la ejecución.",
+    "pt_BR": "Busca automática de hiperparâmetros de RF, SVM e RK para validar e interpolar no Framework. Configure aqui sem abrir as abas individuais. O relatório registra os detalhes da execução."
+  },
+  "Automatic keeps the original rule: REML is used only when available and the dataset has fewer than 100 valid samples; otherwise MoM is used. If REML is selected manually, it is allowed only for fewer than 500 valid samples to avoid overloading the system. MoM fits the theoretical variogram to the experimental semivariogram and shows experimental points. REML estimates variogram parameters by restricted maximum likelihood and does not display the experimental semivariogram.": {
+    "es": "Automático conserva la regla original: REML se utiliza cuando está disponible y hay menos de 100 muestras válidas; en los demás casos se utiliza MoM. REML manual permite menos de 500 muestras válidas para evitar sobrecargar el sistema. MoM ajusta el variograma teórico al semivariograma experimental y muestra los puntos experimentales. REML estima los parámetros por máxima verosimilitud restringida y no muestra el semivariograma experimental.",
+    "pt_BR": "Automático preserva a regra original: REML é utilizado quando está disponível e há menos de 100 amostras válidas; nos demais casos é utilizado MoM. REML manual permite menos de 500 amostras válidas para evitar sobrecarregar o sistema. MoM ajusta o variograma teórico ao semivariograma experimental e mostra os pontos experimentais. REML estima os parâmetros por máxima verossimilhança restrita e não mostra o semivariograma experimental."
+  },
+  "Automatic uses LOOCV for n <= 100 and changes to K Fold from n = 101 (10 folds through n = 500; 5 folds above 500).": {
+    "es": "Automático utiliza LOOCV para n <= 100 y cambia a K particiones desde n = 101 (10 particiones hasta n = 500; 5 por encima de 500).",
+    "pt_BR": "Automático utiliza LOOCV para n <= 100 e muda para K partições a partir de n = 101 (10 partições até n = 500; 5 acima de 500)."
+  },
+  "Best Fit Interpolator classifies the selected point dataset by valid sample count:\n\n• Normal: up to {p0} valid samples.\n• Dense: {p1} to {p2} valid samples.\n• Massive: more than {p3} valid samples.\n\n{p4}\n\n{p5}": {
+    "es": "Best Fit Interpolator clasifica los puntos seleccionados por número de muestras válidas:\n\n• Normal: hasta {p0} muestras válidas.\n• Denso: de {p1} a {p2} muestras válidas.\n• Masivo: más de {p3} muestras válidas.\n\n{p4}\n\n{p5}",
+    "pt_BR": "O Best Fit Interpolator classifica os pontos selecionados pelo número de amostras válidas:\n\n• Normal: até {p0} amostras válidas.\n• Denso: de {p1} a {p2} amostras válidas.\n• Massivo: mais de {p3} amostras válidas.\n\n{p4}\n\n{p5}"
+  },
+  "C and gamma bounds and steps are base-2 exponents (for example, -3 gives 0.125). Standard search minimizes MAE for RF/RK and RMSE for SVM. Spatial search minimizes MSE in inner spatial folds. Exhaustive search evaluates all effective combinations and may take much longer. Dense/massive profiles may limit CV folds and tuning observations; actual settings appear in the report.": {
+    "es": "Los límites y pasos de C y gamma son exponentes de base 2 (por ejemplo, -3 equivale a 0.125). La búsqueda estándar minimiza MAE en RF/RK y RMSE en SVM. La búsqueda espacial minimiza MSE en las particiones espaciales internas. La búsqueda exhaustiva evalúa todas las combinaciones efectivas y puede tardar mucho más. Los perfiles densos/masivos pueden limitar las particiones y las observaciones del ajuste; el informe muestra los valores utilizados.",
+    "pt_BR": "Os limites e passos de C e gamma são expoentes de base 2 (por exemplo, -3 equivale a 0.125). A busca padrão minimiza MAE no RF/RK e RMSE no SVM. A busca espacial minimiza MSE nas partições espaciais internas. A busca exaustiva avalia todas as combinações efetivas e pode demorar muito mais. Os perfis densos/massivos podem limitar as partições e as observações do ajuste; o relatório mostra os valores utilizados."
+  },
+  "C controls the penalty for prediction errors in Support Vector Regression. Larger values force the model to fit the training data more strictly, while smaller values allow a smoother and more tolerant fit.": {
+    "es": "C controla la penalización de los errores de predicción en la regresión por vectores de soporte. Los valores altos exigen un ajuste más estricto a los datos de entrenamiento; los bajos permiten un ajuste más suave y tolerante.",
+    "pt_BR": "C controla a penalização dos erros de predição na regressão por vetores de suporte. Valores altos exigem um ajuste mais estrito aos dados de treinamento; valores baixos permitem um ajuste mais suave e tolerante."
+  },
+  "Explore the current session, validation and executed interpolation. View the interactive HTML report in your browser or open the PDF options.": {
+    "es": "Explore la sesión actual, la validación y la interpolación ejecutada. Vea el informe HTML interactivo en el navegador o abra las opciones PDF.",
+    "pt_BR": "Explore a sessão atual, a validação e a interpolação executada. Veja o relatório HTML interativo no navegador ou abra as opções PDF."
+  },
+  "Fit: {p0} | Maximum distance: {p1} | Lag: {p2} | Samples: {p3}. Recommended: {p4} (R² {p5}, RMSE {p6}). Framework selects the highest R²; lower RMSE breaks ties. Metrics use the existing three decimal precision. Select a row and Apply to change the current model.": {
+    "es": "Ajuste: {p0} | Distancia máxima: {p1} | Clase: {p2} | Muestras: {p3}. Recomendado: {p4} (R² {p5}, RMSE {p6}). Framework selecciona el mayor R²; en los empates utiliza el menor RMSE. Las métricas conservan tres decimales. Seleccione una fila y pulse Aplicar para cambiar el modelo actual.",
+    "pt_BR": "Ajuste: {p0} | Distância máxima: {p1} | Classe: {p2} | Amostras: {p3}. Recomendado: {p4} (R² {p5}, RMSE {p6}). O Framework seleciona o maior R²; nos empates utiliza o menor RMSE. As métricas preservam três casas decimais. Selecione uma linha e clique em Aplicar para mudar o modelo atual."
+  },
+  "Framework always searches hyperparameters for RF, SVM and the RF trend of RK. These settings are independent of the individual method tabs.": {
+    "es": "Framework siempre busca hiperparámetros para RF, SVM y la tendencia RF de RK. Esta configuración es independiente de las pestañas individuales.",
+    "pt_BR": "O Framework sempre busca hiperparâmetros para RF, SVM e a tendência RF do RK. Estas configurações são independentes das abas individuais."
+  },
+  "Framework always tunes ML hyperparameters in nested spatial training folds. Configure the search type and parameter ranges with ML search in Framework. Outer spatial folds evaluate performance.": {
+    "es": "Framework siempre ajusta los hiperparámetros de aprendizaje automático en particiones espaciales internas de entrenamiento. Configure el tipo de búsqueda y los rangos con Búsqueda ML. Las particiones espaciales externas evalúan el desempeño.",
+    "pt_BR": "O Framework sempre ajusta os hiperparâmetros de aprendizado de máquina em partições espaciais internas de treinamento. Configure o tipo de busca e os intervalos em Busca ML. As partições espaciais externas avaliam o desempenho."
+  },
+  "Framework guidance is derived from the master's work. Click the info button to view the article summary used in this tab.": {
+    "es": "La orientación de Framework procede del trabajo de maestría. Pulse el botón de información para ver el resumen del artículo utilizado en esta pestaña.",
+    "pt_BR": "A orientação do Framework vem do trabalho de mestrado. Clique no botão de informação para ver o resumo do artigo utilizado nesta aba."
+  },
+  "IDW power controls how fast influence decreases with distance. Higher values give nearby points more weight; lower values produce smoother results.": {
+    "es": "La potencia de IDW controla la disminución de la influencia con la distancia. Los valores altos dan más peso a los puntos cercanos; los bajos producen resultados más suaves.",
+    "pt_BR": "A potência do IDW controla a diminuição da influência com a distância. Valores altos dão mais peso aos pontos próximos; valores baixos produzem resultados mais suaves."
+  },
+  "Insensitive margin around the regression function. Smaller values fit the data more tightly; larger values ignore small errors and smooth the model.": {
+    "es": "Margen insensible alrededor de la función de regresión. Los valores bajos ajustan los datos con mayor precisión; los altos ignoran errores pequeños y suavizan el modelo.",
+    "pt_BR": "Margem insensível ao redor da função de regressão. Valores baixos ajustam os dados com maior precisão; valores altos ignoram erros pequenos e suavizam o modelo."
+  },
+  "Lag-bin width used to build the residual semivariogram. Use 0 for automatic nearest-neighbor width.": {
+    "es": "Ancho de clase utilizado para construir el semivariograma residual. Use 0 para el ancho automático basado en el vecino más cercano.",
+    "pt_BR": "Largura de classe utilizada para construir o semivariograma residual. Use 0 para a largura automática baseada no vizinho mais próximo."
+  },
+  "Maximum lag distance used to build the residual semivariogram. Use 0 for automatic.": {
+    "es": "Distancia máxima utilizada para construir el semivariograma residual. Use 0 para definirla automáticamente.",
+    "pt_BR": "Distância máxima utilizada para construir o semivariograma residual. Use 0 para defini-la automaticamente."
+  },
+  "Maximum value explored for C during grid/random search.": {
+    "es": "Valor máximo de C explorado durante la búsqueda en malla/aleatoria.",
+    "pt_BR": "Valor máximo de C explorado durante a busca em grade/aleatória."
+  },
+  "Maximum value explored for epsilon during grid/random search.": {
+    "es": "Valor máximo de epsilon explorado durante la búsqueda en malla/aleatoria.",
+    "pt_BR": "Valor máximo de epsilon explorado durante a busca em grade/aleatória."
+  },
+  "Maximum value explored for gamma during grid/random search.": {
+    "es": "Valor máximo de gamma explorado durante la búsqueda en malla/aleatoria.",
+    "pt_BR": "Valor máximo de gamma explorado durante a busca em grade/aleatória."
+  },
+  "Minimum value explored for C during grid/random search.": {
+    "es": "Valor mínimo de C explorado durante la búsqueda en malla/aleatoria.",
+    "pt_BR": "Valor mínimo de C explorado durante a busca em grade/aleatória."
+  },
+  "Minimum value explored for epsilon during grid/random search.": {
+    "es": "Valor mínimo de epsilon explorado durante la búsqueda en malla/aleatoria.",
+    "pt_BR": "Valor mínimo de epsilon explorado durante a busca em grade/aleatória."
+  },
+  "Minimum value explored for gamma during grid/random search.": {
+    "es": "Valor mínimo de gamma explorado durante la búsqueda en malla/aleatoria.",
+    "pt_BR": "Valor mínimo de gamma explorado durante a busca em grade/aleatória."
+  },
+  "MoM uses the experimental semivariogram and fits the model curve from binned semivariance values. REML estimates the variogram parameters statistically from the data and can be heavier computationally, so manual REML is limited to fewer than 500 valid samples. In Automatic mode, the original REML rule remains fewer than 100 valid samples. In REML mode the experimental semivariogram is not shown.": {
+    "es": "MoM utiliza el semivariograma experimental y ajusta la curva a los valores de semivarianza agrupados en clases. REML estima estadísticamente los parámetros a partir de los datos y puede exigir más procesamiento; por ello, REML manual se limita a menos de 500 muestras válidas. En Automático, el límite original de REML sigue siendo menos de 100 muestras válidas. REML no muestra el semivariograma experimental.",
+    "pt_BR": "MoM utiliza o semivariograma experimental e ajusta a curva aos valores de semivariância agrupados em classes. REML estima estatisticamente os parâmetros a partir dos dados e pode exigir mais processamento; por isso, REML manual se limita a menos de 500 amostras válidas. Em Automático, o limite original do REML continua sendo menos de 100 amostras válidas. REML não mostra o semivariograma experimental."
+  },
+  "Multiplicative or incremental step used to generate C candidates, depending on the search logic.": {
+    "es": "Paso multiplicativo o incremental utilizado para generar candidatos de C, según la lógica de búsqueda.",
+    "pt_BR": "Passo multiplicativo ou incremental utilizado para gerar candidatos de C, conforme a lógica da busca."
+  },
+  "Multiplicative or incremental step used to generate gamma candidates, depending on the search logic.": {
+    "es": "Paso multiplicativo o incremental utilizado para generar candidatos de gamma, según la lógica de búsqueda.",
+    "pt_BR": "Passo multiplicativo ou incremental utilizado para gerar candidatos de gamma, conforme a lógica da busca."
+  },
+  "Number of nearest sample points used for each IDW prediction. More neighbors usually smooth the surface; fewer neighbors emphasize local variation.": {
+    "es": "Número de puntos vecinos utilizados en cada predicción IDW. Más vecinos suelen suavizar la superficie; menos vecinos destacan la variación local.",
+    "pt_BR": "Número de pontos vizinhos utilizados em cada predição IDW. Mais vizinhos costumam suavizar a superfície; menos vizinhos destacam a variação local."
+  },
+  "Only used when Grid Search is enabled.\n\nMaximum number of random-search iterations to try. Lower values are faster. Recommended: 10 for normal use, 15 to 20 for smaller datasets if you want a more complete search.": {
+    "es": "Solo se utiliza con la búsqueda en malla activada.\n\nNúmero máximo de iteraciones de búsqueda aleatoria. Los valores bajos son más rápidos. Recomendado: 10 para uso normal y de 15 a 20 para conjuntos pequeños si desea una búsqueda más completa.",
+    "pt_BR": "Utilizado apenas com a busca em grade ativada.\n\nNúmero máximo de iterações da busca aleatória. Valores baixos são mais rápidos. Recomendado: 10 para uso normal e de 15 a 20 para conjuntos pequenos se desejar uma busca mais completa."
+  },
+  "Only used when Grid Search is enabled.\n\nNumber of cross validation folds used to evaluate candidate hyperparameters. Lower values are faster. Recommended: 3 for most computers, 5 only for smaller datasets or more robust tuning.": {
+    "es": "Solo se utiliza con la búsqueda en malla activada.\n\nNúmero de particiones de validación cruzada para evaluar hiperparámetros candidatos. Los valores bajos son más rápidos. Recomendado: 3 para la mayoría de equipos y 5 para conjuntos pequeños o un ajuste más robusto.",
+    "pt_BR": "Utilizado apenas com a busca em grade ativada.\n\nNúmero de partições de validação cruzada para avaliar hiperparâmetros candidatos. Valores baixos são mais rápidos. Recomendado: 3 para a maioria dos computadores e 5 para conjuntos pequenos ou um ajuste mais robusto."
+  },
+  "Only used when Grid Search is enabled. Explains how to choose the number of folds.": {
+    "es": "Solo con la búsqueda en malla activada. Explica cómo elegir el número de particiones.",
+    "pt_BR": "Apenas com a busca em grade ativada. Explica como escolher o número de partições."
+  },
+  "Only used when Grid Search is enabled. Explains how to choose the number of search iterations.": {
+    "es": "Solo con la búsqueda en malla activada. Explica cómo elegir el número de iteraciones.",
+    "pt_BR": "Apenas com a busca em grade ativada. Explica como escolher o número de iterações."
+  },
+  "Only used when Grid Search is enabled. Maximum number of candidate combinations tested during the search.": {
+    "es": "Solo con la búsqueda en malla activada. Número máximo de combinaciones candidatas evaluadas.",
+    "pt_BR": "Apenas com a busca em grade ativada. Número máximo de combinações candidatas avaliadas."
+  },
+  "Only used when Grid Search is enabled. Maximum number of candidate parameter combinations tested during the search. More iterations explore the search space better, but increase processing time.": {
+    "es": "Solo con la búsqueda en malla activada. Número máximo de combinaciones de parámetros evaluadas. Más iteraciones exploran mejor el espacio de búsqueda, pero aumentan el tiempo de procesamiento.",
+    "pt_BR": "Apenas com a busca em grade ativada. Número máximo de combinações de parâmetros avaliadas. Mais iterações exploram melhor o espaço de busca, mas aumentam o tempo de processamento."
+  },
+  "Only used when Grid Search is enabled. Number of cross validation folds used to compare candidate SVM hyperparameters. Lower values are faster; higher values are usually more robust but slower.": {
+    "es": "Solo con la búsqueda en malla activada. Número de particiones de validación cruzada para comparar hiperparámetros de SVM. Los valores bajos son más rápidos; los altos suelen ser más robustos, pero más lentos.",
+    "pt_BR": "Apenas com a busca em grade ativada. Número de partições de validação cruzada para comparar hiperparâmetros do SVM. Valores baixos são mais rápidos; valores altos costumam ser mais robustos, mas mais lentos."
+  },
+  "Only used when Grid Search is enabled. Number of folds used to evaluate candidate hyperparameters.": {
+    "es": "Solo con la búsqueda en malla activada. Número de particiones para evaluar hiperparámetros candidatos.",
+    "pt_BR": "Apenas com a busca em grade ativada. Número de partições para avaliar hiperparâmetros candidatos."
+  },
+  "Pearson:": {
+    "es": "Pearson:",
+    "pt_BR": "Pearson:"
+  },
+  "Penalty for prediction errors in SVR. Higher values fit the training data more strictly; lower values allow a smoother fit.": {
+    "es": "Penalización de errores de predicción en SVR. Los valores altos ajustan los datos con mayor rigidez; los bajos permiten un ajuste más suave.",
+    "pt_BR": "Penalização de erros de predição no SVR. Valores altos ajustam os dados com maior rigidez; valores baixos permitem um ajuste mais suave."
+  },
+  "RBF kernel influence radius. Higher values create more local and complex responses; lower values create smoother responses.": {
+    "es": "Radio de influencia del núcleo RBF. Los valores altos crean respuestas más locales y complejas; los bajos crean respuestas más suaves.",
+    "pt_BR": "Raio de influência do núcleo RBF. Valores altos criam respostas mais locais e complexas; valores baixos criam respostas mais suaves."
+  },
+  "Search several candidate values for C, gamma and epsilon and keep the best combination found.": {
+    "es": "Evaluar varios valores candidatos de C, gamma y epsilon y conservar la mejor combinación.",
+    "pt_BR": "Avaliar vários valores candidatos de C, gamma e epsilon e preservar a melhor combinação."
+  },
+  "Step used to generate epsilon candidates during the search.": {
+    "es": "Paso utilizado para generar candidatos de epsilon en la búsqueda.",
+    "pt_BR": "Passo utilizado para gerar candidatos de epsilon na busca."
+  },
+  "Valid: {p0}; invalid: {p1}; mean: {p2}; median: {p3}. Neighbors min/mean/max: {p4}/{p5}/{p6}; isolated: {p7}. Global Moran I={p8}, pseudo p={p9} (overall diagnostic only). Analysis rows: {p10}/{p11}.": {
+    "es": "Válidos: {p0}; no válidos: {p1}; media: {p2}; mediana: {p3}. Vecinos mín./media/máx.: {p4}/{p5}/{p6}; aislados: {p7}. I de Moran global={p8}, pseudo p={p9} (solo diagnóstico global). Filas de análisis: {p10}/{p11}.",
+    "pt_BR": "Válidos: {p0}; inválidos: {p1}; média: {p2}; mediana: {p3}. Vizinhos mín./média/máx.: {p4}/{p5}/{p6}; isolados: {p7}. I de Moran global={p8}, pseudo p={p9} (apenas diagnóstico global). Linhas da análise: {p10}/{p11}."
+  },
+  "Validation uses this method's selected predictors. Covariance, trend and SVM scaling are refitted inside training folds. Fixed mode uses the manual parameters in the method tab. Method comparisons are performed in Framework.": {
+    "es": "La validación utiliza los predictores seleccionados para este método. La covarianza, la tendencia y la estandarización de SVM se reajustan en las particiones de entrenamiento. El modo fijo utiliza los parámetros manuales de la pestaña del método. Los métodos se comparan en Framework.",
+    "pt_BR": "A validação utiliza os preditores selecionados para este método. A covariância, a tendência e a padronização do SVM são reajustadas nas partições de treinamento. O modo fixo utiliza os parâmetros manuais da aba do método. Os métodos são comparados no Framework."
+  },
+  "View the automatic validation used to compare the Spherical, Exponential, and Gaussian kriging models.": {
+    "es": "Ver la validación automática que compara los modelos esférico, exponencial y gaussiano de kriging.",
+    "pt_BR": "Ver a validação automática que compara os modelos esférico, exponencial e gaussiano da krigagem."
+  },
+  "epsilon defines the width of the insensitive zone around the regression function. Errors smaller than epsilon are ignored during training. Smaller values fit the data more tightly; larger values produce a smoother model.": {
+    "es": "epsilon define el ancho de la zona insensible alrededor de la función de regresión. Los errores menores que epsilon se ignoran durante el entrenamiento. Los valores bajos ajustan los datos con mayor precisión; los altos producen un modelo más suave.",
+    "pt_BR": "epsilon define a largura da zona insensível ao redor da função de regressão. Erros menores que epsilon são ignorados no treinamento. Valores baixos ajustam os dados com maior precisão; valores altos produzem um modelo mais suave."
+  },
+  "gamma controls how local the influence of each sample is in the radial basis function (RBF) kernel. Higher gamma values create more local and complex responses; lower values create smoother and broader responses.": {
+    "es": "gamma controla el carácter local de la influencia de cada muestra en el núcleo de función de base radial (RBF). Los valores altos crean respuestas más locales y complejas; los bajos crean respuestas más suaves y amplias.",
+    "pt_BR": "gamma controla o caráter local da influência de cada amostra no núcleo de função de base radial (RBF). Valores altos criam respostas mais locais e complexas; valores baixos criam respostas mais suaves e amplas."
+  },
+  "{p0} vs {p1} | Grid {p2} × {p3}; pixel size {p4} × {p5}; preview sampling every {p6} pixels. A − B: mean {p7}, median {p8}, min {p9}, max {p10}; {p11} valid common pixels. NoData excluded; no resampling. Spatial comparison complements validation.": {
+    "es": "{p0} frente a {p1} | Malla {p2} × {p3}; píxel {p4} × {p5}; vista previa cada {p6} píxeles. A − B: media {p7}, mediana {p8}, mín. {p9}, máx. {p10}; {p11} píxeles comunes válidos. NoData excluido; sin remuestreo. La comparación espacial complementa la validación.",
+    "pt_BR": "{p0} versus {p1} | Grade {p2} × {p3}; pixel {p4} × {p5}; prévia a cada {p6} pixels. A − B: média {p7}, mediana {p8}, mín. {p9}, máx. {p10}; {p11} pixels comuns válidos. NoData excluído; sem reamostragem. A comparação espacial complementa a validação."
+  },
+  "{p0} | SSE={p1}{p2}": {
+    "es": "{p0} | SSE={p1}{p2}",
+    "pt_BR": "{p0} | SSE={p1}{p2}"
+  },
+  "ML search: randomized": {
+    "es": "Búsqueda ML: aleatoria",
+    "pt_BR": "Busca ML: aleatória"
+  },
+  "ML search: exhaustive": {
+    "es": "Búsqueda ML: exhaustiva",
+    "pt_BR": "Busca ML: exaustiva"
+  },
+  "Clustered": {
+    "es": "Agrupado",
+    "pt_BR": "Agrupado"
+  },
+  "Dispersed": {
+    "es": "Disperso",
+    "pt_BR": "Disperso"
+  },
+  "Random": {
+    "es": "Aleatorio",
+    "pt_BR": "Aleatório"
+  },
+  "Very High": {
+    "es": "Muy alto",
+    "pt_BR": "Muito alto"
+  },
+  "Very high": {
+    "es": "Muy alto",
+    "pt_BR": "Muito alto"
+  },
+  "High": {
+    "es": "Alto",
+    "pt_BR": "Alto"
+  },
+  "Moderate": {
+    "es": "Moderado",
+    "pt_BR": "Moderado"
+  },
+  "Low": {
+    "es": "Bajo",
+    "pt_BR": "Baixo"
+  },
+  "Very Low": {
+    "es": "Muy bajo",
+    "pt_BR": "Muito baixo"
+  },
+  "Very low": {
+    "es": "Muy bajo",
+    "pt_BR": "Muito baixo"
+  },
+  "Weak": {
+    "es": "Débil",
+    "pt_BR": "Fraco"
+  },
+  "Strong": {
+    "es": "Fuerte",
+    "pt_BR": "Forte"
+  },
+  "normal": {
+    "es": "normal",
+    "pt_BR": "normal"
+  },
+  "dense": {
+    "es": "denso",
+    "pt_BR": "denso"
+  },
+  "massive": {
+    "es": "masivo",
+    "pt_BR": "massivo"
+  },
+  "Theoretical ({p0})": {
+    "es": "Teórico ({p0})",
+    "pt_BR": "Teórico ({p0})"
+  },
+  "Theoretical": {
+    "es": "Teórico",
+    "pt_BR": "Teórico"
+  },
+  "Experimental": {
+    "es": "Experimental",
+    "pt_BR": "Experimental"
+  },
+  "Machine learning hyperparameter selection": {
+    "es": "Selección de hiperparámetros de aprendizaje automático",
+    "pt_BR": "Seleção de hiperparâmetros de aprendizado de máquina"
+  },
+  "Hyperparameter selection": {
+    "es": "Selección de hiperparámetros",
+    "pt_BR": "Seleção de hiperparâmetros"
+  },
+  "Executed value": {
+    "es": "Valor utilizado",
+    "pt_BR": "Valor utilizado"
+  },
+  "Method and execution": {
+    "es": "Método y ejecución",
+    "pt_BR": "Método e execução"
+  },
+  "Observations supplied to the tuning/fitting routine": {
+    "es": "Observaciones utilizadas en la rutina de búsqueda/ajuste",
+    "pt_BR": "Observações utilizadas na rotina de busca/ajuste"
+  },
+  "Evaluated / available combinations": {
+    "es": "Combinaciones evaluadas / disponibles",
+    "pt_BR": "Combinações avaliadas / disponíveis"
+  },
+  "Search validation": {
+    "es": "Validación de la búsqueda",
+    "pt_BR": "Validação da busca"
+  },
+  "Selection criterion and best search score": {
+    "es": "Criterio de selección y mejor puntuación",
+    "pt_BR": "Critério de seleção e melhor pontuação"
+  },
+  "Search repeated inside performance-validation folds": {
+    "es": "Búsqueda repetida dentro de las particiones de evaluación",
+    "pt_BR": "Busca repetida dentro das partições de avaliação"
+  },
+  "No; parameters selected before performance validation": {
+    "es": "No; parámetros seleccionados antes de evaluar el desempeño",
+    "pt_BR": "Não; parâmetros selecionados antes de avaliar o desempenho"
+  },
+  "Effective search values": {
+    "es": "Valores efectivos de búsqueda",
+    "pt_BR": "Valores efetivos da busca"
+  },
+  "Evaluated search combinations": {
+    "es": "Combinaciones de búsqueda evaluadas",
+    "pt_BR": "Combinações de busca avaliadas"
+  },
+  "Reproducible random search over a finite grid": {
+    "es": "Búsqueda aleatoria reproducible en una malla finita",
+    "pt_BR": "Busca aleatória reproduzível em uma grade finita"
+  },
+  "Exhaustive search over the finite grid": {
+    "es": "Búsqueda exhaustiva en la malla finita",
+    "pt_BR": "Busca exaustiva na grade finita"
+  },
+  "Manual parameters; search not run": {
+    "es": "Parámetros manuales; búsqueda no ejecutada",
+    "pt_BR": "Parâmetros manuais; busca não executada"
+  },
+  "Execution details not recorded; rerun this method to populate them.": {
+    "es": "Detalles de ejecución no registrados; ejecute de nuevo el método para generarlos.",
+    "pt_BR": "Detalhes da execução não registrados; execute novamente o método para gerá-los."
+  },
+  "Lowest cross-validation {p0} = {p1}": {
+    "es": "Menor {p0} de validación cruzada = {p1}",
+    "pt_BR": "Menor {p0} de validação cruzada = {p1}"
+  },
+  "Shuffled K-fold cross-validation; {p0} folds; n={p1}; seed={p2}": {
+    "es": "Validación cruzada con K particiones aleatorias; {p0} particiones; n={p1}; semilla={p2}",
+    "pt_BR": "Validação cruzada com K partições aleatórias; {p0} partições; n={p1}; semente={p2}"
+  },
+  "{p0} - Framework performance validation": {
+    "es": "{p0} - Validación del desempeño en Framework",
+    "pt_BR": "{p0} - Validação do desempenho no Framework"
+  },
+  "{p0} - Final interpolation": {
+    "es": "{p0} - Interpolación final",
+    "pt_BR": "{p0} - Interpolação final"
+  },
+  "These settings describe completed executions. Search cross-validation selects hyperparameters; the predictive validation results are used to compare interpolation methods. For RK, hyperparameter search refers to its RF trend component.": {
+    "es": "Estos valores describen ejecuciones finalizadas. La validación cruzada de la búsqueda selecciona hiperparámetros; los resultados de validación predictiva permiten comparar los métodos de interpolación. En RK, la búsqueda se refiere a su componente de tendencia RF.",
+    "pt_BR": "Estes valores descrevem execuções concluídas. A validação cruzada da busca seleciona hiperparâmetros; os resultados da validação preditiva permitem comparar os métodos de interpolação. No RK, a busca se refere ao seu componente de tendência RF."
+  },
+  "Framework spatial validation protocol": {
+    "es": "Protocolo de validación espacial de Framework",
+    "pt_BR": "Protocolo de validação espacial do Framework"
+  },
+  "Nested spatial hyperparameter search in each training partition": {
+    "es": "Búsqueda espacial anidada de hiperparámetros en cada partición de entrenamiento",
+    "pt_BR": "Busca espacial aninhada de hiperparâmetros em cada partição de treinamento"
+  },
+  "Fixed user hyperparameters; search not run": {
+    "es": "Hiperparámetros fijos del usuario; búsqueda no ejecutada",
+    "pt_BR": "Hiperparâmetros fixos do usuário; busca não executada"
+  },
+  "Outer fold {p0} parameters": {
+    "es": "Parámetros de la partición externa {p0}",
+    "pt_BR": "Parâmetros da partição externa {p0}"
+  },
+  "Outer fold {p0} search": {
+    "es": "Búsqueda de la partición externa {p0}",
+    "pt_BR": "Busca da partição externa {p0}"
+  },
+  "Prediction uncertainty components": {
+    "es": "Componentes de incertidumbre de la predicción",
+    "pt_BR": "Componentes de incerteza da predição"
+  },
+  "Block size: {p0}; buffer: {p1}; folds: {p2}; CRS: {p3}; common observations: {p4}.": {
+    "es": "Tamaño del bloque: {p0}; zona de exclusión: {p1}; particiones: {p2}; SRC: {p3}; observaciones comunes: {p4}.",
+    "pt_BR": "Tamanho do bloco: {p0}; zona de exclusão: {p1}; partições: {p2}; SRC: {p3}; observações comuns: {p4}."
+  },
+  "Soil samples": {
+    "es": "Muestras de suelo",
+    "pt_BR": "Amostras de solo"
+  },
+  "Covariates available?": {
+    "es": "¿Hay covariables?",
+    "pt_BR": "Há covariáveis?"
+  },
+  "Use univariate path": {
+    "es": "Usar ruta univariada",
+    "pt_BR": "Usar caminho univariado"
+  },
+  "SDI >= 80%?": {
+    "es": "¿IDE >= 80%?",
+    "pt_BR": "IDE >= 80%?"
+  },
+  "SDI < 60%?": {
+    "es": "¿IDE < 60%?",
+    "pt_BR": "IDE < 60%?"
+  },
+  "SDI < 40%?": {
+    "es": "¿IDE < 40%?",
+    "pt_BR": "IDE < 40%?"
+  },
+  "Based on your data: n = {p0} | MI p = {p1} | Pattern = {p2} | SDI = {p3} | Recommended: {p4}": {
+    "es": "Según sus datos: n = {p0} | p de Moran = {p1} | Patrón = {p2} | IDE = {p3} | Recomendados: {p4}",
+    "pt_BR": "Com base nos seus dados: n = {p0} | p de Moran = {p1} | Padrão = {p2} | IDE = {p3} | Recomendados: {p4}"
+  },
+  "Session": {
+    "es": "Sesión",
+    "pt_BR": "Sessão"
+  },
+  "Samples": {
+    "es": "Muestras",
+    "pt_BR": "Amostras"
+  },
+  "Evaluated methods": {
+    "es": "Métodos evaluados",
+    "pt_BR": "Métodos avaliados"
+  },
+  "Recommended": {
+    "es": "Recomendado",
+    "pt_BR": "Recomendado"
+  },
+  "Selected for next run": {
+    "es": "Seleccionado para la próxima ejecución",
+    "pt_BR": "Selecionado para a próxima execução"
+  },
+  "Executed in Framework": {
+    "es": "Ejecutado en Framework",
+    "pt_BR": "Executado no Framework"
+  },
+  "Review validation": {
+    "es": "Revisar validación",
+    "pt_BR": "Revisar validação"
+  },
+  "Open interpolation": {
+    "es": "Abrir interpolación",
+    "pt_BR": "Abrir interpolação"
+  },
+  "Validation compares predictive accuracy. A recommendation does not create an interpolated map. Framework output appears after Run interpolation completes.": {
+    "es": "La validación compara la precisión predictiva. Una recomendación no genera un mapa interpolado. La salida de Framework aparece al finalizar Ejecutar interpolación.",
+    "pt_BR": "A validação compara a precisão preditiva. Uma recomendação não gera um mapa interpolado. A saída do Framework aparece ao concluir Executar interpolação."
+  },
+  "Validated configuration": {
+    "es": "Configuración validada",
+    "pt_BR": "Configuração validada"
+  },
+  "No validation has been run for the current inputs.": {
+    "es": "No se ha ejecutado la validación para las entradas actuales.",
+    "pt_BR": "A validação não foi executada para as entradas atuais."
+  },
+  "Lower RMSE and MAE indicate smaller prediction errors. LCCC measures agreement between observed and predicted values. Compare these results using the same input data and validation strategy.": {
+    "es": "Un RMSE y MAE menores indican errores de predicción menores. LCCC mide la concordancia entre valores observados y predichos. Compare los resultados con los mismos datos y estrategia de validación.",
+    "pt_BR": "RMSE e MAE menores indicam erros de predição menores. LCCC mede a concordância entre valores observados e preditos. Compare os resultados com os mesmos dados e estratégia de validação."
+  },
+  "Open Validation": {
+    "es": "Abrir validación",
+    "pt_BR": "Abrir validação"
+  },
+  "No Framework interpolation has been executed in this session.": {
+    "es": "No se ha ejecutado una interpolación de Framework en esta sesión.",
+    "pt_BR": "Nenhuma interpolação do Framework foi executada nesta sessão."
+  },
+  "Executed output": {
+    "es": "Salida ejecutada",
+    "pt_BR": "Saída executada"
+  },
+  "Parameters": {
+    "es": "Parámetros",
+    "pt_BR": "Parâmetros"
+  },
+  "Execution": {
+    "es": "Ejecución",
+    "pt_BR": "Execução"
+  },
+  "Open the interpolation map": {
+    "es": "Abrir mapa de interpolación",
+    "pt_BR": "Abrir mapa de interpolação"
+  },
+  "Compare evaluated maps": {
+    "es": "Comparar mapas evaluados",
+    "pt_BR": "Comparar mapas avaliados"
+  },
+  "Spatial diagnostic": {
+    "es": "Diagnóstico espacial",
+    "pt_BR": "Diagnóstico espacial"
+  },
+  "Global Moran I": {
+    "es": "I de Moran global",
+    "pt_BR": "I de Moran global"
+  },
+  "Open Outlier diagnostic in Data to review local clusters, statistical flags and Keep/Exclude/Reset decisions. Diagnostics help interpret the inputs; they do not automatically remove observations.": {
+    "es": "Abra Diagnóstico de valores atípicos en Datos para revisar las agrupaciones locales, los indicadores estadísticos y las decisiones Conservar/Excluir/Restablecer. Los diagnósticos ayudan a interpretar las entradas y no eliminan observaciones automáticamente.",
+    "pt_BR": "Abra Diagnóstico de valores atípicos em Dados para revisar os agrupamentos locais, os indicadores estatísticos e as decisões Manter/Excluir/Redefinir. Os diagnósticos ajudam a interpretar as entradas e não removem observações automaticamente."
+  },
+  "The default browser could not open the report.": {
+    "es": "El navegador predeterminado no pudo abrir el informe.",
+    "pt_BR": "O navegador padrão não conseguiu abrir o relatório."
+  },
+  "Z (optional, nonrobust)": {
+    "es": "Z (opcional, no robusto)",
+    "pt_BR": "Z (opcional, não robusto)"
+  },
+  "Tukey k": {
+    "es": "k de Tukey",
+    "pt_BR": "k de Tukey"
+  },
+  "Modified Z threshold": {
+    "es": "Umbral Z modificado",
+    "pt_BR": "Limiar Z modificado"
+  },
+  "Classical Z threshold": {
+    "es": "Umbral Z clásico",
+    "pt_BR": "Limiar Z clássico"
+  },
+  "Outlier diagnostic ({p0})": {
+    "es": "Diagnóstico de valores atípicos ({p0})",
+    "pt_BR": "Diagnóstico de valores atípicos ({p0})"
+  },
+  "Block size (layer CRS units)": {
+    "es": "Tamaño del bloque (unidades del SRC)",
+    "pt_BR": "Tamanho do bloco (unidades do SRC)"
+  },
+  "Buffer distance": {
+    "es": "Distancia de exclusión",
+    "pt_BR": "Distância de exclusão"
+  },
+  "Spatial folds": {
+    "es": "Particiones espaciales",
+    "pt_BR": "Partições espaciais"
+  },
+  "Covariance model": {
+    "es": "Modelo de covarianza",
+    "pt_BR": "Modelo de covariância"
+  },
+  "Select covariates": {
+    "es": "Seleccionar covariables",
+    "pt_BR": "Selecionar covariáveis"
+  },
+  "No predictors selected": {
+    "es": "No hay predictores seleccionados",
+    "pt_BR": "Nenhum preditor selecionado"
+  },
+  "Select at least one predictor.": {
+    "es": "Seleccione al menos un predictor.",
+    "pt_BR": "Selecione pelo menos um preditor."
+  },
+  "Minimum": {
+    "es": "Mínimo",
+    "pt_BR": "Mínimo"
+  },
+  "Maximum": {
+    "es": "Máximo",
+    "pt_BR": "Máximo"
+  },
+  "Automatic cross-validation selects the validation strategy from the sample size. It uses LOOCV for up to and including 100 samples (n <= 100). Starting at 101 samples (n >= 101), it switches to K-Fold. From 101 to 500 samples, Automatic uses 10 folds; above 500 samples, it uses 5 folds. LOOCV leaves one sample out at a time and validates on that sample. K-Fold splits the samples into k groups, trains on k-1 groups, and validates on the remaining group.": {
+    "es": "La validación cruzada automática selecciona la estrategia según el tamaño de la muestra. Utiliza LOOCV hasta 100 muestras inclusive (n <= 100). A partir de 101 muestras (n >= 101), utiliza K particiones. De 101 a 500 muestras usa 10 particiones; por encima de 500 usa 5. LOOCV deja fuera una muestra cada vez y valida con ella. K particiones divide las muestras en k grupos, entrena con k-1 grupos y valida con el restante.",
+    "pt_BR": "A validação cruzada automática seleciona a estratégia conforme o tamanho da amostra. Utiliza LOOCV até 100 amostras inclusive (n <= 100). A partir de 101 amostras (n >= 101), utiliza K partições. De 101 a 500 amostras usa 10 partições; acima de 500 usa 5. LOOCV deixa uma amostra de fora por vez e valida com ela. K partições divide as amostras em k grupos, treina com k-1 grupos e valida com o restante."
+  },
+  "Best Fit Interpolator logo": {
+    "es": "Logotipo de Best Fit Interpolator",
+    "pt_BR": "Logotipo do Best Fit Interpolator"
+  },
+  "Best RF model metrics will appear here after interpolation.": {
+    "es": "Las métricas del mejor modelo RF aparecerán aquí después de interpolar.",
+    "pt_BR": "As métricas do melhor modelo RF aparecerão aqui após interpolar."
+  },
+  "Best SVM model metrics will appear here after interpolation.": {
+    "es": "Las métricas del mejor modelo SVM aparecerán aquí después de interpolar.",
+    "pt_BR": "As métricas do melhor modelo SVM aparecerão aqui após interpolar."
+  },
+  "Contact by email": {
+    "es": "Contactar por correo",
+    "pt_BR": "Entrar em contato por e-mail"
+  },
+  "Decision-support plugin for selecting, validating, and applying spatial interpolation methods in QGIS.": {
+    "es": "Plugin de apoyo a la decisión para seleccionar, validar y aplicar métodos de interpolación espacial en QGIS.",
+    "pt_BR": "Plugin de apoio à decisão para selecionar, validar e aplicar métodos de interpolação espacial no QGIS."
+  },
+  "GitHub repository": {
+    "es": "Repositorio GitHub",
+    "pt_BR": "Repositório GitHub"
+  },
+  "Information": {
+    "es": "Información",
+    "pt_BR": "Informações"
+  },
+  "Map A": {
+    "es": "Mapa A",
+    "pt_BR": "Mapa A"
+  },
+  "Minimum node size": {
+    "es": "Tamaño mínimo del nodo",
+    "pt_BR": "Tamanho mínimo do nó"
+  },
+  "Not evaluated": {
+    "es": "Sin evaluar",
+    "pt_BR": "Não avaliado"
+  },
+  "Not interpolated": {
+    "es": "Sin interpolar",
+    "pt_BR": "Não interpolado"
+  },
+  "Open Laura Delgado Bejarano's LinkedIn profile to send a message": {
+    "es": "Abrir el perfil de LinkedIn de Laura Delgado Bejarano",
+    "pt_BR": "Abrir o perfil de LinkedIn de Laura Delgado Bejarano"
+  },
+  "Open Lucas Rios do Amaral's LinkedIn profile to send a message": {
+    "es": "Abrir el perfil de LinkedIn de Lucas Rios do Amaral",
+    "pt_BR": "Abrir o perfil de LinkedIn de Lucas Rios do Amaral"
+  },
+  "Random Forest variable importance": {
+    "es": "Importancia de variables de Random Forest",
+    "pt_BR": "Importância das variáveis do Random Forest"
+  },
+  "Report an issue": {
+    "es": "Informar de un problema",
+    "pt_BR": "Relatar um problema"
+  },
+  "Residual model": {
+    "es": "Modelo residual",
+    "pt_BR": "Modelo residual"
+  },
+  "Trees (ntree)": {
+    "es": "Árboles (ntree)",
+    "pt_BR": "Árvores (ntree)"
+  },
+  "Univariate": {
+    "es": "Univariado",
+    "pt_BR": "Univariado"
+  },
+  "Full": {
+    "es": "Completo",
+    "pt_BR": "Completo"
+  },
+  "User manual (PDF)": {
+    "es": "Manual de usuario (PDF)",
+    "pt_BR": "Manual do usuário (PDF)"
+  },
+  "Variables per split (mtry)": {
+    "es": "Variables por división (mtry)",
+    "pt_BR": "Variáveis por divisão (mtry)"
+  },
+  "Support Vector Machine parameters": {
+    "es": "Parámetros de la máquina de vectores de soporte",
+    "pt_BR": "Parâmetros da máquina de vetores de suporte"
+  },
+  "C: penalty for prediction errors. Higher values force the model to fit training data more strictly; lower values allow a smoother and more tolerant fit.": {
+    "es": "C: penalización de errores de predicción. Los valores altos exigen un ajuste más estricto a los datos de entrenamiento; los bajos permiten un ajuste más suave y tolerante.",
+    "pt_BR": "C: penalização de erros de predição. Valores altos exigem um ajuste mais estrito aos dados de treinamento; valores baixos permitem um ajuste mais suave e tolerante."
+  },
+  "gamma: influence radius of each sample in the RBF kernel. Higher values create more local and complex responses; lower values create smoother and broader responses.": {
+    "es": "gamma: radio de influencia de cada muestra en el núcleo RBF. Los valores altos crean respuestas más locales y complejas; los bajos crean respuestas más suaves y amplias.",
+    "pt_BR": "gamma: raio de influência de cada amostra no núcleo RBF. Valores altos criam respostas mais locais e complexas; valores baixos criam respostas mais suaves e amplas."
+  },
+  "epsilon: insensitive margin around the regression function. Errors smaller than epsilon are ignored during training. Smaller values fit data more tightly; larger values smooth the model.": {
+    "es": "epsilon: margen insensible alrededor de la función de regresión. Los errores menores que epsilon se ignoran en el entrenamiento. Los valores bajos ajustan los datos con mayor precisión; los altos suavizan el modelo.",
+    "pt_BR": "epsilon: margem insensível ao redor da função de regressão. Erros menores que epsilon são ignorados no treinamento. Valores baixos ajustam os dados com maior precisão; valores altos suavizam o modelo."
+  },
+  "Search folds: number of cross validation folds used to compare candidate SVM parameter sets when Grid Search is enabled.": {
+    "es": "Particiones de búsqueda: número de particiones de validación cruzada para comparar parámetros candidatos de SVM al activar la búsqueda en malla.",
+    "pt_BR": "Partições da busca: número de partições de validação cruzada para comparar parâmetros candidatos do SVM ao ativar a busca em grade."
+  },
+  "Max iterations: maximum number of candidate parameter combinations tested during the search. More iterations explore the search space better, but increase processing time.": {
+    "es": "Máximo de iteraciones: número máximo de combinaciones de parámetros evaluadas. Más iteraciones exploran mejor el espacio de búsqueda, pero aumentan el tiempo de procesamiento.",
+    "pt_BR": "Máximo de iterações: número máximo de combinações de parâmetros avaliadas. Mais iterações exploram melhor o espaço de busca, mas aumentam o tempo de processamento."
+  },
+  "Sample standard deviation across the fitted forest's individual tree predictions (ddof=1). This diagnostic describes tree disagreement, not the standard error of the forest mean or a calibrated prediction interval. It excludes outcome noise and model bias. The variance output is the square of this standard deviation. At least two trees are required; identical trees can give zero dispersion without implying certainty.": {
+    "es": "Desviación estándar muestral entre las predicciones individuales de los árboles del bosque ajustado (ddof=1). Este diagnóstico describe la discrepancia entre árboles, no el error estándar de la media del bosque ni un intervalo de predicción calibrado. Excluye el ruido de la respuesta y el sesgo del modelo. La varianza es el cuadrado de esta desviación estándar. Se requieren al menos dos árboles; árboles idénticos pueden dar dispersión cero sin implicar certeza.",
+    "pt_BR": "Desvio padrão amostral entre as predições individuais das árvores da floresta ajustada (ddof=1). Este diagnóstico descreve a discordância entre árvores, não o erro padrão da média da floresta nem um intervalo de predição calibrado. Exclui o ruído da resposta e o viés do modelo. A variância é o quadrado desse desvio padrão. São necessárias pelo menos duas árvores; árvores idênticas podem apresentar dispersão zero sem implicar certeza."
+  },
+  "Conditional point-support standard deviation of ordinary kriging of the RF residuals, with the fitted RF trend and residual variogram held fixed. It excludes RF trend uncertainty, variogram parameter uncertainty and covariate error. The variance output is the square of this standard deviation. It is not total RK predictive uncertainty or a calibrated prediction interval.": {
+    "es": "Desviación estándar condicional con soporte puntual del kriging ordinario de los residuos de RF, manteniendo fijos la tendencia RF y el variograma residual ajustados. Excluye la incertidumbre de la tendencia RF, la de los parámetros del variograma y el error de las covariables. La varianza es el cuadrado de esta desviación estándar. No representa la incertidumbre predictiva total de RK ni un intervalo de predicción calibrado.",
+    "pt_BR": "Desvio padrão condicional com suporte pontual da krigagem ordinária dos resíduos do RF, mantendo fixos a tendência RF e o variograma residual ajustados. Exclui a incerteza da tendência RF, a dos parâmetros do variograma e o erro das covariáveis. A variância é o quadrado desse desvio padrão. Não representa a incerteza preditiva total do RK nem um intervalo de predição calibrado."
+  },
+  "Save": {
+    "es": "Guardar",
+    "pt_BR": "Salvar"
+  },
+  "Open": {
+    "es": "Abrir",
+    "pt_BR": "Abrir"
+  },
+  "Discard": {
+    "es": "Descartar",
+    "pt_BR": "Descartar"
+  },
+  "Fitting Random Forest": {
+    "es": "Ajustando Random Forest",
+    "pt_BR": "Ajustando Random Forest"
+  },
+  "Fitting SVM": {
+    "es": "Ajustando SVM",
+    "pt_BR": "Ajustando SVM"
+  },
+  "Validating thin plate spline": {
+    "es": "Validando spline de placa delgada",
+    "pt_BR": "Validando spline de placa fina"
+  },
+  "Validating kriging": {
+    "es": "Validando kriging",
+    "pt_BR": "Validando krigagem"
+  },
+  "Fitting REML semivariogram": {
+    "es": "Ajustando semivariograma REML",
+    "pt_BR": "Ajustando semivariograma REML"
+  },
+  "Validating REML kriging": {
+    "es": "Validando kriging REML",
+    "pt_BR": "Validando krigagem REML"
+  },
+  "Preparing Random Forest hyperparameter search…": {
+    "es": "Preparando búsqueda de hiperparámetros de Random Forest…",
+    "pt_BR": "Preparando busca de hiperparâmetros do Random Forest…"
+  },
+  "Training Random Forest with manual parameters…": {
+    "es": "Entrenando Random Forest con parámetros manuales…",
+    "pt_BR": "Treinando Random Forest com parâmetros manuais…"
+  },
+  "Random Forest training completed.": {
+    "es": "Entrenamiento de Random Forest finalizado.",
+    "pt_BR": "Treinamento do Random Forest concluído."
+  },
+  "Random Forest search completed.": {
+    "es": "Búsqueda de Random Forest finalizada.",
+    "pt_BR": "Busca do Random Forest concluída."
+  },
+  "Running Randomized Grid Search ({p0} settings, {p1}-fold CV){p2}…": {
+    "es": "Ejecutando búsqueda aleatoria en malla ({p0} combinaciones, {p1} particiones){p2}…",
+    "pt_BR": "Executando busca aleatória em grade ({p0} combinações, {p1} partições){p2}…"
+  },
+  "Running Exhaustive Grid Search ({p0} settings, {p1}-fold CV){p2}…": {
+    "es": "Ejecutando búsqueda exhaustiva en malla ({p0} combinaciones, {p1} particiones){p2}…",
+    "pt_BR": "Executando busca exaustiva em grade ({p0} combinações, {p1} partições){p2}…"
+  },
+  "Random Forest setting {p0}/{p1}, fold {p2}/{p3}…": {
+    "es": "Random Forest: combinación {p0}/{p1}, partición {p2}/{p3}…",
+    "pt_BR": "Random Forest: combinação {p0}/{p1}, partição {p2}/{p3}…"
+  },
+  "Fitting manual SVM model…": {
+    "es": "Ajustando modelo SVM manual…",
+    "pt_BR": "Ajustando modelo SVM manual…"
+  },
+  "SVM tuning {p0}/{p1}…": {
+    "es": "Ajustando SVM {p0}/{p1}…",
+    "pt_BR": "Ajustando SVM {p0}/{p1}…"
+  },
+  "Fitting best SVM model…": {
+    "es": "Ajustando el mejor modelo SVM…",
+    "pt_BR": "Ajustando o melhor modelo SVM…"
+  },
+  "Predicting SVM interpolation grid…": {
+    "es": "Prediciendo en la malla de interpolación SVM…",
+    "pt_BR": "Predizendo na grade de interpolação SVM…"
+  },
+  "Export": {
+    "es": "Exportar",
+    "pt_BR": "Exportar"
+  },
+  "Larger view": {
+    "es": "Vista ampliada",
+    "pt_BR": "Vista ampliada"
+  },
+  "{p0} Larger view": {
+    "es": "{p0}: vista ampliada",
+    "pt_BR": "{p0}: vista ampliada"
+  },
+  "Prediction map": {
+    "es": "Mapa de predicción",
+    "pt_BR": "Mapa de predição"
+  },
+  "Model-scale parameter": {
+    "es": "Parámetro de escala del modelo",
+    "pt_BR": "Parâmetro de escala do modelo"
+  },
+  "Reproducibility": {
+    "es": "Reproducibilidad",
+    "pt_BR": "Reprodutibilidade"
+  },
+  "Correlation": {
+    "es": "Correlación",
+    "pt_BR": "Correlação"
+  },
+  "Uncertainty": {
+    "es": "Incertidumbre",
+    "pt_BR": "Incerteza"
+  },
+  "High-High": {
+    "es": "Alto-Alto",
+    "pt_BR": "Alto-Alto"
+  },
+  "Low-Low": {
+    "es": "Bajo-Bajo",
+    "pt_BR": "Baixo-Baixo"
+  },
+  "High-Low": {
+    "es": "Alto-Bajo",
+    "pt_BR": "Alto-Baixo"
+  },
+  "Low-High": {
+    "es": "Bajo-Alto",
+    "pt_BR": "Baixo-Alto"
+  },
+  "Not significant": {
+    "es": "No significativo",
+    "pt_BR": "Não significativo"
+  },
+  "Undefined": {
+    "es": "Sin definir",
+    "pt_BR": "Indefinido"
+  },
+  "Non-significant": {
+    "es": "No significativo",
+    "pt_BR": "Não significativo"
+  },
+  "Histogram": {
+    "es": "Histograma",
+    "pt_BR": "Histograma"
+  },
+  "Frequency": {
+    "es": "Frecuencia",
+    "pt_BR": "Frequência"
+  },
+  "Boxplot": {
+    "es": "Diagrama de caja",
+    "pt_BR": "Diagrama de caixa"
+  },
+  "Count": {
+    "es": "Cantidad",
+    "pt_BR": "Contagem"
+  },
+  "Study Data": {
+    "es": "Datos del estudio",
+    "pt_BR": "Dados do estudo"
+  },
+  "Observed vs Predicted {p0}": {
+    "es": "Observados y predichos {p0}",
+    "pt_BR": "Observados e preditos {p0}"
+  },
+  "Interpolation Output": {
+    "es": "Resultado de interpolación",
+    "pt_BR": "Resultado da interpolação"
+  },
+  "Reference": {
+    "es": "Referencia",
+    "pt_BR": "Referência"
+  },
+  "Spatial diagnostics": {
+    "es": "Diagnósticos espaciales",
+    "pt_BR": "Diagnósticos espaciais"
+  },
+  "Outlier diagnostics": {
+    "es": "Diagnósticos de valores atípicos",
+    "pt_BR": "Diagnósticos de valores atípicos"
+  },
+  "Global Moran (diagnostic only)": {
+    "es": "Moran global (solo diagnóstico)",
+    "pt_BR": "Moran global (apenas diagnóstico)"
+  },
+  "LISA and distributions": {
+    "es": "LISA y distribuciones",
+    "pt_BR": "LISA e distribuições"
+  },
+  "Diagnostic methodology": {
+    "es": "Metodología del diagnóstico",
+    "pt_BR": "Metodologia do diagnóstico"
+  },
+  "Analysis mask and user decisions": {
+    "es": "Máscara de análisis y decisiones del usuario",
+    "pt_BR": "Máscara de análise e decisões do usuário"
+  },
+  "Framework Decision": {
+    "es": "Decisión de Framework",
+    "pt_BR": "Decisão do Framework"
+  },
+  "Framework Decision Tree": {
+    "es": "Árbol de decisión de Framework",
+    "pt_BR": "Árvore de decisão do Framework"
+  },
+  "Multivariate Framework": {
+    "es": "Framework multivariado",
+    "pt_BR": "Framework multivariado"
+  },
+  "Combined class": {
+    "es": "Clase combinada",
+    "pt_BR": "Classe combinada"
+  },
+  "Conventional practical range": {
+    "es": "Alcance práctico convencional",
+    "pt_BR": "Alcance prático convencional"
+  },
+  "Covariate correlation plot:": {
+    "es": "Gráfico de correlación de covariables:",
+    "pt_BR": "Gráfico de correlação de covariáveis:"
+  },
+  "Covariates:": {
+    "es": "Covariables:",
+    "pt_BR": "Covariáveis:"
+  },
+  "Decision path:": {
+    "es": "Ruta de decisión:",
+    "pt_BR": "Caminho de decisão:"
+  },
+  "Executed interpolation method:": {
+    "es": "Método de interpolación ejecutado:",
+    "pt_BR": "Método de interpolação executado:"
+  },
+  "False": {
+    "es": "No",
+    "pt_BR": "Não"
+  },
+  "True": {
+    "es": "Sí",
+    "pt_BR": "Sim"
+  },
+  "Framework interpolation and validation: {p0} data profile ({p1} valid samples).": {
+    "es": "Interpolación y validación de Framework: perfil de datos {p0} ({p1} muestras válidas).",
+    "pt_BR": "Interpolação e validação do Framework: perfil de dados {p0} ({p1} amostras válidas)."
+  },
+  "HH cluster": {
+    "es": "Agrupación HH",
+    "pt_BR": "Agrupamento HH"
+  },
+  "LL cluster": {
+    "es": "Agrupación LL",
+    "pt_BR": "Agrupamento LL"
+  },
+  "HL outlier": {
+    "es": "Valor atípico HL",
+    "pt_BR": "Valor atípico HL"
+  },
+  "LH outlier": {
+    "es": "Valor atípico LH",
+    "pt_BR": "Valor atípico LH"
+  },
+  "IDW optimization parameters:": {
+    "es": "Parámetros de optimización de IDW:",
+    "pt_BR": "Parâmetros de otimização do IDW:"
+  },
+  "Invalid": {
+    "es": "No válido",
+    "pt_BR": "Inválido"
+  },
+  "Item": {
+    "es": "Elemento",
+    "pt_BR": "Item"
+  },
+  "LISA, histogram and boxplot": {
+    "es": "LISA, histograma y diagrama de caja",
+    "pt_BR": "LISA, histograma e diagrama de caixa"
+  },
+  "Local Moran uses row-standardized weights, population second moment m2 = sum((x - mean)^2) / n, conditional randomization and unadjusted pseudo p values. HH/LL are clusters and significant HL/LH are potential spatial outliers. Thresholds and neighborhoods apply to the original finite data; exclusions affect subsequent model inputs.": {
+    "es": "Moran local utiliza pesos estandarizados por filas, segundo momento poblacional m2 = sum((x - media)^2) / n, aleatorización condicional y valores pseudo p sin ajustar. HH/LL son agrupaciones y HL/LH significativos son posibles valores atípicos espaciales. Los umbrales y las vecindades se aplican a los datos finitos originales; las exclusiones afectan a las entradas posteriores del modelo.",
+    "pt_BR": "Moran local utiliza pesos padronizados por linha, segundo momento populacional m2 = sum((x - média)^2) / n, aleatorização condicional e valores pseudo p não ajustados. HH/LL são agrupamentos e HL/LH significativos são possíveis valores atípicos espaciais. Os limiares e as vizinhanças se aplicam aos dados finitos originais; as exclusões afetam as entradas posteriores do modelo."
+  },
+  "Methods evaluated:": {
+    "es": "Métodos evaluados:",
+    "pt_BR": "Métodos avaliados:"
+  },
+  "Missing/Invalid": {
+    "es": "Ausente/No válido",
+    "pt_BR": "Ausente/Inválido"
+  },
+  "Normal": {
+    "es": "Normal",
+    "pt_BR": "Normal"
+  },
+  "Optimized power p={p0}; neighbors n={p1}": {
+    "es": "Potencia optimizada p={p0}; vecinos n={p1}",
+    "pt_BR": "Potência otimizada p={p0}; vizinhos n={p1}"
+  },
+  "Original observations: {p0}; analysis observations: {p1}; excluded by user: {p2}. The source layer remains unchanged.": {
+    "es": "Observaciones originales: {p0}; observaciones del análisis: {p1}; excluidas por el usuario: {p2}. Se conserva la capa de origen.",
+    "pt_BR": "Observações originais: {p0}; observações da análise: {p1}; excluídas pelo usuário: {p2}. A camada de origem é preservada."
+  },
+  "Performance profile": {
+    "es": "Perfil de procesamiento",
+    "pt_BR": "Perfil de processamento"
+  },
+  "Pseudo p": {
+    "es": "Pseudo p",
+    "pt_BR": "Pseudo p"
+  },
+  "Range (a) is the model scale in layer CRS distance units, for both MoM and REML. Spherical: practical range = a (full sill). Exponential: practical range = 3a. Gaussian: practical range = sqrt(3)a. The latter two reach approximately 95% of the structured variance.": {
+    "es": "Alcance (a) es la escala del modelo en unidades de distancia del SRC de la capa, tanto para MoM como para REML. Esférico: alcance práctico = a (meseta completa). Exponencial: alcance práctico = 3a. Gaussiano: alcance práctico = sqrt(3)a. Los dos últimos alcanzan aproximadamente el 95% de la varianza estructurada.",
+    "pt_BR": "Alcance (a) é a escala do modelo em unidades de distância do SRC da camada, tanto para MoM como para REML. Esférico: alcance prático = a (patamar completo). Exponencial: alcance prático = 3a. Gaussiano: alcance prático = sqrt(3)a. Os dois últimos atingem aproximadamente 95% da variância estruturada."
+  },
+  "Range (a, model scale)": {
+    "es": "Alcance (a, escala del modelo)",
+    "pt_BR": "Alcance (a, escala do modelo)"
+  },
+  "Recommended methods:": {
+    "es": "Métodos recomendados:",
+    "pt_BR": "Métodos recomendados:"
+  },
+  "Semivariogram calculation method": {
+    "es": "Método de cálculo del semivariograma",
+    "pt_BR": "Método de cálculo do semivariograma"
+  },
+  "Semivariogram parameter": {
+    "es": "Parámetro del semivariograma",
+    "pt_BR": "Parâmetro do semivariograma"
+  },
+  "Statistic": {
+    "es": "Estadístico",
+    "pt_BR": "Estatística"
+  },
+  "Statistical flag": {
+    "es": "Indicador estadístico",
+    "pt_BR": "Indicador estatístico"
+  },
+  "Statistical votes": {
+    "es": "Votos estadísticos",
+    "pt_BR": "Votos estatísticos"
+  },
+  "Undecided": {
+    "es": "Sin decidir",
+    "pt_BR": "Sem decisão"
+  },
+  "User decision": {
+    "es": "Decisión del usuario",
+    "pt_BR": "Decisão do usuário"
+  },
+  "Validation winner:": {
+    "es": "Ganador de la validación:",
+    "pt_BR": "Vencedor da validação:"
+  },
+  "invalid": {
+    "es": "no válido",
+    "pt_BR": "inválido"
+  },
+  "isolated": {
+    "es": "aislado",
+    "pt_BR": "isolado"
+  },
+  "lower": {
+    "es": "inferior",
+    "pt_BR": "inferior"
+  },
+  "mean": {
+    "es": "media",
+    "pt_BR": "média"
+  },
+  "median": {
+    "es": "mediana",
+    "pt_BR": "mediana"
+  },
+  "std": {
+    "es": "desviación estándar",
+    "pt_BR": "desvio padrão"
+  },
+  "not generated yet.": {
+    "es": "aún sin generar.",
+    "pt_BR": "ainda não gerado."
+  },
+  "permutations": {
+    "es": "permutaciones",
+    "pt_BR": "permutações"
+  },
+  "seed": {
+    "es": "semilla",
+    "pt_BR": "semente"
+  },
+  "upper": {
+    "es": "superior",
+    "pt_BR": "superior"
+  },
+  "valid": {
+    "es": "válido",
+    "pt_BR": "válido"
+  },
+  "Common complete-case cohort; no response-informed feature selection. Covariance and trend fitted in each training fold. Fixed user parameters or nested spatial hyperparameter search; SVM scaling fitted on each training fold.": {
+    "es": "Conjunto común de casos completos; sin selección de variables basada en la respuesta. Covarianza y tendencia ajustadas en cada partición de entrenamiento. Parámetros fijos del usuario o búsqueda espacial anidada de hiperparámetros; estandarización de SVM ajustada en cada partición de entrenamiento.",
+    "pt_BR": "Conjunto comum de casos completos; sem seleção de variáveis baseada na resposta. Covariância e tendência ajustadas em cada partição de treinamento. Parâmetros fixos do usuário ou busca espacial aninhada de hiperparâmetros; padronização do SVM ajustada em cada partição de treinamento."
+  },
+  "ML hyperparameter selection: {p0}. Search scores select parameters within the training data; outer spatial folds provide performance validation.": {
+    "es": "Selección de hiperparámetros de aprendizaje automático: {p0}. Las puntuaciones de búsqueda seleccionan parámetros dentro de los datos de entrenamiento; las particiones espaciales externas evalúan el desempeño.",
+    "pt_BR": "Seleção de hiperparâmetros de aprendizado de máquina: {p0}. As pontuações da busca selecionam parâmetros nos dados de treinamento; as partições espaciais externas avaliam o desempenho."
+  },
+  "Decision path": {
+    "es": "Ruta de decisión",
+    "pt_BR": "Caminho de decisão"
+  },
+  "Candidate methods": {
+    "es": "Métodos candidatos",
+    "pt_BR": "Métodos candidatos"
+  },
+  "Available methods": {
+    "es": "Métodos disponibles",
+    "pt_BR": "Métodos disponíveis"
+  },
+  "Available": {
+    "es": "Disponible",
+    "pt_BR": "Disponível"
+  },
+  "Winner": {
+    "es": "Ganador",
+    "pt_BR": "Vencedor"
+  },
+  "OK fit": {
+    "es": "Ajuste de OK",
+    "pt_BR": "Ajuste do OK"
+  },
+  "Not selected": {
+    "es": "Sin seleccionar",
+    "pt_BR": "Não selecionado"
+  },
+  "Run Evaluate methods to trace the framework path.": {
+    "es": "Ejecute Evaluar métodos para identificar la ruta de Framework.",
+    "pt_BR": "Execute Avaliar métodos para identificar o caminho do Framework."
+  },
+  "Next step: run automatic CV/LCCC validation for the selected methods.": {
+    "es": "Siguiente paso: ejecutar validación automática CV/LCCC para los métodos seleccionados.",
+    "pt_BR": "Próximo passo: executar validação automática CV/LCCC para os métodos selecionados."
+  },
+  "Framework PDF report preview": {
+    "es": "Vista previa del informe PDF de Framework",
+    "pt_BR": "Prévia do relatório PDF do Framework"
+  },
+  "Framework Validation Report Preview": {
+    "es": "Vista previa del informe de validación de Framework",
+    "pt_BR": "Prévia do relatório de validação do Framework"
+  },
+  "Framework Validation Report": {
+    "es": "Informe de validación de Framework",
+    "pt_BR": "Relatório de validação do Framework"
+  },
+  "Selected final method": {
+    "es": "Método final seleccionado",
+    "pt_BR": "Método final selecionado"
+  },
+  "Validation metrics pending": {
+    "es": "Métricas de validación pendientes",
+    "pt_BR": "Métricas de validação pendentes"
+  },
+  "The exported PDF will include the generated maps and validation plots.": {
+    "es": "El PDF exportado incluirá los mapas y gráficos de validación generados.",
+    "pt_BR": "O PDF exportado incluirá os mapas e gráficos de validação gerados."
+  },
+  "Framework information": {
+    "es": "Información de Framework",
+    "pt_BR": "Informações do Framework"
+  },
+  "Purpose": {
+    "es": "Objetivo",
+    "pt_BR": "Objetivo"
+  },
+  "Citation": {
+    "es": "Cita",
+    "pt_BR": "Citação"
+  },
+  "Article link": {
+    "es": "Enlace del artículo",
+    "pt_BR": "Link do artigo"
+  },
+  "The selection of interpolation methods in digital soil mapping lacks a systematic approach, reducing map accuracy. This study aimed to evaluate whether data characteristics, such as sample size and spatial structure, influence the selection and performance of interpolation methods.": {
+    "es": "La selección de métodos de interpolación en el mapeo digital de suelos carece de un enfoque sistemático, lo que reduce la precisión de los mapas. Este estudio evaluó si las características de los datos, como el tamaño de muestra y la estructura espacial, influyen en la selección y el desempeño de los métodos de interpolación.",
+    "pt_BR": "A seleção de métodos de interpolação no mapeamento digital de solos carece de uma abordagem sistemática, reduzindo a precisão dos mapas. Este estudo avaliou se características dos dados, como tamanho amostral e estrutura espacial, influenciam a seleção e o desempenho dos métodos de interpolação."
+  },
+  "Boxplot click a value": {
+    "es": "Caja: pulse un valor",
+    "pt_BR": "Caixa: clique num valor"
+  },
+  "Framework data profile: {p0} ({p1} valid samples). See the Data tab profile info and manual for details.": {
+    "es": "Perfil de datos de Framework: {p0} ({p1} muestras válidas). Consulte la información del perfil en Datos y el manual.",
+    "pt_BR": "Perfil de dados do Framework: {p0} ({p1} amostras válidas). Consulte as informações do perfil em Dados e o manual."
+  },
+  "Massive mode has no fixed sample-count stop and includes productivity datasets around {p0}+ samples. Practical runtime still depends on sample count, raster grid cells, covariates, and the selected method.{p1}": {
+    "es": "El modo masivo no tiene un límite fijo de muestras e incluye conjuntos de productividad de unas {p0}+ muestras. El tiempo de ejecución depende del número de muestras, las celdas de la malla, las covariables y el método seleccionado.{p1}",
+    "pt_BR": "O modo massivo não tem um limite fixo de amostras e inclui conjuntos de produtividade com cerca de {p0}+ amostras. O tempo de execução depende do número de amostras, das células da grade, das covariáveis e do método selecionado.{p1}"
+  },
+  " Current selection: {p0} valid samples.": {
+    "es": " Selección actual: {p0} muestras válidas.",
+    "pt_BR": " Seleção atual: {p0} amostras válidas."
+  },
+  "Univariate Framework": {
+    "es": "Framework univariado",
+    "pt_BR": "Framework univariado"
+  },
+  "At least 10 valid samples are required for Framework validation. The current dataset has {p0} valid samples.": {
+    "es": "Se requieren al menos 10 muestras válidas para la validación de Framework. El conjunto actual tiene {p0} muestras válidas.",
+    "pt_BR": "São necessárias pelo menos 10 amostras válidas para a validação do Framework. O conjunto atual tem {p0} amostras válidas."
+  },
+  "At least 5 valid data points are required for cross validation.": {
+    "es": "Se requieren al menos 5 puntos válidos para la validación cruzada.",
+    "pt_BR": "São necessários pelo menos 5 pontos válidos para a validação cruzada."
+  },
+  "CSV files (*.csv);;All files (*.*)": {
+    "es": "Archivos CSV (*.csv);;Todos los archivos (*.*)",
+    "pt_BR": "Arquivos CSV (*.csv);;Todos os arquivos (*.*)"
+  },
+  "Correlation error": {
+    "es": "Error de correlación",
+    "pt_BR": "Erro de correlação"
+  },
+  "Could not compute correlation matrix:\n{p0}": {
+    "es": "No se pudo calcular la matriz de correlación:\n{p0}",
+    "pt_BR": "Não foi possível calcular a matriz de correlação:\n{p0}"
+  },
+  "Could not create GeoTIFF for {p0} interpolation.": {
+    "es": "No se pudo crear el GeoTIFF de la interpolación {p0}.",
+    "pt_BR": "Não foi possível criar o GeoTIFF da interpolação {p0}."
+  },
+  "Could not write CSV file:\n{p0}": {
+    "es": "No se pudo escribir el archivo CSV:\n{p0}",
+    "pt_BR": "Não foi possível gravar o arquivo CSV:\n{p0}"
+  },
+  "Empty grid": {
+    "es": "Malla vacía",
+    "pt_BR": "Grade vazia"
+  },
+  "Export error": {
+    "es": "Error de exportación",
+    "pt_BR": "Erro de exportação"
+  },
+  "Export technical report": {
+    "es": "Exportar informe técnico",
+    "pt_BR": "Exportar relatório técnico"
+  },
+  "Extraction CSV export is not connected in the Machine Learning workflow.": {
+    "es": "La exportación CSV de extracciones no está conectada en el flujo de aprendizaje automático.",
+    "pt_BR": "A exportação CSV das extrações não está conectada no fluxo de aprendizado de máquina."
+  },
+  "Framework OK validation": {
+    "es": "Validación de OK en Framework",
+    "pt_BR": "Validação do OK no Framework"
+  },
+  "Framework covariates": {
+    "es": "Covariables de Framework",
+    "pt_BR": "Covariáveis do Framework"
+  },
+  "Framework interpolation error": {
+    "es": "Error de interpolación de Framework",
+    "pt_BR": "Erro de interpolação do Framework"
+  },
+  "Insufficient data": {
+    "es": "Datos insuficientes",
+    "pt_BR": "Dados insuficientes"
+  },
+  "Interpolation failed:\n{p0}": {
+    "es": "La interpolación falló:\n{p0}",
+    "pt_BR": "A interpolação falhou:\n{p0}"
+  },
+  "Invalid grid": {
+    "es": "Malla no válida",
+    "pt_BR": "Grade inválida"
+  },
+  "Invalid layer": {
+    "es": "Capa no válida",
+    "pt_BR": "Camada inválida"
+  },
+  "Invalid pixel size": {
+    "es": "Tamaño de píxel no válido",
+    "pt_BR": "Tamanho de pixel inválido"
+  },
+  "Invalid variable": {
+    "es": "Variable no válida",
+    "pt_BR": "Variável inválida"
+  },
+  "JSON (*.json)": {
+    "es": "JSON (*.json)",
+    "pt_BR": "JSON (*.json)"
+  },
+  "Kriging model validation": {
+    "es": "Validación del modelo de kriging",
+    "pt_BR": "Validação do modelo de krigagem"
+  },
+  "Loaded covariates are not valid raster layers.": {
+    "es": "Las covariables cargadas no son capas ráster válidas.",
+    "pt_BR": "As covariáveis carregadas não são camadas raster válidas."
+  },
+  "Machine Learning correlation workflow is not available.": {
+    "es": "El flujo de correlación de aprendizaje automático no está disponible.",
+    "pt_BR": "O fluxo de correlação de aprendizado de máquina não está disponível."
+  },
+  "Machine Learning covariates workflow is not available.": {
+    "es": "El flujo de covariables de aprendizaje automático no está disponible.",
+    "pt_BR": "O fluxo de covariáveis de aprendizado de máquina não está disponível."
+  },
+  "Missing dependency": {
+    "es": "Falta una dependencia",
+    "pt_BR": "Dependência ausente"
+  },
+  "No covariates": {
+    "es": "No hay covariables",
+    "pt_BR": "Nenhuma covariável"
+  },
+  "No extractions": {
+    "es": "No hay extracciones",
+    "pt_BR": "Nenhuma extração"
+  },
+  "No grid cells": {
+    "es": "No hay celdas en la malla",
+    "pt_BR": "Nenhuma célula na grade"
+  },
+  "No grid cells fall inside the polygon for {p0} interpolation. Check the polygon CRS and the Data-tab pixel size.": {
+    "es": "No hay celdas dentro del polígono para la interpolación {p0}. Revise el SRC del polígono y el tamaño de píxel en Datos.",
+    "pt_BR": "Não há células dentro do polígono para a interpolação {p0}. Verifique o SRC do polígono e o tamanho do pixel em Dados."
+  },
+  "No interpolation method is available yet.": {
+    "es": "Aún no hay un método de interpolación disponible.",
+    "pt_BR": "Ainda não há um método de interpolação disponível."
+  },
+  "No points layer": {
+    "es": "No hay capa de puntos",
+    "pt_BR": "Nenhuma camada de pontos"
+  },
+  "No polygon layer": {
+    "es": "No hay capa de polígonos",
+    "pt_BR": "Nenhuma camada de polígonos"
+  },
+  "No training data": {
+    "es": "No hay datos de entrenamiento",
+    "pt_BR": "Nenhum dado de treinamento"
+  },
+  "No valid grid cells were found with complete covariate data. Check that the polygon, point data, and covariate rasters overlap after CRS transformation.": {
+    "es": "No se encontraron celdas válidas con covariables completas. Compruebe que el polígono, los puntos y los rásteres de covariables se superponen después de transformar el SRC.",
+    "pt_BR": "Não foram encontradas células válidas com covariáveis completas. Verifique se o polígono, os pontos e os rasters de covariáveis se sobrepõem após transformar o SRC."
+  },
+  "No valid points were found with covariate values for RF training.": {
+    "es": "No se encontraron puntos válidos con valores de covariables para entrenar RF.",
+    "pt_BR": "Não foram encontrados pontos válidos com valores de covariáveis para treinar o RF."
+  },
+  "No valid rasters": {
+    "es": "No hay rásteres válidos",
+    "pt_BR": "Nenhum raster válido"
+  },
+  "No valid samples were found to extract covariate values.": {
+    "es": "No se encontraron muestras válidas para extraer los valores de covariables.",
+    "pt_BR": "Não foram encontradas amostras válidas para extrair os valores de covariáveis."
+  },
+  "No variable": {
+    "es": "No hay variable",
+    "pt_BR": "Nenhuma variável"
+  },
+  "Not enough valid samples were found to compute correlations.": {
+    "es": "No hay suficientes muestras válidas para calcular correlaciones.",
+    "pt_BR": "Não há amostras válidas suficientes para calcular correlações."
+  },
+  "Operation canceled by the user.": {
+    "es": "Operación cancelada por el usuario.",
+    "pt_BR": "Operação cancelada pelo usuário."
+  },
+  "PDF (*.pdf)": {
+    "es": "PDF (*.pdf)",
+    "pt_BR": "PDF (*.pdf)"
+  },
+  "PNG Images (*.png)": {
+    "es": "Imágenes PNG (*.png)",
+    "pt_BR": "Imagens PNG (*.png)"
+  },
+  "Please load at least one covariate raster before extracting values.": {
+    "es": "Cargue al menos un ráster de covariables antes de extraer valores.",
+    "pt_BR": "Carregue pelo menos um raster de covariáveis antes de extrair valores."
+  },
+  "Please load at least one covariate raster before standardizing.": {
+    "es": "Cargue al menos un ráster de covariables antes de estandarizar.",
+    "pt_BR": "Carregue pelo menos um raster de covariáveis antes de padronizar."
+  },
+  "Please load at least one covariate raster to compute correlations.": {
+    "es": "Cargue al menos un ráster de covariables para calcular correlaciones.",
+    "pt_BR": "Carregue pelo menos um raster de covariáveis para calcular correlações."
+  },
+  "Please select a polygon layer in the Data tab before {p0} interpolation.": {
+    "es": "Seleccione una capa de polígonos en Datos antes de interpolar con {p0}.",
+    "pt_BR": "Selecione uma camada de polígonos em Dados antes de interpolar com {p0}."
+  },
+  "Please select a valid points layer in the Data tab.": {
+    "es": "Seleccione una capa de puntos válida en Datos.",
+    "pt_BR": "Selecione uma camada de pontos válida em Dados."
+  },
+  "Please select a variable in the Data tab.": {
+    "es": "Seleccione una variable en Datos.",
+    "pt_BR": "Selecione uma variável em Dados."
+  },
+  "Polygon extent and pixel size produced an invalid grid.": {
+    "es": "La extensión del polígono y el tamaño de píxel produjeron una malla no válida.",
+    "pt_BR": "A extensão do polígono e o tamanho do pixel produziram uma grade inválida."
+  },
+  "Polygon geometry could not be read for interpolation grid creation.": {
+    "es": "No se pudo leer la geometría del polígono para crear la malla de interpolación.",
+    "pt_BR": "Não foi possível ler a geometria do polígono para criar a grade de interpolação."
+  },
+  "REML cross validation is not available. MoM will be used instead.": {
+    "es": "La validación cruzada REML no está disponible. Se utilizará MoM.",
+    "pt_BR": "A validação cruzada REML não está disponível. Será utilizado MoM."
+  },
+  "RF error": {
+    "es": "Error de RF",
+    "pt_BR": "Erro do RF"
+  },
+  "RF uncertainty": {
+    "es": "Incertidumbre de RF",
+    "pt_BR": "Incerteza do RF"
+  },
+  "RF validation": {
+    "es": "Validación de RF",
+    "pt_BR": "Validação do RF"
+  },
+  "RF validation error": {
+    "es": "Error de validación de RF",
+    "pt_BR": "Erro de validação do RF"
+  },
+  "Random Forest interpolation did not return a valid result.": {
+    "es": "La interpolación de Random Forest no devolvió un resultado válido.",
+    "pt_BR": "A interpolação do Random Forest não retornou um resultado válido."
+  },
+  "Random Forest interpolation failed:\n{p0}": {
+    "es": "La interpolación de Random Forest falló:\n{p0}",
+    "pt_BR": "A interpolação do Random Forest falhou:\n{p0}"
+  },
+  "Random Forest is unavailable because the bundled dependency could not be loaded.\n\nDetails:\n{p0}": {
+    "es": "Random Forest no está disponible porque no se pudo cargar la dependencia incluida.\n\nDetalles:\n{p0}",
+    "pt_BR": "Random Forest não está disponível porque não foi possível carregar a dependência incluída.\n\nDetalhes:\n{p0}"
+  },
+  "Random Forest validation failed:\n{p0}": {
+    "es": "La validación de Random Forest falló:\n{p0}",
+    "pt_BR": "A validação do Random Forest falhou:\n{p0}"
+  },
+  "Random Forest validation is unavailable.\n{p0}": {
+    "es": "La validación de Random Forest no está disponible.\n{p0}",
+    "pt_BR": "A validação do Random Forest não está disponível.\n{p0}"
+  },
+  "Raster files (*.tif *.tiff *.img *.vrt);;All files (*)": {
+    "es": "Archivos ráster (*.tif *.tiff *.img *.vrt);;Todos los archivos (*)",
+    "pt_BR": "Arquivos raster (*.tif *.tiff *.img *.vrt);;Todos os arquivos (*)"
+  },
+  "Run Framework diagnostics or validation first.": {
+    "es": "Ejecute primero los diagnósticos o la validación de Framework.",
+    "pt_BR": "Execute primeiro os diagnósticos ou a validação do Framework."
+  },
+  "Run Random Forest interpolation first. Validation uses the exact predictors and final parameters from that interpolation.": {
+    "es": "Ejecute primero la interpolación de Random Forest. La validación utiliza los mismos predictores y parámetros finales de esa interpolación.",
+    "pt_BR": "Execute primeiro a interpolação do Random Forest. A validação utiliza os mesmos preditores e parâmetros finais dessa interpolação."
+  },
+  "Run SVM interpolation first. Validation uses the exact predictors and final parameters from that interpolation.": {
+    "es": "Ejecute primero la interpolación de SVM. La validación utiliza los mismos predictores y parámetros finales de esa interpolación.",
+    "pt_BR": "Execute primeiro a interpolação do SVM. A validação utiliza os mesmos preditores e parâmetros finais dessa interpolação."
+  },
+  "SVM cross validation failed:\n{p0}": {
+    "es": "La validación cruzada de SVM falló:\n{p0}",
+    "pt_BR": "A validação cruzada do SVM falhou:\n{p0}"
+  },
+  "SVM error": {
+    "es": "Error de SVM",
+    "pt_BR": "Erro do SVM"
+  },
+  "SVM interpolation did not return a valid result.": {
+    "es": "La interpolación de SVM no devolvió un resultado válido.",
+    "pt_BR": "A interpolação do SVM não retornou um resultado válido."
+  },
+  "SVM interpolation failed:\n{p0}": {
+    "es": "La interpolación de SVM falló:\n{p0}",
+    "pt_BR": "A interpolação do SVM falhou:\n{p0}"
+  },
+  "SVM is unavailable because the bundled dependency could not be loaded.\n\nDetails:\n{p0}": {
+    "es": "SVM no está disponible porque no se pudo cargar la dependencia incluida.\n\nDetalles:\n{p0}",
+    "pt_BR": "SVM não está disponível porque não foi possível carregar a dependência incluída.\n\nDetalhes:\n{p0}"
+  },
+  "SVM validation": {
+    "es": "Validación de SVM",
+    "pt_BR": "Validação do SVM"
+  },
+  "SVM validation error": {
+    "es": "Error de validación de SVM",
+    "pt_BR": "Erro de validação do SVM"
+  },
+  "SVM validation is unavailable.\n{p0}": {
+    "es": "La validación de SVM no está disponible.\n{p0}",
+    "pt_BR": "A validação do SVM não está disponível.\n{p0}"
+  },
+  "Save correlation matrix as CSV": {
+    "es": "Guardar matriz de correlación como CSV",
+    "pt_BR": "Salvar matriz de correlação como CSV"
+  },
+  "Select at least one method before running validation.": {
+    "es": "Seleccione al menos un método antes de validar.",
+    "pt_BR": "Selecione pelo menos um método antes de validar."
+  },
+  "Select covariate rasters": {
+    "es": "Seleccionar rásteres de covariables",
+    "pt_BR": "Selecionar rasters de covariáveis"
+  },
+  "Selected layer is not a raster or is no longer available.": {
+    "es": "La capa seleccionada no es un ráster o ya no está disponible.",
+    "pt_BR": "A camada selecionada não é um raster ou não está mais disponível."
+  },
+  "Selected variable not found in the points layer.": {
+    "es": "La variable seleccionada no se encontró en la capa de puntos.",
+    "pt_BR": "A variável selecionada não foi encontrada na camada de pontos."
+  },
+  "Small sample warning": {
+    "es": "Aviso de muestra pequeña",
+    "pt_BR": "Aviso de amostra pequena"
+  },
+  "Standardization failed or no valid covariate rasters were found.": {
+    "es": "La estandarización falló o no se encontraron rásteres de covariables válidos.",
+    "pt_BR": "A padronização falhou ou não foram encontrados rasters de covariáveis válidos."
+  },
+  "Target pixel size must be greater than zero.": {
+    "es": "El tamaño de píxel de destino debe ser mayor que cero.",
+    "pt_BR": "O tamanho de pixel de destino deve ser maior que zero."
+  },
+  "The SDI dialog module is not available. Make sure framework_sdi_dialog.py is in the plugin folder.": {
+    "es": "El módulo del IDE no está disponible. Compruebe que framework_sdi_dialog.py esté en la carpeta del plugin.",
+    "pt_BR": "O módulo do IDE não está disponível. Verifique se framework_sdi_dialog.py está na pasta do plugin."
+  },
+  "The prediction column '{p0}' is missing.": {
+    "es": "Falta la columna de predicción '{p0}'.",
+    "pt_BR": "A coluna de predição '{p0}' está ausente."
+  },
+  "Unavailable predictors": {
+    "es": "Predictores no disponibles",
+    "pt_BR": "Preditores indisponíveis"
+  },
+  "best_fit_report.pdf": {
+    "es": "best_fit_report.pdf",
+    "pt_BR": "best_fit_report.pdf"
+  },
+  "{p0} computed predictions, but no predicted grid cell falls inside the output raster extent.": {
+    "es": "{p0} calculó predicciones, pero ninguna celda predicha está dentro de la extensión del ráster de salida.",
+    "pt_BR": "{p0} calculou predições, mas nenhuma célula predita está dentro da extensão do raster de saída."
+  },
+  "{p0} covariate(s) are now available for Full Framework.": {
+    "es": "Ahora hay {p0} covariables disponibles para Framework completo.",
+    "pt_BR": "Agora há {p0} covariáveis disponíveis para o Framework completo."
+  },
+  "{p0} interpolation failed:\n{p1}": {
+    "es": "La interpolación {p0} falló:\n{p1}",
+    "pt_BR": "A interpolação {p0} falhou:\n{p1}"
+  },
+  "{p0} predictions were computed, but the output raster block could not be allocated in memory. Increase the Data-tab pixel size and try again.": {
+    "es": "Se calcularon las predicciones de {p0}, pero no se pudo reservar memoria para el bloque ráster de salida. Aumente el tamaño de píxel en Datos e inténtelo de nuevo.",
+    "pt_BR": "As predições de {p0} foram calculadas, mas não foi possível reservar memória para o bloco raster de saída. Aumente o tamanho do pixel em Dados e tente novamente."
+  },
+  "{p0} raster error": {
+    "es": "Error del ráster de {p0}",
+    "pt_BR": "Erro do raster de {p0}"
+  },
+  "{p0} raster was written but could not be loaded as a QGIS layer.": {
+    "es": "Se escribió el ráster de {p0}, pero no se pudo cargar como capa QGIS.",
+    "pt_BR": "O raster de {p0} foi gravado, mas não foi possível carregá-lo como camada QGIS."
+  },
+  "Univariate: n >= 100 -> clustered -> SDI < 60%.": {
+    "es": "Univariado: n >= 100 -> agrupado -> IDE < 60%.",
+    "pt_BR": "Univariado: n >= 100 -> agrupado -> IDE < 60%."
+  },
+  "Univariate: n >= 100 -> clustered -> SDI < 60%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n >= 100 -> agrupado -> IDE < 60%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n >= 100 -> agrupado -> IDE < 60%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n < 100 -> n >= 50 -> clustered -> SDI < 80%.": {
+    "es": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE < 80%.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE < 80%."
+  },
+  "Full: n < 100 -> n >= 50 -> clustered -> SDI < 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE < 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE < 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n < 100 -> n >= 50 -> random -> SDI < 60%.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> aleatorio -> IDE < 60%.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> aleatório -> IDE < 60%."
+  },
+  "Univariate: n < 100 -> n >= 50 -> random -> SDI < 60%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> aleatorio -> IDE < 60%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> aleatório -> IDE < 60%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n >= 100 -> clustered -> 60% <= SDI < 80%.": {
+    "es": "Univariado: n >= 100 -> agrupado -> 60% <= IDE < 80%.",
+    "pt_BR": "Univariado: n >= 100 -> agrupado -> 60% <= IDE < 80%."
+  },
+  "Univariate: n >= 100 -> clustered -> 60% <= SDI < 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n >= 100 -> agrupado -> 60% <= IDE < 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n >= 100 -> agrupado -> 60% <= IDE < 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n >= 100 -> clustered -> SDI >= 80%.": {
+    "es": "Univariado: n >= 100 -> agrupado -> IDE >= 80%.",
+    "pt_BR": "Univariado: n >= 100 -> agrupado -> IDE >= 80%."
+  },
+  "Univariate: n >= 100 -> clustered -> SDI >= 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n >= 100 -> agrupado -> IDE >= 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n >= 100 -> agrupado -> IDE >= 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n < 100 -> n < 50 -> spatial structure -> clustered.": {
+    "es": "Completo: n < 100 -> n < 50 -> spatial structure -> agrupado.",
+    "pt_BR": "Completo: n < 100 -> n < 50 -> spatial structure -> agrupado."
+  },
+  "Full: n < 100 -> n < 50 -> spatial structure -> clustered. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n < 100 -> n < 50 -> spatial structure -> agrupado. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n < 100 -> n < 50 -> spatial structure -> agrupado. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n < 100 -> n >= 50 -> clustered -> SDI < 80%.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE < 80%.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE < 80%."
+  },
+  "Univariate: n < 100 -> n >= 50 -> clustered -> SDI < 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE < 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE < 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n >= 100 -> random -> deterministic fallback.": {
+    "es": "Univariado: n >= 100 -> aleatorio -> alternativa determinista.",
+    "pt_BR": "Univariado: n >= 100 -> aleatório -> alternativa determinística."
+  },
+  "Univariate: n >= 100 -> random -> deterministic fallback. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n >= 100 -> aleatorio -> alternativa determinista. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n >= 100 -> aleatório -> alternativa determinística. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n < 100 -> n >= 50 -> clustered -> SDI >= 80%.": {
+    "es": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%."
+  },
+  "Full: n < 100 -> n >= 50 -> clustered -> SDI >= 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n >= 100 -> clustered -> 60% <= SDI < 80%.": {
+    "es": "Completo: n >= 100 -> agrupado -> 60% <= IDE < 80%.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> 60% <= IDE < 80%."
+  },
+  "Full: n >= 100 -> clustered -> 60% <= SDI < 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n >= 100 -> agrupado -> 60% <= IDE < 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> 60% <= IDE < 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n < 100 -> n >= 50 -> random -> SDI < 60%.": {
+    "es": "Completo: n < 100 -> n >= 50 -> aleatorio -> IDE < 60%.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> aleatório -> IDE < 60%."
+  },
+  "Full: n < 100 -> n >= 50 -> random -> SDI < 60%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n < 100 -> n >= 50 -> aleatorio -> IDE < 60%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> aleatório -> IDE < 60%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n >= 100 -> clustered -> SDI < 60% -> SDI >= 40%.": {
+    "es": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE >= 40%.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE >= 40%."
+  },
+  "Full: n >= 100 -> clustered -> SDI < 60% -> SDI >= 40%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE >= 40%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE >= 40%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n < 100 -> n < 50 -> random.": {
+    "es": "Completo: n < 100 -> n < 50 -> aleatorio.",
+    "pt_BR": "Completo: n < 100 -> n < 50 -> aleatório."
+  },
+  "Full: n < 100 -> n < 50 -> random. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n < 100 -> n < 50 -> aleatorio. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n < 100 -> n < 50 -> aleatório. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n >= 100 -> clustered -> SDI >= 80%.": {
+    "es": "Completo: n >= 100 -> agrupado -> IDE >= 80%.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> IDE >= 80%."
+  },
+  "Full: n >= 100 -> clustered -> SDI >= 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n >= 100 -> agrupado -> IDE >= 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> IDE >= 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n < 100 -> n < 50.": {
+    "es": "Univariado: n < 100 -> n < 50.",
+    "pt_BR": "Univariado: n < 100 -> n < 50."
+  },
+  "Univariate: n < 100 -> n < 50. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n < 100 -> n < 50. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n < 100 -> n < 50. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n < 100 -> n >= 50 -> clustered -> SDI >= 80%.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%."
+  },
+  "Univariate: n < 100 -> n >= 50 -> clustered -> SDI >= 80%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> agrupado -> IDE >= 80%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n < 100 -> n >= 50 -> random -> SDI >= 60%.": {
+    "es": "Completo: n < 100 -> n >= 50 -> aleatorio -> IDE >= 60%.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> aleatório -> IDE >= 60%."
+  },
+  "Full: n < 100 -> n >= 50 -> random -> SDI >= 60%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n < 100 -> n >= 50 -> aleatorio -> IDE >= 60%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n < 100 -> n >= 50 -> aleatório -> IDE >= 60%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Univariate: n < 100 -> n >= 50 -> random -> SDI >= 60%.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> aleatorio -> IDE >= 60%.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> aleatório -> IDE >= 60%."
+  },
+  "Univariate: n < 100 -> n >= 50 -> random -> SDI >= 60%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Univariado: n < 100 -> n >= 50 -> aleatorio -> IDE >= 60%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Univariado: n < 100 -> n >= 50 -> aleatório -> IDE >= 60%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n >= 100 -> random -> TPS/SVM comparison.": {
+    "es": "Completo: n >= 100 -> aleatorio -> comparación TPS/SVM.",
+    "pt_BR": "Completo: n >= 100 -> aleatório -> comparação TPS/SVM."
+  },
+  "Full: n >= 100 -> random -> TPS/SVM comparison. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n >= 100 -> aleatorio -> comparación TPS/SVM. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n >= 100 -> aleatório -> comparação TPS/SVM. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Full: n >= 100 -> clustered -> SDI < 60% -> SDI < 40%.": {
+    "es": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE < 40%.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE < 40%."
+  },
+  "Full: n >= 100 -> clustered -> SDI < 60% -> SDI < 40%. Full framework selected, but no covariates have been applied yet; using univariate path.": {
+    "es": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE < 40%. Se seleccionó Framework completo, pero aún no se han aplicado covariables; se utiliza la ruta univariada.",
+    "pt_BR": "Completo: n >= 100 -> agrupado -> IDE < 60% -> IDE < 40%. O Framework completo foi selecionado, mas ainda não foram aplicadas covariáveis; utiliza-se o caminho univariado."
+  },
+  "Best Fit Interpolator": {
+    "es": "Best Fit Interpolator",
+    "pt_BR": "Best Fit Interpolator"
+  },
+  "Framework": {
+    "es": "Framework",
+    "pt_BR": "Framework"
+  },
+  "IDW": {
+    "es": "IDW",
+    "pt_BR": "IDW"
+  },
+  "TPS": {
+    "es": "TPS",
+    "pt_BR": "TPS"
+  },
+  "RF": {
+    "es": "RF",
+    "pt_BR": "RF"
+  },
+  "RFE": {
+    "es": "RFE",
+    "pt_BR": "RFE"
+  },
+  "RK": {
+    "es": "RK",
+    "pt_BR": "RK"
+  },
+  "SVM": {
+    "es": "SVM",
+    "pt_BR": "SVM"
+  },
+  "Random Forest": {
+    "es": "Random Forest",
+    "pt_BR": "Random Forest"
+  },
+  "KNN": {
+    "es": "KNN",
+    "pt_BR": "KNN"
+  },
+  "LOOCV": {
+    "es": "LOOCV",
+    "pt_BR": "LOOCV"
+  },
+  "MoM": {
+    "es": "MoM",
+    "pt_BR": "MoM"
+  },
+  "REML": {
+    "es": "REML",
+    "pt_BR": "REML"
+  },
+  "Exp": {
+    "es": "Exp",
+    "pt_BR": "Exp"
+  },
+  "Gau": {
+    "es": "Gau",
+    "pt_BR": "Gau"
+  },
+  "Sph": {
+    "es": "Sph",
+    "pt_BR": "Sph"
+  },
+  "C (log2)": {
+    "es": "C (log2)",
+    "pt_BR": "C (log2)"
+  },
+  "gamma (log2)": {
+    "es": "gamma (log2)",
+    "pt_BR": "gamma (log2)"
+  },
+  "gamma": {
+    "es": "gamma",
+    "pt_BR": "gamma"
+  },
+  "epsilon": {
+    "es": "epsilon",
+    "pt_BR": "epsilon"
+  },
+  "ntree": {
+    "es": "ntree",
+    "pt_BR": "ntree"
+  },
+  "mtry": {
+    "es": "mtry",
+    "pt_BR": "mtry"
+  },
+  "nodesize": {
+    "es": "nodesize",
+    "pt_BR": "nodesize"
+  },
+  "MAE": {
+    "es": "MAE",
+    "pt_BR": "MAE"
+  },
+  "RMSE": {
+    "es": "RMSE",
+    "pt_BR": "RMSE"
+  },
+  "RMSE%": {
+    "es": "RMSE%",
+    "pt_BR": "RMSE%"
+  },
+  "LCCC": {
+    "es": "LCCC",
+    "pt_BR": "LCCC"
+  },
+  "R²": {
+    "es": "R²",
+    "pt_BR": "R²"
+  },
+  "R2": {
+    "es": "R2",
+    "pt_BR": "R2"
+  },
+  "Pearson": {
+    "es": "Pearson",
+    "pt_BR": "Pearson"
+  },
+  "LinkedIn:": {
+    "es": "LinkedIn:",
+    "pt_BR": "LinkedIn:"
+  },
+  "LCCC:": {
+    "es": "LCCC:",
+    "pt_BR": "LCCC:"
+  },
+  "RMSE:": {
+    "es": "RMSE:",
+    "pt_BR": "RMSE:"
+  },
+  "RMSE%:": {
+    "es": "RMSE%:",
+    "pt_BR": "RMSE%:"
+  },
+  "MAE:": {
+    "es": "MAE:",
+    "pt_BR": "MAE:"
+  },
+  "-1 to 1": {
+    "es": "-1 to 1",
+    "pt_BR": "-1 to 1"
+  },
+  "ML grid search": {
+    "es": "Grid search de ML",
+    "pt_BR": "Grid search de ML"
+  },
+  "Framework uses the same reproducible grid sampling and default ranges as the individual windows. The iteration limit bounds the number of combinations evaluated for each method. These settings can be changed here without opening the individual windows.": {
+    "es": "Framework usa el mismo muestreo reproducible de la grilla y los rangos predeterminados de las ventanas individuales. El límite de iteraciones controla cuántas combinaciones se evalúan por método. Estos ajustes se pueden cambiar aquí sin abrir las ventanas individuales.",
+    "pt_BR": "O Framework usa a mesma amostragem reproduzível da grade e os intervalos padrão das janelas individuais. O limite de iterações controla quantas combinações são avaliadas por método. Esses ajustes podem ser alterados aqui sem abrir as janelas individuais."
+  },
+  "C and gamma are actual values; Step multiplies each value (2 doubles it). Epsilon uses an additive step. Search minimizes MAE for RF/RK and RMSE for SVM. Spatial validation tunes within training blocks. Dense-data limits and completed-search reuse are recorded in the report.": {
+    "es": "C y gamma son valores reales; Paso multiplica cada valor (2 lo duplica). Epsilon usa un paso aditivo. La búsqueda minimiza MAE para RF/RK y RMSE para SVM. La validación espacial ajusta dentro de los bloques de entrenamiento. El informe registra los límites para datos densos y la reutilización de búsquedas completadas.",
+    "pt_BR": "C e gamma são valores reais; Passo multiplica cada valor (2 o duplica). Epsilon usa um passo aditivo. A busca minimiza MAE para RF/RK e RMSE para SVM. A validação espacial ajusta dentro dos blocos de treinamento. O relatório registra os limites para dados densos e a reutilização de buscas concluídas."
+  },
+  "C and gamma are actual values; Step multiplies each value (2 doubles it).": {
+    "es": "C y gamma son valores reales; Paso multiplica cada valor (2 lo duplica).",
+    "pt_BR": "C e gamma são valores reais; Passo multiplica cada valor (2 o duplica)."
+  },
+  "C and gamma require positive bounds and a step multiplier greater than 1.": {
+    "es": "C y gamma requieren límites positivos y un multiplicador de paso mayor que 1.",
+    "pt_BR": "C e gamma exigem limites positivos e um multiplicador de passo maior que 1."
+  },
+  "The parameter range contains too many values. Increase the step multiplier.": {
+    "es": "El rango del parámetro contiene demasiados valores. Aumente el multiplicador de paso.",
+    "pt_BR": "O intervalo do parâmetro contém valores demais. Aumente o multiplicador de passo."
+  },
+  "Completed grid search reused; training data, predictors and settings are unchanged": {
+    "es": "Se reutilizó la búsqueda completada; los datos de entrenamiento, predictores y ajustes son los mismos",
+    "pt_BR": "Busca concluída reutilizada; os dados de treinamento, preditores e ajustes são os mesmos"
+  },
+  "Additional search combinations evaluated": {
+    "es": "Combinaciones adicionales evaluadas",
+    "pt_BR": "Combinações adicionais avaliadas"
+  },
+  "Grid search over the finite grid": {
+    "es": "Búsqueda sobre la grilla finita",
+    "pt_BR": "Busca sobre a grade finita"
+  },
+  "Original search: Evaluated / available combinations": {
+    "es": "Búsqueda original: Combinaciones evaluadas / disponibles",
+    "pt_BR": "Busca original: Combinações avaliadas / disponíveis"
+  },
+  "Original search: Search validation": {
+    "es": "Búsqueda original: Validación de la búsqueda",
+    "pt_BR": "Busca original: Validação da busca"
+  },
+  "Original search: Selection criterion and best search score": {
+    "es": "Búsqueda original: Criterio de selección y mejor puntuación de la búsqueda",
+    "pt_BR": "Busca original: Critério de seleção e melhor pontuação da busca"
+  },
+  "Refitting the model with parameters selected by the completed grid search": {
+    "es": "Ajustando el modelo con los parámetros seleccionados por la búsqueda completada",
+    "pt_BR": "Ajustando o modelo com os parâmetros selecionados pela busca concluída"
+  },
+  "Completed grid search reused": {
+    "es": "Búsqueda completada reutilizada",
+    "pt_BR": "Busca concluída reutilizada"
+  },
+  "Original search combinations (evaluated / available)": {
+    "es": "Búsqueda original: combinaciones evaluadas / disponibles",
+    "pt_BR": "Busca original: combinações avaliadas / disponíveis"
+  },
+  "Original search validation": {
+    "es": "Validación de la búsqueda original",
+    "pt_BR": "Validação da busca original"
+  },
+  "Original search criterion and score": {
+    "es": "Criterio y puntuación de la búsqueda original",
+    "pt_BR": "Critério e pontuação da busca original"
+  },
+  "Restore Defaults": {
+    "es": "Restaurar valores predeterminados",
+    "pt_BR": "Restaurar valores padrão"
+  },
+  "The parameter ranges and search routines follow the individual V2.0 windows. RF/RK use MAE and SVM uses RMSE. The iteration limit bounds the combinations evaluated. Spatial validation tunes within training blocks. The report records the effective values and any completed-search reuse.": {
+    "es": "Los rangos y las rutinas de búsqueda siguen las ventanas individuales de V2.0. RF/RK usan MAE y SVM usa RMSE. Las iteraciones limitan las combinaciones evaluadas. La validación espacial ajusta dentro de los bloques de entrenamiento. El informe registra los valores efectivos y las búsquedas reutilizadas.",
+    "pt_BR": "Os intervalos e as rotinas de busca seguem as janelas individuais da V2.0. RF/RK usam MAE e SVM usa RMSE. As iterações limitam as combinações avaliadas. A validação espacial ajusta dentro dos blocos de treinamento. O relatório registra os valores efetivos e as buscas reutilizadas."
+  },
+  "Incomplete predictor coverage": {
+    "es": "Cobertura incompleta de los predictores",
+    "pt_BR": "Cobertura incompleta dos preditores"
+  },
+  "Complete predictor data: {p0} / {p1}.": {
+    "es": "Datos completos de predictores: {p0} / {p1}.",
+    "pt_BR": "Dados completos de preditores: {p0} / {p1}."
+  },
+  "Predictor '{p0}': {p1} / {p2}": {
+    "es": "Predictor '{p0}': {p1} / {p2}",
+    "pt_BR": "Preditor '{p0}': {p1} / {p2}"
+  },
+  "Less than half of the requested input has complete predictors. Check the listed raster sources, CRS and NoData coverage before running interpolation.": {
+    "es": "Menos de la mitad de los datos solicitados tiene predictores completos. Revise las rutas de los rásteres indicados, su CRS y la cobertura NoData antes de interpolar.",
+    "pt_BR": "Menos da metade dos dados solicitados tem preditores completos. Confira os caminhos dos rasters indicados, seu SRC e a cobertura NoData antes de interpolar."
+  },
+  "Training observations with complete predictors": {
+    "es": "Muestras de entrenamiento con predictores completos",
+    "pt_BR": "Amostras de treinamento com preditores completos"
+  },
+  "Prediction cells with complete predictors": {
+    "es": "Celdas de predicción con predictores completos",
+    "pt_BR": "Células de predição com preditores completos"
+  },
+  "Could not open predictor raster: {p0}": {
+    "es": "No se pudo abrir el ráster predictor: {p0}",
+    "pt_BR": "Não foi possível abrir o raster preditor: {p0}"
+  },
+  "Add the selected method SD layer to QGIS when interpolation runs.": {
+    "es": "Añadir la capa de DE del método seleccionado a QGIS al interpolar.",
+    "pt_BR": "Adicionar a camada de DP do método selecionado ao QGIS ao interpolar."
+  },
+  "Run the selected method interpolation to produce its uncertainty maps.": {
+    "es": "Ejecute la interpolación del método seleccionado para generar sus mapas de incertidumbre.",
+    "pt_BR": "Execute a interpolação do método selecionado para gerar seus mapas de incerteza."
+  },
+  "Uncertainty maps are available for Kriging, RF and RK.": {
+    "es": "Los mapas de incertidumbre están disponibles para Kriging, RF y RK.",
+    "pt_BR": "Os mapas de incerteza estão disponíveis para Kriging, RF e RK."
+  },
+  "Current selection: no valid variable selected yet.": {
+    "es": "Selección actual: todavía no se ha seleccionado una variable válida.",
+    "pt_BR": "Seleção atual: nenhuma variável válida selecionada ainda."
+  },
+  "Current selection: {p0} valid samples → {p1}.": {
+    "es": "Selección actual: {p0} muestras válidas → {p1}.",
+    "pt_BR": "Seleção atual: {p0} amostras válidas → {p1}."
+  },
+  "All inputs are required.": {
+    "es": "Se requieren todos los datos de entrada.",
+    "pt_BR": "Todos os dados de entrada são necessários."
+  },
+  "At least 10 valid data points are required for interpolation.": {
+    "es": "Se requieren al menos 10 puntos válidos para interpolar.",
+    "pt_BR": "São necessários pelo menos 10 pontos válidos para interpolar."
+  },
+  "At least 10 valid samples are required for IDW interpolation.": {
+    "es": "Se requieren al menos 10 muestras válidas para interpolar con IDW.",
+    "pt_BR": "São necessárias pelo menos 10 amostras válidas para interpolar com IDW."
+  },
+  "At least 10 valid samples are required for TPS interpolation.": {
+    "es": "Se requieren al menos 10 muestras válidas para interpolar con TPS.",
+    "pt_BR": "São necessárias pelo menos 10 amostras válidas para interpolar com TPS."
+  },
+  "At least 10 valid samples are required for deterministic validation.": {
+    "es": "Se requieren al menos 10 muestras válidas para la validación determinista.",
+    "pt_BR": "São necessárias pelo menos 10 amostras válidas para a validação determinística."
+  },
+  "At least 5 valid data points are required for interpolation.": {
+    "es": "Se requieren al menos 5 puntos válidos para interpolar.",
+    "pt_BR": "São necessários pelo menos 5 pontos válidos para interpolar."
+  },
+  "Canceled by the user.": {
+    "es": "Cancelado por el usuario.",
+    "pt_BR": "Cancelado pelo usuário."
+  },
+  "Canceled for the user.": {
+    "es": "Cancelado por el usuario.",
+    "pt_BR": "Cancelado pelo usuário."
+  },
+  "Cross-validation failed: {p0}": {
+    "es": "Falló la validación cruzada: {p0}",
+    "pt_BR": "Falha na validação cruzada: {p0}"
+  },
+  "Deterministic Interpolation": {
+    "es": "Interpolación determinista",
+    "pt_BR": "Interpolação determinística"
+  },
+  "Error": {
+    "es": "Error",
+    "pt_BR": "Erro"
+  },
+  "Failed to create GTiff.": {
+    "es": "No se pudo crear el GeoTIFF.",
+    "pt_BR": "Não foi possível criar o GeoTIFF."
+  },
+  "Failed to export RK raster: {p0}": {
+    "es": "No se pudo exportar el ráster de RK: {p0}",
+    "pt_BR": "Não foi possível exportar o raster de RK: {p0}"
+  },
+  "Failed to export raster: {p0}": {
+    "es": "No se pudo exportar el ráster: {p0}",
+    "pt_BR": "Não foi possível exportar o raster: {p0}"
+  },
+  "Failed to initialize Framework tab: {p0}": {
+    "es": "No se pudo iniciar la pestaña Framework: {p0}",
+    "pt_BR": "Não foi possível iniciar a aba Framework: {p0}"
+  },
+  "Failed to initialize Kriging dispatcher: {p0}": {
+    "es": "No se pudo iniciar el controlador de Kriging: {p0}",
+    "pt_BR": "Não foi possível iniciar o controlador de Kriging: {p0}"
+  },
+  "Failed to initialize ML tab: {p0}": {
+    "es": "No se pudo iniciar la pestaña de aprendizaje automático: {p0}",
+    "pt_BR": "Não foi possível iniciar a aba de aprendizado de máquina: {p0}"
+  },
+  "Failed to initialize RK tab: {p0}": {
+    "es": "No se pudo iniciar la pestaña de RK: {p0}",
+    "pt_BR": "Não foi possível iniciar a aba de RK: {p0}"
+  },
+  "Failed to trigger CV run: {p0}": {
+    "es": "No se pudo iniciar la validación cruzada: {p0}",
+    "pt_BR": "Não foi possível iniciar a validação cruzada: {p0}"
+  },
+  "Fit to view": {
+    "es": "Ajustar a la vista",
+    "pt_BR": "Ajustar à visualização"
+  },
+  "Fold failed: {p0}": {
+    "es": "Falló una partición de validación: {p0}",
+    "pt_BR": "Falha em uma partição de validação: {p0}"
+  },
+  "Framework tab is not available: {p0}": {
+    "es": "La pestaña Framework no está disponible: {p0}",
+    "pt_BR": "A aba Framework não está disponível: {p0}"
+  },
+  "IDW optimization": {
+    "es": "Optimización de IDW",
+    "pt_BR": "Otimização de IDW"
+  },
+  "Info": {
+    "es": "Información",
+    "pt_BR": "Informação"
+  },
+  "Interpolation Complete": {
+    "es": "Interpolación completada",
+    "pt_BR": "Interpolação concluída"
+  },
+  "Interpolation complete.": {
+    "es": "Interpolación completada.",
+    "pt_BR": "Interpolação concluída."
+  },
+  "Interpolation failed: {p0}": {
+    "es": "Falló la interpolación: {p0}",
+    "pt_BR": "Falha na interpolação: {p0}"
+  },
+  "Invalid variogram parameters: {p0}": {
+    "es": "Parámetros de variograma inválidos: {p0}",
+    "pt_BR": "Parâmetros de variograma inválidos: {p0}"
+  },
+  "Kriging": {
+    "es": "Kriging",
+    "pt_BR": "Krigagem"
+  },
+  "Kriging CV": {
+    "es": "Validación cruzada de Kriging",
+    "pt_BR": "Validação cruzada de krigagem"
+  },
+  "Kriging REML": {
+    "es": "Kriging REML",
+    "pt_BR": "Krigagem REML"
+  },
+  "Kriging REML CV": {
+    "es": "Validación cruzada de Kriging REML",
+    "pt_BR": "Validação cruzada de krigagem REML"
+  },
+  "Kriging failed: {p0}": {
+    "es": "Falló el Kriging: {p0}",
+    "pt_BR": "Falha na krigagem: {p0}"
+  },
+  "Kriging validation": {
+    "es": "Validación de Kriging",
+    "pt_BR": "Validação de krigagem"
+  },
+  "Manual p or n value is invalid.": {
+    "es": "El valor manual de p o n es inválido.",
+    "pt_BR": "O valor manual de p ou n é inválido."
+  },
+  "Many cells to predict ({p0}). Consider increasing the pixel size.": {
+    "es": "Hay muchas celdas que predecir ({p0}). Considere aumentar el tamaño del píxel.",
+    "pt_BR": "Há muitas células para prever ({p0}). Considere aumentar o tamanho do pixel."
+  },
+  "Model fitting completed, but the interpolation raster could not be created or loaded in QGIS.": {
+    "es": "El ajuste terminó, pero no se pudo crear o cargar el ráster de interpolación en QGIS.",
+    "pt_BR": "O ajuste foi concluído, mas não foi possível criar ou carregar o raster de interpolação no QGIS."
+  },
+  "No graph to save": {
+    "es": "No hay un gráfico para guardar",
+    "pt_BR": "Não há gráfico para salvar"
+  },
+  "No grid cells fall inside the polygon.": {
+    "es": "No hay celdas de la malla dentro del polígono.",
+    "pt_BR": "Não há células da grade dentro do polígono."
+  },
+  "No valid points or values found after filtering.": {
+    "es": "No se encontraron puntos o valores válidos después del filtrado.",
+    "pt_BR": "Não foram encontrados pontos ou valores válidos após a filtragem."
+  },
+  "No valid points or values found for interpolation.": {
+    "es": "No se encontraron puntos o valores válidos para interpolar.",
+    "pt_BR": "Não foram encontrados pontos ou valores válidos para interpolar."
+  },
+  "OKDispatcherController not available: {p0}": {
+    "es": "El controlador de Kriging no está disponible: {p0}",
+    "pt_BR": "O controlador de krigagem não está disponível: {p0}"
+  },
+  "Open larger view": {
+    "es": "Abrir vista ampliada",
+    "pt_BR": "Abrir visualização ampliada"
+  },
+  "Operation canceled by user.": {
+    "es": "Operación cancelada por el usuario.",
+    "pt_BR": "Operação cancelada pelo usuário."
+  },
+  "Optimization Complete": {
+    "es": "Optimización completada",
+    "pt_BR": "Otimização concluída"
+  },
+  "Optimized parameters: p={p0}, n={p1}, ISI={p2}": {
+    "es": "Parámetros optimizados: p={p0}, n={p1}, ISI={p2}",
+    "pt_BR": "Parâmetros otimizados: p={p0}, n={p1}, ISI={p2}"
+  },
+  "PNG saved to: {p0}": {
+    "es": "PNG guardado en: {p0}",
+    "pt_BR": "PNG salvo em: {p0}"
+  },
+  "Please select a point layer, polygon layer, and variable.": {
+    "es": "Seleccione una capa de puntos, una capa de polígonos y una variable.",
+    "pt_BR": "Selecione uma camada de pontos, uma camada de polígonos e uma variável."
+  },
+  "Point layer not found.": {
+    "es": "No se encontró la capa de puntos.",
+    "pt_BR": "Camada de pontos não encontrada."
+  },
+  "Prediction and conditional uncertainty complete.": {
+    "es": "Predicción e incertidumbre condicional completadas.",
+    "pt_BR": "Predição e incerteza condicional concluídas."
+  },
+  "Python kriging failed: {p0}": {
+    "es": "Falló el Kriging en Python: {p0}",
+    "pt_BR": "Falha na krigagem em Python: {p0}"
+  },
+  "REML CV did not return predictions.": {
+    "es": "La validación cruzada de REML no devolvió predicciones.",
+    "pt_BR": "A validação cruzada de REML não retornou predições."
+  },
+  "REML CV failed: {p0}": {
+    "es": "Falló la validación cruzada de REML: {p0}",
+    "pt_BR": "Falha na validação cruzada de REML: {p0}"
+  },
+  "REML fit failed: {p0}": {
+    "es": "Falló el ajuste REML: {p0}",
+    "pt_BR": "Falha no ajuste REML: {p0}"
+  },
+  "REML is not available for this dataset ({p0}). MoM will be used instead.": {
+    "es": "REML no está disponible para estos datos ({p0}). Se utilizará MoM.",
+    "pt_BR": "REML não está disponível para estes dados ({p0}). Será utilizado MoM."
+  },
+  "REML prediction failed: {p0}": {
+    "es": "Falló la predicción REML: {p0}",
+    "pt_BR": "Falha na predição REML: {p0}"
+  },
+  "RF fitting failed: {p0}": {
+    "es": "Falló el ajuste de RF: {p0}",
+    "pt_BR": "Falha no ajuste de RF: {p0}"
+  },
+  "RF interpolation": {
+    "es": "Interpolación con RF",
+    "pt_BR": "Interpolação com RF"
+  },
+  "RK interpolation was computed, but the raster could not be exported to QGIS.": {
+    "es": "Se calculó la interpolación con RK, pero no se pudo exportar el ráster a QGIS.",
+    "pt_BR": "A interpolação com RK foi calculada, mas não foi possível exportar o raster para o QGIS."
+  },
+  "RK raster created: {p0}": {
+    "es": "Ráster de RK creado: {p0}",
+    "pt_BR": "Raster de RK criado: {p0}"
+  },
+  "Raster added to QGIS: {p0}": {
+    "es": "Ráster añadido a QGIS: {p0}",
+    "pt_BR": "Raster adicionado ao QGIS: {p0}"
+  },
+  "Raster created but is invalid for QGIS.": {
+    "es": "El ráster se creó, pero no es válido para QGIS.",
+    "pt_BR": "O raster foi criado, mas não é válido para o QGIS."
+  },
+  "Raster layer created: {p0}": {
+    "es": "Capa ráster creada: {p0}",
+    "pt_BR": "Camada raster criada: {p0}"
+  },
+  "Raster layer is not valid.": {
+    "es": "La capa ráster no es válida.",
+    "pt_BR": "A camada raster não é válida."
+  },
+  "Regression Kriging preparation was canceled.": {
+    "es": "Se canceló la preparación de Kriging de regresión.",
+    "pt_BR": "A preparação da krigagem de regressão foi cancelada."
+  },
+  "Regression Kriging validation": {
+    "es": "Validación de Kriging de regresión",
+    "pt_BR": "Validação de krigagem de regressão"
+  },
+  "Removed {p0} rows with incomplete or invalid data.": {
+    "es": "Se eliminaron {p0} filas con datos incompletos o inválidos.",
+    "pt_BR": "Foram removidas {p0} linhas com dados incompletos ou inválidos."
+  },
+  "Residual variogram fitting failed: {p0}": {
+    "es": "Falló el ajuste del variograma de residuos: {p0}",
+    "pt_BR": "Falha no ajuste do variograma dos resíduos: {p0}"
+  },
+  "Run Ordinary Kriging interpolation first, then run validation.": {
+    "es": "Ejecute primero la interpolación de Kriging ordinario y después la validación.",
+    "pt_BR": "Execute primeiro a interpolação de krigagem ordinária e depois a validação."
+  },
+  "Run deterministic interpolation first, then run validation.": {
+    "es": "Ejecute primero la interpolación determinista y después la validación.",
+    "pt_BR": "Execute primeiro a interpolação determinística e depois a validação."
+  },
+  "Run the complete Regression Kriging interpolation first. Validation uses its exact predictors, RF parameters, and variogram.": {
+    "es": "Ejecute primero la interpolación completa de Kriging de regresión. La validación usa sus mismos predictores, parámetros de RF y variograma.",
+    "pt_BR": "Execute primeiro a interpolação completa de krigagem de regressão. A validação usa seus mesmos preditores, parâmetros de RF e variograma."
+  },
+  "Save graph as PNG": {
+    "es": "Guardar gráfico como PNG",
+    "pt_BR": "Salvar gráfico como PNG"
+  },
+  "Select a polygon layer.": {
+    "es": "Seleccione una capa de polígonos.",
+    "pt_BR": "Selecione uma camada de polígonos."
+  },
+  "Select point layer and variable in the Data tab": {
+    "es": "Seleccione la capa de puntos y la variable en la pestaña Datos",
+    "pt_BR": "Selecione a camada de pontos e a variável na aba Dados"
+  },
+  "Selected point layer is not loaded in QGIS.": {
+    "es": "La capa de puntos seleccionada no está cargada en QGIS.",
+    "pt_BR": "A camada de pontos selecionada não está carregada no QGIS."
+  },
+  "TPS canceled because duplicate locations were not accepted.": {
+    "es": "TPS se canceló porque no se aceptaron las ubicaciones duplicadas.",
+    "pt_BR": "TPS foi cancelado porque as localizações duplicadas não foram aceitas."
+  },
+  "TPS is selected but Thin_plate_spline.py was not found or failed to import.": {
+    "es": "Se seleccionó TPS, pero no se pudo cargar el módulo Thin_plate_spline.py.",
+    "pt_BR": "TPS foi selecionado, mas não foi possível carregar o módulo Thin_plate_spline.py."
+  },
+  "The grid does not fall within the polygon.": {
+    "es": "La malla no se encuentra dentro del polígono.",
+    "pt_BR": "A grade não está dentro do polígono."
+  },
+  "The last IDW interpolation has no saved p/n parameters. Run interpolation again first.": {
+    "es": "La última interpolación de IDW no tiene parámetros p/n guardados. Repita primero la interpolación.",
+    "pt_BR": "A última interpolação de IDW não tem parâmetros p/n salvos. Execute novamente a interpolação primeiro."
+  },
+  "The last interpolation used MoM. Run the matching Kriging validation.": {
+    "es": "La última interpolación utilizó MoM. Ejecute la validación de Kriging correspondiente.",
+    "pt_BR": "A última interpolação utilizou MoM. Execute a validação de krigagem correspondente."
+  },
+  "The saved REML interpolation configuration is unavailable. Run interpolation again.": {
+    "es": "La configuración guardada de la interpolación REML no está disponible. Repita la interpolación.",
+    "pt_BR": "A configuração salva da interpolação REML não está disponível. Execute novamente a interpolação."
+  },
+  "The saved interpolation data are unavailable. Run interpolation again.": {
+    "es": "Los datos guardados de interpolación no están disponibles. Repita la interpolación.",
+    "pt_BR": "Os dados salvos da interpolação não estão disponíveis. Execute novamente a interpolação."
+  },
+  "The selected Data-tab variable is not available in the selected point layer. Reload the Data tab selection.": {
+    "es": "La variable seleccionada en Datos no está disponible en la capa de puntos. Vuelva a cargar la selección de Datos.",
+    "pt_BR": "A variável selecionada em Dados não está disponível na camada de pontos. Carregue novamente a seleção de Dados."
+  },
+  "There are no valid points/variables.": {
+    "es": "No hay puntos o variables válidos.",
+    "pt_BR": "Não há pontos ou variáveis válidos."
+  },
+  "There is no canvas for the kriging map.": {
+    "es": "No hay un canvas disponible para el mapa de Kriging.",
+    "pt_BR": "Não há um canvas disponível para o mapa de krigagem."
+  },
+  "Using {p0} unique locations for TPS; {p1} repeated samples ignored for this run only.": {
+    "es": "Se utilizan {p0} ubicaciones únicas para TPS; se omiten {p1} muestras repetidas solo en esta ejecución.",
+    "pt_BR": "São utilizadas {p0} localizações únicas para TPS; {p1} amostras repetidas são ignoradas apenas nesta execução."
+  },
+  "View larger view": {
+    "es": "Ver vista ampliada",
+    "pt_BR": "Ver visualização ampliada"
+  },
+  "Warning": {
+    "es": "Advertencia",
+    "pt_BR": "Aviso"
+  },
+  "Zoom in": {
+    "es": "Acercar",
+    "pt_BR": "Ampliar"
+  },
+  "Zoom out": {
+    "es": "Alejar",
+    "pt_BR": "Reduzir"
+  },
+  "{p0} interpolation": {
+    "es": "Interpolación con {p0}",
+    "pt_BR": "Interpolação com {p0}"
+  },
+  "{p0} interpolation completed from Framework.": {
+    "es": "Interpolación de {p0} completada desde Framework.",
+    "pt_BR": "Interpolação de {p0} concluída pelo Framework."
+  },
+  "{p0} preparation was canceled.": {
+    "es": "Se canceló la preparación de {p0}.",
+    "pt_BR": "A preparação de {p0} foi cancelada."
+  },
+  "{p0} raster created: {p1}": {
+    "es": "Ráster de {p0} creado: {p1}",
+    "pt_BR": "Raster de {p0} criado: {p1}"
+  },
+  "The parameter ranges and search routines follow the individual V2.0 windows. RF/RK use MAE and SVM uses RMSE. The iteration limit bounds the combinations evaluated. The report records the effective values and any completed-search reuse.": {
+    "es": "Los rangos de parámetros y las rutinas de búsqueda siguen las ventanas individuales de V2.0. RF/RK usan MAE y SVM usa RMSE. El límite de iteraciones acota las combinaciones evaluadas. El reporte registra los valores efectivos y la reutilización de búsquedas completadas.",
+    "pt_BR": "Os intervalos de parâmetros e as rotinas de busca seguem as janelas individuais da V2.0. RF/RK usam MAE e SVM usa RMSE. O limite de iterações restringe as combinações avaliadas. O relatório registra os valores efetivos e a reutilização de buscas concluídas."
+  },
+  "CV finished. RMSE={p0}, RMSE%={p1}%, MAE={p2}, R²={p3}, Pearson r={p4}, LCCC={p5}": {
+    "es": "Validación cruzada completada. RMSE={p0}, RMSE%={p1}%, MAE={p2}, R²={p3}, Pearson r={p4}, LCCC={p5}",
+    "pt_BR": "Validação cruzada concluída. RMSE={p0}, RMSE%={p1}%, MAE={p2}, R²={p3}, Pearson r={p4}, LCCC={p5}"
+  },
+  "{p0} finished. RMSE={p1}, RMSE%={p2}%, MAE={p3}, R²={p4}, Pearson r={p5}, LCCC={p6}": {
+    "es": "{p0} completado. RMSE={p1}, RMSE%={p2}%, MAE={p3}, R²={p4}, Pearson r={p5}, LCCC={p6}",
+    "pt_BR": "{p0} concluído. RMSE={p1}, RMSE%={p2}%, MAE={p3}, R²={p4}, Pearson r={p5}, LCCC={p6}"
+  },
+  "Finished REML CV — RMSE={p0}, RMSE%={p1}%, MAE={p2}, R²={p3}, r={p4}, LCCC={p5}": {
+    "es": "Validación cruzada de REML completada — RMSE={p0}, RMSE%={p1}%, MAE={p2}, R²={p3}, r={p4}, LCCC={p5}",
+    "pt_BR": "Validação cruzada de REML concluída — RMSE={p0}, RMSE%={p1}%, MAE={p2}, R²={p3}, r={p4}, LCCC={p5}"
+  },
+  "Run diagnostics to classify the dataset in the framework.": {
+    "es": "Ejecute el diagnóstico para clasificar los datos en Framework.",
+    "pt_BR": "Execute o diagnóstico para classificar os dados no Framework."
+  },
+  "{p0} (SD)": {
+    "es": "{p0} (DE)",
+    "pt_BR": "{p0} (DP)"
+  },
+  "{p0}² (variance)": {
+    "es": "{p0}² (varianza)",
+    "pt_BR": "{p0}² (variância)"
+  },
+  "{p0} — kriging SD": {
+    "es": "{p0} — DE de Kriging",
+    "pt_BR": "{p0} — DP de krigagem"
+  },
+  "{p0}² — kriging variance": {
+    "es": "{p0}² — varianza de Kriging",
+    "pt_BR": "{p0}² — variância de krigagem"
+  },
+  "Validation winner": {
+    "es": "Ganador de la validación",
+    "pt_BR": "Vencedor da validação"
+  }
+}

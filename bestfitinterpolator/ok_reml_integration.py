@@ -7,9 +7,10 @@ All code comments are in English.
 from __future__ import annotations
 
 from .ok_r_integration_reml import OKTabController as _REMLBaseController
+from .geostatistics_options import GeostatisticsOptions
 
 
-class OKREMLController(_REMLBaseController):
+class OKREMLController(GeostatisticsOptions, _REMLBaseController):
     """Thin wrapper around the REML-specific controller."""
 
     strategy_name = "REML"

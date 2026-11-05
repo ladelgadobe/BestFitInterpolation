@@ -16,8 +16,8 @@ def _metadata():
 
 def test_release_version_and_changelog_are_consistent():
     metadata = _metadata()
-    assert metadata["version"] == "2.0"
-    assert metadata["changelog"].startswith("Version 2.0:")
+    assert metadata["version"] == "2.1"
+    assert metadata["changelog"].startswith("Version 2.1:")
 
 
 def test_release_documentation_has_no_legacy_r_squared_encoding():

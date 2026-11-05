@@ -10,6 +10,11 @@ from itertools import product
 import math
 import random
 
+try:
+    from .search_provenance import model_search_record, record_search
+except ImportError:  # standalone numerical use
+    from search_provenance import model_search_record, record_search
+
 import numpy as np
 import pandas as pd
 
@@ -243,6 +248,13 @@ def _sample_param_candidates(all_candidates, max_iterations=12, random_state=20)
 
 
 
+try:
+    from .numerical_runtime import responsive_numerical
+except ImportError:  # standalone numerical use
+    from numerical_runtime import responsive_numerical
+
+
+@responsive_numerical
 def _tune_svm(
     X,
     y,
@@ -254,6 +266,7 @@ def _tune_svm(
     max_iterations=12,
     random_state=20,
     progress_fn=None,
+    search_strategy="randomized",
 ):
     """Tune SVM hyperparameters and return the fitted model and best parameters."""
     if not use_grid_search:
@@ -265,6 +278,7 @@ def _tune_svm(
         _safe_progress(progress_fn, 1, 1, "Fitting manual SVM model…")
         model = _make_pipeline(params, sample_count=len(y))
         model.fit(X, y)
+        record_search(model, False, params, len(y))
         return model, params
 
     cv_folds, max_iterations, _ = dense_search_limits(
@@ -276,7 +290,7 @@ def _tune_svm(
     all_candidates = _build_param_grid(grid_params or {})
     candidates = _sample_param_candidates(
         all_candidates,
-        max_iterations=max_iterations,
+        max_iterations=len(all_candidates) if search_strategy == "exhaustive" else max_iterations,
         random_state=random_state,
     )
 
@@ -316,6 +330,12 @@ def _tune_svm(
     # Hyperparameter selection may use a bounded representative subset, but
     # the production model always consumes every valid observation.
     model.fit(X, y)
+    record_search(model, True, {key: best_params[key] for key in ("C", "gamma", "epsilon")},
+                  len(y), algorithm="grid_search" if len(candidates) == len(all_candidates) else "random_search",
+                  total=len(all_candidates), evaluated=len(candidates),
+                  folds=cv_folds, search_n=len(y_search), objective="RMSE", score=best_rmse,
+                  random_state=random_state,
+                  space={key: sorted({candidate[key] for candidate in all_candidates}) for key in ("C", "gamma", "epsilon")})
     return model, best_params
 
 
@@ -336,6 +356,7 @@ def svm_interpolation(
     random_state=20,
     n_jobs=1,
     progress_fn=None,
+    search_strategy="randomized",
 ):
     """
     Fit an SVM interpolation model and predict over the interpolation grid.
@@ -388,6 +409,7 @@ def svm_interpolation(
         grid_params=grid_params or {},
         cv_folds=cv_folds,
         max_iterations=max_iterations,
+        search_strategy=search_strategy,
         random_state=random_state,
         progress_fn=progress_fn,
     )
@@ -415,6 +437,7 @@ def svm_interpolation(
 
     return {
         "model": model,
+        "search_summary": model_search_record(model),
         "best_params": best_params,
         "train_mae": train_mae,
         "train_rmse": train_rmse,
