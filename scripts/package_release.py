@@ -72,7 +72,7 @@ def main():
     zip_time = time.gmtime(max(timestamp, 315532800))[:6]
     output = Path(args.output_dir).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    archive_path = output / 'bestfitinterpolator.zip'
+    archive_path = output / ('bestfitinterpolator_v' + version + '.zip')
     with zipfile.ZipFile(str(archive_path), 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name, data in sorted(files.items()):
             info = zipfile.ZipInfo(name, zip_time)
@@ -90,6 +90,7 @@ def main():
     artifacts = {archive_path.name: sha(archive_path.read_bytes()), MANUAL: sha(manual)}
     manifest = {
         'version': version, 'tag': 'v' + version, 'source_commit': commit,
+        'installation_archive': archive_path.name,
         'archive_root': PLUGIN + '/', 'files': len(files), 'python37_syntax_modules': modules,
         'manual_url': MANUAL_URL, 'manual_pages': verification['pages'],
         'qgis_minimum': general['qgisMinimumVersion'],

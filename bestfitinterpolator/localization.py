@@ -354,14 +354,12 @@ class LanguageController(QObject):
         row.addWidget(self.label); row.addWidget(self.combo)
         self.root.verticalLayout_root.insertLayout(0, row)
         # The Designer's static combo choices also retain their source labels.
-        import xml.etree.ElementTree as ET
-        tree = ET.parse(os.path.join(os.path.dirname(__file__), 'BestFitInterpolator_dialog_base.ui'))
-        for element in tree.findall('.//widget[@class="QComboBox"]'):
-            combo = self.root.findChild(QComboBox, element.get('name'))
+        from .designer_metadata import designer_metadata
+        for name, labels in designer_metadata()['combos'].items():
+            combo = self.root.findChild(QComboBox, name)
             if combo is None: continue
-            for index, item in enumerate(element.findall('item')):
-                value = item.find('property[@name="text"]/string')
-                if value is not None and index < combo.count(): combo.setItemData(index, value.text or '', SOURCE_ROLE)
+            for index, label in enumerate(labels):
+                if label is not None and index < combo.count(): combo.setItemData(index, label, SOURCE_ROLE)
             if combo.count(): _objects.add(combo)
         self.combo.currentIndexChanged.connect(lambda: self.request(self.combo.currentData()))
         self.timer = QTimer(self); self.timer.setInterval(250); self.timer.timeout.connect(self._finish_pending)

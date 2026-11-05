@@ -5,17 +5,15 @@ The individual V2.0 readers retain their original rounding and range convention.
 """
 from copy import deepcopy
 from functools import lru_cache
-from pathlib import Path
 from decimal import Decimal, ROUND_HALF_UP
-from xml.etree import ElementTree
+from .designer_metadata import designer_metadata
 
 
 @lru_cache(maxsize=1)
 def _defaults():
-    widgets = {w.attrib['name']: w for w in ElementTree.parse(
-        str(Path(__file__).with_name('BestFitInterpolator_dialog_base.ui'))).iter('widget')}
+    values = designer_metadata()['values']
     def value(name):
-        return float(widgets[name].find("property[@name='value']")[0].text)
+        return float(values[name])
     result = {}
     for method in ('RF', 'SVM', 'RK'):
         cast = float if method == 'SVM' else int

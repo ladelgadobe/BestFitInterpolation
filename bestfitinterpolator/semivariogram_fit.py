@@ -18,8 +18,8 @@ def model_token(model):
 
 
 def practical_range_factor(model):
-    token = model_token(model)
-    return {"spherical": 1.0, "exponential": 3.0, "gaussian": np.sqrt(3.0)}[token]
+    model_kind = model_token(model)
+    return {"spherical": 1.0, "exponential": 3.0, "gaussian": np.sqrt(3.0)}[model_kind]
 
 
 def practical_range(model, scale):
@@ -86,7 +86,7 @@ def fit_joint_wls(lags, gamma, cutoff, model, initial):
         # Three free parameters cannot be identified from fewer than three lags.
         info.update(status="insufficient_distinct_bins", converged=False)
         return tuple(float(v) for v in initial), info
-    token = model_token(model)
+    model_kind = model_token(model)
     scaled = g / amplitude
     mean_g = float(np.sum(w * scaled) / wsum)
     floor = 1e-12
@@ -96,10 +96,10 @@ def fit_joint_wls(lags, gamma, cutoff, model, initial):
         evaluations[0] += 1
         a = float(np.exp(log_scale))
         t = h / a
-        if token == "spherical":
+        if model_kind == "spherical":
             t = np.minimum(t, 1.0)
             basis = 1.5 * t - 0.5 * t ** 3
-        elif token == "gaussian":
+        elif model_kind == "gaussian":
             basis = -np.expm1(-(t * t))
         else:
             basis = -np.expm1(-t)
