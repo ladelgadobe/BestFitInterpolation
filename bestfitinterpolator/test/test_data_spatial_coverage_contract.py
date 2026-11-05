@@ -13,7 +13,9 @@ def function_source(path, name):
 
 
 def standalone_method(path, name, namespace=None):
+    from bestfitinterpolator.localization import _dialog, _combo_text
     scope = {"LOG": logging.getLogger("BestFitInterpolator")}
+    scope.update(_dialog=_dialog, _combo_text=_combo_text)
     scope.update(namespace or {})
     exec(
         compile(textwrap.dedent(function_source(path, name)), str(path), "exec"),

@@ -257,6 +257,13 @@ def _kfold_indices(n_samples, n_splits=5, shuffle=True, random_state=42):
 
 # ----------------------------- Parameter search --------------------------------
 
+try:
+    from .numerical_runtime import responsive_numerical
+except ImportError:  # standalone numerical use
+    from numerical_runtime import responsive_numerical
+
+
+@responsive_numerical
 def optimize_idw(x, y, z, k=5, progress_fn=None):
     """
     Grid-search for (p, n) using K-fold CV (MAE & SAE) and ISI selection.

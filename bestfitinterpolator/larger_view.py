@@ -1,4 +1,5 @@
 """Enlarge the current figure without recomputing or changing its display state."""
+from .localization import _ui
 from .mpl_compat import clone_figure
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout,QApplication
@@ -12,7 +13,7 @@ class LargerViewDialog(QDialog):
     def __init__(self, source_figure, parent=None, title='Larger view'):
         super().__init__(parent)
         self.setAttribute(enum_value(Qt,'WidgetAttribute','WA_DeleteOnClose'),True)
-        self.setWindowTitle(clean_display_name(title))
+        _ui(self, 'setWindowTitle', clean_display_name(title))
         self.source=source_figure
         self.source_canvas=source_figure.canvas
         self.figure=clone_figure(source_figure)

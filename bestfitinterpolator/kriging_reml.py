@@ -13,12 +13,26 @@ This module mirrors geoR::likfit(..., method = "REML") logic at a high level:
 from __future__ import annotations
 import numpy as np
 from dataclasses import dataclass
+try:
+    from .numerical_runtime import responsive_numerical
+except ImportError:  # standalone numerical use
+    try:
+        from numerical_runtime import responsive_numerical
+    except ImportError:
+        from bestfitinterpolator.numerical_runtime import responsive_numerical
 
 try:
     from scipy.optimize import minimize
+    from scipy.linalg import cho_solve
     _HAS_SCIPY = True
 except Exception:
     _HAS_SCIPY = False
+
+
+def _cholesky_solve(factor, rhs):
+    if _HAS_SCIPY:
+        return cho_solve((factor, True), rhs, check_finite=False)
+    return np.linalg.solve(factor.T, np.linalg.solve(factor, rhs))
 
 
 # ----------------------------
@@ -41,11 +55,14 @@ def _ensure_2d_coords(coords: np.ndarray) -> np.ndarray:
     return c[:, :2]
 
 
-def _design_matrix(coords: np.ndarray, degree: int) -> np.ndarray:
+def _design_matrix(coords: np.ndarray, degree: int, origin=None, scale=None) -> np.ndarray:
     x = coords[:, 0]
     y = coords[:, 1]
     if degree <= 0:
         return np.ones((coords.shape[0], 1))
+    origin = coords.mean(axis=0) if origin is None else origin
+    scale = np.maximum(coords.std(axis=0), 1.0) if scale is None else scale
+    x, y = ((coords - origin) / scale).T
     cols = [np.ones_like(x), x, y]
     if degree >= 2:
         cols += [x * x, x * y, y * y]
@@ -105,8 +122,7 @@ def _restricted_loglik(theta: np.ndarray, coords: np.ndarray, y: np.ndarray, X: 
         return 1e20
 
     def chol_solve(B: np.ndarray) -> np.ndarray:
-        v = np.linalg.solve(L, B)
-        return np.linalg.solve(L.T, v)
+        return _cholesky_solve(L, B)
 
     Ci_y = chol_solve(y)
     Ci_X = chol_solve(X)
@@ -131,6 +147,7 @@ def _restricted_loglik(theta: np.ndarray, coords: np.ndarray, y: np.ndarray, X: 
 # Fitting
 # ----------------------------
 
+@responsive_numerical
 def fit_variogram_reml(
     coords: np.ndarray,
     values: np.ndarray,
@@ -218,7 +235,7 @@ def fit_variogram_reml(
 
     C = _cov_matrix(XY, ps, a, ng, model)
     L = np.linalg.cholesky(C)
-    def chol_solve(B): v = np.linalg.solve(L, B); return np.linalg.solve(L.T, v)
+    def chol_solve(B): return _cholesky_solve(L, B)
     Ci_X = chol_solve(X)
     XtCiX = X.T @ Ci_X
     beta = np.linalg.inv(XtCiX) @ (X.T @ chol_solve(y))
@@ -230,6 +247,7 @@ def fit_variogram_reml(
 # Prediction
 # ----------------------------
 
+@responsive_numerical
 def ok_predict(
     coords,
     values,
@@ -247,7 +265,7 @@ def ok_predict(
     X = _design_matrix(XY, trend_degree)
     C = _cov_matrix(XY, ps, a, ng, model)
     L = np.linalg.cholesky(C)
-    def chol_solve(B): v = np.linalg.solve(L, B); return np.linalg.solve(L.T, v)
+    def chol_solve(B): return _cholesky_solve(L, B)
     Ci = lambda B: chol_solve(B)
     Ci_y, Ci_X = Ci(y), Ci(X)
     XtCiX = X.T @ Ci_X
@@ -262,7 +280,7 @@ def ok_predict(
     for start in range(0, total, block):
         end = min(total, start + block)
         XP_block = XP[start:end]
-        Xp = _design_matrix(XP_block, trend_degree)
+        Xp = _design_matrix(XP_block, trend_degree, XY.mean(axis=0), np.maximum(XY.std(axis=0), 1.0))
         d_cross = np.sqrt(((XY[:, None, :] - XP_block[None, :, :]) ** 2).sum(axis=2))
         K = ps * _rho(d_cross, model, a)
         pred[start:end] = Xp @ beta + K.T @ w
@@ -296,7 +314,8 @@ def _metrics(y, yhat):
     return mae, rmse, r2, ccc, rmse_pct
 
 
-def kfold_cv_ok_reml(coords, values, params, k=10, trend_degree=0):
+@responsive_numerical
+def kfold_cv_ok_reml(coords, values, params, k=10, trend_degree=0, cancelled=lambda: False):
     XY = _ensure_2d_coords(coords)
     y = np.asarray(values, float).ravel()
     n = len(y)
@@ -304,6 +323,7 @@ def kfold_cv_ok_reml(coords, values, params, k=10, trend_degree=0):
         idx = np.arange(n)
         yhat = np.zeros(n, float)
         for i in range(n):
+            if cancelled(): raise InterruptedError('REML validation cancelled')
             mask = idx != i
             pred, _ = ok_predict(XY[mask], y[mask], params, XY[[i]], return_var=False, trend_degree=trend_degree)
             yhat[i] = pred[0]
@@ -313,6 +333,7 @@ def kfold_cv_ok_reml(coords, values, params, k=10, trend_degree=0):
         folds = np.array_split(perm, k)
         yhat = np.zeros(n, float)
         for fold in folds:
+            if cancelled(): raise InterruptedError('REML validation cancelled')
             train = np.setdiff1d(np.arange(n), fold)
             pred, _ = ok_predict(XY[train], y[train], params, XY[fold], return_var=False, trend_degree=trend_degree)
             yhat[fold] = pred

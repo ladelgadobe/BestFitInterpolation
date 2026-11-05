@@ -1,4 +1,5 @@
 """Adapt existing Designer widgets without changing their controller bindings."""
+from .localization import _ui
 from qgis.PyQt.QtCore import QSize, Qt, QObject, QEvent
 from qgis.PyQt.QtWidgets import QWidget,QScrollArea,QVBoxLayout,QHBoxLayout,QTabWidget,QSizePolicy,QApplication,QLabel,QBoxLayout
 from .compat import enum_value
@@ -33,7 +34,7 @@ def refine_rk(dialog):
     if group is None or group.property('bfiRefined'): return
     group.setMaximumHeight(16777215)
     rf,kriging=dialog.grpRKRF,dialog.grpRKKriging
-    rf.setTitle('Random Forest trend'); kriging.setTitle('Residual kriging')
+    _ui(rf, 'setTitle', 'Random Forest trend'); _ui(kriging, 'setTitle', 'Residual kriging')
     for panel in (rf,kriging): panel.setProperty('bfiSection',True)
     # Keep both original parameter panels visible; advanced settings share one dialog.
     for name in ('spinRKCutoff','labelRKCutoff','spinRKLag','labelRKLagWidth',
@@ -67,22 +68,22 @@ def refine_rk(dialog):
     dialog.valRKStatus.setMinimumWidth(0)
     dialog.valRKStatus.setMinimumHeight(30)
     dialog.valRKStatus.setSizePolicy(enum_value(QSizePolicy,'Policy','Ignored'),enum_value(QSizePolicy,'Policy','Preferred'))
-    dialog.btnRKValidateVariogramModels.setText('Adjust semivariogram')
-    dialog.btnRKValidateVariogramModels.setToolTip('Adjust maximum distance, lag distance or count; preview, validate and apply residual models.')
+    _ui(dialog.btnRKValidateVariogramModels, 'setText', 'Adjust semivariogram')
+    _ui(dialog.btnRKValidateVariogramModels, 'setToolTip', 'Adjust maximum distance, lag distance or count; preview, validate and apply residual models.')
     button=dialog.btnRKApplyVariogram
     # Retain the existing signal and backend; move the same button out of the form.
     kriging.layout().removeWidget(button)
-    button.setText('Interpolate')
+    _ui(button, 'setText', 'Interpolate')
     dialog.tabRKInterpolation.layout().addWidget(button)
     dialog.groupRKDiagnostics.setMaximumWidth(16777215)
     dialog.horizontalLayoutRKDiagnosticsAndMap.setStretch(0,1)
     dialog.horizontalLayoutRKDiagnosticsAndMap.setStretch(1,2)
     for canvas in (dialog.RKMap,dialog.RKVariogram,dialog.RKImportance):
         canvas.setMinimumHeight(180)
-    dialog.tabWidgetRKDiagnostics.setTabText(0,'Semivariogram')
-    dialog.tabWidgetRKDiagnostics.setTabText(1,'Importance')
-    dialog.tabWidgetRKDiagnostics.setTabToolTip(0,'Residual semivariogram')
-    dialog.tabWidgetRKDiagnostics.setTabToolTip(1,'Random Forest variable importance')
+    _ui(dialog.tabWidgetRKDiagnostics, 'setTabText', 0,'Semivariogram')
+    _ui(dialog.tabWidgetRKDiagnostics, 'setTabText', 1,'Importance')
+    _ui(dialog.tabWidgetRKDiagnostics, 'setTabToolTip', 0,'Residual semivariogram')
+    _ui(dialog.tabWidgetRKDiagnostics, 'setTabToolTip', 1,'Random Forest variable importance')
     for page in (dialog.tabRKVariogram,dialog.tabRKImportance):
         page.setProperty('bfiScrollable',True)
     scroll_content(dialog.tabRKInterpolation)
@@ -90,7 +91,7 @@ def refine_rk(dialog):
     dialog.tabRKInterpolation.layout().addWidget(button)
     for name,text in (('labelRK_mtry','Variables per split (mtry)'),('labelRK_ntree','Trees (ntree)'),('labelRK_nodesize','Minimum node size'),('labelRKVarModel','Residual model'),('labelRKCutoff','Maximum distance')):
         label=getattr(dialog,name,None)
-        if label is not None: label.setText(text)
+        if label is not None: _ui(label, 'setText', text)
     summary=getattr(dialog,'valRKVariogramValidationSummary',None)
     if summary is not None:
         summary.setWordWrap(True); summary.setMinimumHeight(32)

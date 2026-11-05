@@ -245,7 +245,7 @@ def test_export_draw_does_not_replace_the_embedded_framework_map():
     source=Figure();source_canvas=FigureCanvas(source);layout.addWidget(source_canvas)
     source.subplots().imshow([[0.,1.],[2.,3.]],cmap='viridis');source._bfi_execution_id='test-execution'
     target=FigureCanvas(Figure());layout.addWidget(target)
-    controller=SimpleNamespace(plugin=SimpleNamespace(),state=SimpleNamespace(executed_result=SimpleNamespace(execution_id='test-execution')),
+    controller=SimpleNamespace(plugin=SimpleNamespace(_bfi_interpolation_purpose='final',_latest_produced_result=SimpleNamespace(execution_id='test-execution')),state=SimpleNamespace(executed_result=SimpleNamespace(execution_id='test-execution')),
                                interpolation_canvas=target)
     controller._copy_source_figure_to_framework_map=MethodType(FrameworkTabController._copy_source_figure_to_framework_map,controller)
     owner.resize(800,700);owner.show();events();source_canvas.draw()
@@ -256,6 +256,14 @@ def test_export_draw_does_not_replace_the_embedded_framework_map():
         assert controller.interpolation_fig is mirrored
     set_pixel_ratio(source_canvas,1.5);source_canvas.draw();events()
     assert controller.interpolation_fig is not mirrored
+    # A standalone rerun can change this same source canvas before publication
+    # replaces its execution ID. It must not change the Framework's result.
+    completed=controller.interpolation_fig
+    controller.plugin._bfi_interpolation_purpose='standalone'
+    source.axes[0].images[0].set_data([[90.,91.],[92.,93.]])
+    source_canvas.draw();events()
+    assert controller.interpolation_fig is completed
+    np.testing.assert_array_equal(completed.axes[0].images[0].get_array(),[[0.,1.],[2.,3.]])
     for iteration in range(4): events()
     target.draw()
     from bestfitinterpolator.mpl_compat import canvas_pixel_ratio

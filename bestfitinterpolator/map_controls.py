@@ -1,4 +1,5 @@
 """Shared display-only controls for Matplotlib maps and map comparisons."""
+from .localization import _combo_text, _find_text, _new, _ui
 from dataclasses import dataclass
 import numpy as np
 from qgis.PyQt.QtCore import pyqtSignal, QObject, QEvent, QSize, Qt
@@ -36,7 +37,7 @@ class SettingsButton(QToolButton):
         self.setProperty('bfiSettings',True)
         self.setIcon(action_icon('settings')); self.setIconSize(QSize(19,19))
         self.setFixedSize(30,30)
-        self.setToolTip('Visualization settings'); self.setAccessibleName('Visualization settings')
+        _ui(self, 'setToolTip', 'Visualization settings'); _ui(self, 'setAccessibleName', 'Visualization settings')
         self.clicked.connect(callback)
         canvas.installEventFilter(self)
         self.reposition()
@@ -72,17 +73,17 @@ class MapDisplayControls(QWidget):
         self.scale=QDoubleSpinBox(); self.scale.setRange(1.,1.e12); self.scale.setDecimals(0); self.scale.setValue(5000.); self.scale.setKeyboardTracking(False)
         self.form=form
         scale_row=QHBoxLayout(); scale_row.addWidget(self.scale)
-        scale_button=QPushButton("Set scale"); scale_button.clicked.connect(lambda:self.scaleRequested.emit(self.scale.value())); scale_row.addWidget(scale_button)
+        scale_button=_new(QPushButton, "Set scale"); scale_button.clicked.connect(lambda:self.scaleRequested.emit(self.scale.value())); scale_row.addWidget(scale_button)
         self.scale_button=scale_button
-        form.addRow('Scale 1 :',scale_row)
-        fit=QPushButton("Fit to layer"); fit.clicked.connect(self.fitRequested); form.addRow('',fit)
+        _ui(form, 'addRow', 'Scale 1 :',scale_row)
+        fit=_new(QPushButton, "Fit to layer"); fit.clicked.connect(self.fitRequested); _ui(form, 'addRow', '',fit)
         self.palette=QComboBox(); self.palette.setIconSize(QSize(112,16))
         for icon,name in previews: self.palette.addItem(icon,name)
-        form.addRow('Palette',self.palette)
-        self.automatic=QCheckBox("Automatic value range"); self.automatic.setChecked(True); form.addRow('',self.automatic)
+        _ui(form, 'addRow', 'Palette',self.palette)
+        self.automatic=_new(QCheckBox, "Automatic value range"); self.automatic.setChecked(True); _ui(form, 'addRow', '',self.automatic)
         self.minimum=QDoubleSpinBox(); self.maximum=QDoubleSpinBox()
         for label,spin in (("Min",self.minimum),("Max",self.maximum)):
-            spin.setRange(-1.e15,1.e15); spin.setDecimals(6); spin.setKeyboardTracking(False); form.addRow(label,spin)
+            spin.setRange(-1.e15,1.e15); spin.setDecimals(6); spin.setKeyboardTracking(False); _ui(form, 'addRow', label,spin)
         self.maximum.setValue(1.)
         self.palette.currentIndexChanged.connect(self.update_state)
         self.automatic.toggled.connect(self.update_state)
@@ -94,23 +95,23 @@ class MapDisplayControls(QWidget):
     def show_settings(self):
         dialog=getattr(self,'_settings_dialog',None)
         if not is_alive(dialog):
-            dialog=QDialog(self.window()); dialog.setWindowTitle('Visualization settings')
+            dialog=QDialog(self.window()); _ui(dialog, 'setWindowTitle', 'Visualization settings')
             layout=QVBoxLayout(dialog); layout.setContentsMargins(16,16,16,16)
             layout.addWidget(self)
-            close=QPushButton('Done'); close.clicked.connect(dialog.close); layout.addWidget(close)
+            close=_new(QPushButton, 'Done'); close.clicked.connect(dialog.close); layout.addWidget(close)
             apply_theme(dialog); dialog.resize(370,300)
             self._settings_dialog=dialog
         self.show(); dialog.show(); dialog.raise_(); dialog.activateWindow()
 
     def update_state(self,*args):
-        name=self.palette.currentText()
+        name=_combo_text(self.palette)
         self.state.palette=name if name in ('Spectral','RdYlGn') else name.lower()
         self.state.automatic=self.automatic.isChecked()
         self.state.minimum,self.state.maximum=self.minimum.value(),self.maximum.value()
         for spin in (self.minimum,self.maximum): spin.setEnabled(not self.state.automatic)
         if self.state.automatic or self.state.minimum < self.state.maximum:
-            self.setToolTip(""); self._customized=True; self.changed.emit()
-        else: self.setToolTip("Minimum must be smaller than maximum.")
+            _ui(self, 'setToolTip', ""); self._customized=True; self.changed.emit()
+        else: _ui(self, 'setToolTip', "Minimum must be smaller than maximum.")
 
 
 def scientific_colormap(name):
@@ -166,7 +167,7 @@ class MatplotlibMapDisplay(QObject):
         blocked=[widget.blockSignals(True) for widget in widgets]
         try:
             artist=numeric[0]; name=artist.get_cmap().name
-            index=controls.palette.findText(name,enum_value(Qt,'MatchFlag','MatchFixedString'))
+            index=_find_text(controls.palette, name,enum_value(Qt,'MatchFlag','MatchFixedString'))
             if index<0:
                 controls.palette.addItem(palette_icon(name),name); index=controls.palette.count()-1
             controls.palette.setCurrentIndex(index)
@@ -227,7 +228,7 @@ class MatplotlibMapDisplay(QObject):
         getter=getattr(self,"units_getter",None)
         if getter is not None: self.meters_per_unit=getter()
         if self.meters_per_unit is None or self.meters_per_unit<=0:
-            self.controls.setToolTip("Numeric scale requires a projected CRS with known linear units."); return
+            _ui(self.controls, 'setToolTip', "Numeric scale requires a projected CRS with known linear units."); return
         self.controls.state.scale=scale
         for ax in self.axes():
             bbox=ax.get_window_extent(); dpi=self.canvas.figure.dpi
@@ -254,7 +255,7 @@ def attach_map_controls(canvas):
     display=MatplotlibMapDisplay(canvas,controls,getattr(canvas,"_bfi_meters_per_unit",None))
     if not getattr(canvas,'_bfi_is_map',False):
         controls.scale.setEnabled(False); controls.scale_button.setEnabled(False)
-        controls.scale.setToolTip('Numeric map scale applies only to spatial maps.')
+        _ui(controls.scale, 'setToolTip', 'Numeric map scale applies only to spatial maps.')
     display.adopt_current()
     canvas._bfi_open_settings=controls.show_settings
     canvas._bfi_settings_button=SettingsButton(canvas,controls.show_settings)
@@ -281,7 +282,7 @@ def selected_map_units(plugin):
     """Resolve actual CRS linear units; geographic degrees have no fixed scale."""
     from qgis.core import QgsProject, QgsUnitTypes
     from osgeo import osr
-    layers=QgsProject.instance().mapLayersByName(plugin.dlg.Points.currentText())
+    layers=QgsProject.instance().mapLayersByName(_combo_text(plugin.dlg.Points))
     if not layers or not layers[0].crs().isValid() or layers[0].crs().isGeographic(): return None
     crs=osr.SpatialReference()
     if crs.SetFromUserInput(layers[0].crs().toWkt()) != 0 or not crs.IsProjected(): return None

@@ -12,7 +12,14 @@ installation with TeX available, run `latexmk -pdf main.tex` in this directory.
 The graphic search path allows images in `figures/` locally or in the Overleaf
 project root, while retaining the existing logos and framework diagrams.
 
-All plugin interface screenshots were captured from the updated plugin in
+The 51-page version 2.1 manual was compiled and reviewed in Overleaf on
+5 November 2026. The English text documents the English, Spanish and Brazilian
+Portuguese interface, Universal Kriging, model-scale conventions, uncertainty
+components, automatic Framework searches and independent workflow results.
+The existing illustrations are retained and explicitly described as earlier
+interface layouts where applicable.
+
+The retained plugin interface screenshots were captured for version 2.0 in
 QGIS 4.2.3 using the original Paulínia study inputs: 114 soil observations,
 the Clay attribute, the original boundary, ECa, elevation and NDCI, EPSG:32723,
 and 5 m output pixels. These are actual plugin calculations with unchanged

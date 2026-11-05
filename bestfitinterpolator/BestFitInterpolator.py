@@ -4,6 +4,8 @@ BestFitInterpolator.py
 Main plugin entry point and dialog orchestration.
 All code comments are in English. User-facing messages are in English.
 """
+from .localization import _message
+from .localization import _combo_text, _dialog, _find_text, _new, _tab_text, _ui
 from .theme import save_figure
 from .compat import enum_value, qt_exec
 from .theme import COLORS
@@ -197,9 +199,9 @@ class BestFitInterpolatorDialog(QDialog):
         header_layout = QHBoxLayout()
         header_layout.setSpacing(14)
         header_layout.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignTop"))
-        icon_label = QLabel(about_tab)
+        icon_label = _new(QLabel, about_tab)
         icon_label.setObjectName("lblAboutLogo")
-        icon_label.setAccessibleName("Best Fit Interpolator logo")
+        _ui(icon_label, 'setAccessibleName', "Best Fit Interpolator logo")
         logo_size = 144
         icon_label.setFixedSize(logo_size, logo_size)
         icon_label.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignCenter"))
@@ -219,15 +221,15 @@ class BestFitInterpolatorDialog(QDialog):
 
         heading_layout = QVBoxLayout()
         heading_layout.setSpacing(2)
-        title_label = QLabel(plugin_name, about_tab)
+        title_label = _new(QLabel, plugin_name, about_tab)
         title_label.setObjectName("lblAboutPluginName")
         title_label.setStyleSheet("font-size: 20px; font-weight: 600;")
-        version_label = QLabel(f"Version {version}", about_tab)
+        version_label = _new(QLabel, f"Version {version}", about_tab)
         version_label.setObjectName("lblAboutVersion")
         version_label.setStyleSheet("color: palette(mid);")
         heading_layout.addWidget(title_label)
         heading_layout.addWidget(version_label)
-        description_label = QLabel(description, about_tab)
+        description_label = _new(QLabel, description, about_tab)
         description_label.setObjectName("lblAboutDescription")
         description_label.setWordWrap(True)
         description_label.setStyleSheet("margin-top: 5px;")
@@ -236,24 +238,24 @@ class BestFitInterpolatorDialog(QDialog):
         header_layout.addStretch()
         root_layout.addLayout(header_layout)
 
-        information_group = QGroupBox("Plugin information", about_tab)
+        information_group = _new(QGroupBox, "Plugin information", about_tab)
         information_layout = QGridLayout(information_group)
         information_layout.setContentsMargins(12, 10, 12, 10)
         information_layout.setHorizontalSpacing(14)
         information_layout.setVerticalSpacing(7)
-        information_layout.addWidget(QLabel("Version:", information_group), 0, 0)
-        information_layout.addWidget(QLabel(version, information_group), 0, 1)
-        information_layout.addWidget(QLabel("Authors:", information_group), 1, 0)
-        authors_label = QLabel(authors, information_group)
+        information_layout.addWidget(_new(QLabel, "Version:", information_group), 0, 0)
+        information_layout.addWidget(_new(QLabel, version, information_group), 0, 1)
+        information_layout.addWidget(_new(QLabel, "Authors:", information_group), 1, 0)
+        authors_label = _new(QLabel, authors, information_group)
         authors_label.setWordWrap(True)
         information_layout.addWidget(authors_label, 1, 1)
-        information_layout.addWidget(QLabel("Contact:", information_group), 2, 0)
+        information_layout.addWidget(_new(QLabel, "Contact:", information_group), 2, 0)
         information_layout.addWidget(
-            QLabel(email or "Not specified", information_group),
+            _new(QLabel, email or "Not specified", information_group),
             2,
             1,
         )
-        information_layout.addWidget(QLabel("LinkedIn:", information_group), 3, 0)
+        information_layout.addWidget(_new(QLabel, "LinkedIn:", information_group), 3, 0)
         linkedin_layout = QHBoxLayout()
         linkedin_layout.setSpacing(8)
         linkedin_buttons = (
@@ -271,10 +273,10 @@ class BestFitInterpolatorDialog(QDialog):
             ),
         )
         for object_name, text, url, tooltip in linkedin_buttons:
-            button = QPushButton(text, information_group)
+            button = _new(QPushButton, text, information_group)
             button.setObjectName(object_name)
             button.setMinimumHeight(30)
-            button.setToolTip(tooltip if url else "Link not configured in metadata.txt")
+            _ui(button, 'setToolTip', tooltip if url else "Link not configured in metadata.txt")
             button.setEnabled(bool(url))
             if url:
                 button.clicked.connect(
@@ -284,16 +286,16 @@ class BestFitInterpolatorDialog(QDialog):
         information_layout.addLayout(linkedin_layout, 3, 1)
         information_layout.setColumnStretch(1, 1)
 
-        article_group = QGroupBox("Reference publication", about_tab)
+        article_group = _new(QGroupBox, "Reference publication", about_tab)
         article_layout = QVBoxLayout(article_group)
         article_layout.setContentsMargins(12, 10, 12, 10)
         article_layout.setSpacing(6)
-        reference_label = QLabel("Complete reference:", article_group)
+        reference_label = _new(QLabel, "Complete reference:", article_group)
         reference_label.setStyleSheet("font-weight: 600;")
-        article_citation_label = QLabel(article_citation, article_group)
+        article_citation_label = _new(QLabel, article_citation, article_group)
         article_citation_label.setObjectName("lblAboutArticleCitation")
         article_citation_label.setWordWrap(True)
-        citation_request_label = QLabel(
+        citation_request_label = _new(QLabel, 
             "If you use this plugin in academic work, please cite the "
             "reference article.",
             article_group,
@@ -304,10 +306,10 @@ class BestFitInterpolatorDialog(QDialog):
         article_layout.addWidget(reference_label)
         article_layout.addWidget(article_citation_label)
         article_layout.addWidget(citation_request_label)
-        article_button = QPushButton("Open reference article", article_group)
+        article_button = _new(QPushButton, "Open reference article", article_group)
         article_button.setObjectName("btnAboutArticle")
         article_button.setMinimumHeight(34)
-        article_button.setToolTip(article or "Link not configured in metadata.txt")
+        _ui(article_button, 'setToolTip', article or "Link not configured in metadata.txt")
         article_button.setEnabled(bool(article))
         if article:
             article_button.clicked.connect(
@@ -321,7 +323,7 @@ class BestFitInterpolatorDialog(QDialog):
         details_layout.addWidget(article_group, 1)
         root_layout.addLayout(details_layout)
 
-        resources_group = QGroupBox("Documentation and support", about_tab)
+        resources_group = _new(QGroupBox, "Documentation and support", about_tab)
         resources_layout = QGridLayout(resources_group)
         resources_layout.setContentsMargins(10, 10, 10, 10)
         resources_layout.setHorizontalSpacing(10)
@@ -337,10 +339,13 @@ class BestFitInterpolatorDialog(QDialog):
             ),
         )
         for index, (object_name, text, url) in enumerate(resource_buttons):
-            button = QPushButton(text, resources_group)
+            button = _new(QPushButton, text, resources_group)
             button.setObjectName(object_name)
+            # Retain these dynamically created buttons and their source labels
+            # throughout language changes and repeated About-tab visits.
+            setattr(about_tab, object_name, button)
             button.setMinimumHeight(36)
-            button.setToolTip(url or "Link not configured in metadata.txt")
+            _ui(button, 'setToolTip', url or "Link not configured in metadata.txt")
             button.setEnabled(bool(url))
             if url:
                 button.clicked.connect(
@@ -353,7 +358,7 @@ class BestFitInterpolatorDialog(QDialog):
         root_layout.addWidget(resources_group)
         root_layout.addStretch()
 
-        tabs.addTab(about_tab, "About")
+        _ui(tabs, 'addTab', about_tab, "About")
 
     def _open_external_url(self, url):
         """Open an About-page resource in the system's default application."""
@@ -362,7 +367,7 @@ class BestFitInterpolatorDialog(QDialog):
         except Exception:
             opened = False
         if not opened:
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self,
                 "Unable to open link",
                 f"The link could not be opened:\n{url}",
@@ -371,7 +376,7 @@ class BestFitInterpolatorDialog(QDialog):
     def closeEvent(self, event):
         """Confirm closure and mark the session for a clean next opening."""
         try:
-            reply = QMessageBox.question(
+            reply = _dialog(QMessageBox.question, 
                 self,
                 "Close Best Fit Interpolator",
                 "Are you sure you want to close Best Fit Interpolator? Any unsaved progress in the plugin window will be lost.",
@@ -406,12 +411,10 @@ class BestFitInterpolator:
         self.iface = PopupIfaceProxy(iface)
         self.plugin_dir = os.path.dirname(__file__)
 
-        locale = str(QSettings().value('locale/userLocale', 'en'))[0:2]
-        locale_path = os.path.join(self.plugin_dir, 'i18n', f'BestFitInterpolator_{locale}.qm')
-        if os.path.exists(locale_path):
-            self.translator = QTranslator()
-            self.translator.load(locale_path)
-            QCoreApplication.installTranslator(self.translator)
+        # Build from stable English sources; the local language controller
+        # applies the saved presentation language after all tabs are ready.
+        from .localization import _set_language
+        _set_language('en')
 
         self.actions = []
         self.menu = self.tr(u'&Best Fit Interpolator')
@@ -485,13 +488,13 @@ class BestFitInterpolator:
                    add_to_menu=True, add_to_toolbar=True, status_tip=None,
                    whats_this=None, parent=None):
         icon = QIcon(icon_path)
-        action = QAction(icon, text, parent)
+        action = _new(QAction, icon, text, parent)
         action.triggered.connect(callback)
         action.setEnabled(enabled_flag)
         if status_tip is not None:
-            action.setStatusTip(status_tip)
+            _ui(action, 'setStatusTip', status_tip)
         if whats_this is not None:
-            action.setWhatsThis(whats_this)
+            _ui(action, 'setWhatsThis', whats_this)
         if add_to_toolbar:
             self.iface.addToolBarIcon(action)
         if add_to_menu:
@@ -531,7 +534,7 @@ class BestFitInterpolator:
         path = proj.fileName()
         if path and os.path.isfile(path):
             return True
-        QMessageBox.warning(
+        _dialog(QMessageBox.warning, 
             self.iface.mainWindow(),
             "Project must be saved",
             "Please save the QGIS project before using the plugin.\n\n"
@@ -544,7 +547,7 @@ class BestFitInterpolator:
         path = proj.fileName()
         saved = bool(path and os.path.isfile(path))
         if not saved:
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self.iface.mainWindow(),
                 "Project not saved",
                 "The QGIS project is still not saved. Please save the project before using the plugin."
@@ -640,7 +643,7 @@ class BestFitInterpolator:
             tabw = tabs[0]
         target_idx = None
         for i in range(tabw.count()):
-            t = (tabw.tabText(i) or "").lower()
+            t = (_tab_text(tabw, i) or "").lower()
             if 'data' in t or 'datos' in t:
                 target_idx = i
                 break
@@ -655,9 +658,9 @@ class BestFitInterpolator:
                 return
             tabw = tabs[0]
         for i in range(tabw.count()):
-            t = tabw.tabText(i)
+            t = _tab_text(tabw, i)
             if 'interpolation' in (t or '').lower():
-                tabw.setTabText(i, 'Deterministic Interpolation')
+                _ui(tabw, 'setTabText', i, 'Deterministic Interpolation')
 
     def _connect_project_signals(self):
         """Connect to project signals so the combos refresh as layers change."""
@@ -715,37 +718,37 @@ class BestFitInterpolator:
     def _refresh_layer_combos_preserving_selection(self):
         if not hasattr(self, 'dlg') or self.dlg is None:
             return
-        old_points = self.dlg.Points.currentText()
-        old_attr = self.dlg.Points_2.currentText()
-        old_poly = self.dlg.poly.currentText()
+        old_points = _combo_text(self.dlg.Points)
+        old_attr = _combo_text(self.dlg.Points_2)
+        old_poly = _combo_text(self.dlg.poly)
         # Suppress data-change side effects while refreshing combos
         self._suppress_data_change_events = True
         try:
             self.load_layers()
-            idx_points = self.dlg.Points.findText(old_points)
+            idx_points = _find_text(self.dlg.Points, old_points)
             if idx_points >= 0:
                 self.dlg.Points.setCurrentIndex(idx_points)
                 self.update_variables()
-                idx_attr = self.dlg.Points_2.findText(old_attr)
+                idx_attr = _find_text(self.dlg.Points_2, old_attr)
                 if idx_attr >= 0:
                     self.dlg.Points_2.setCurrentIndex(idx_attr)
                     if not self._suppress_data_change_events:
                         self._update_ok_context()
-            idx_poly = self.dlg.poly.findText(old_poly)
+            idx_poly = _find_text(self.dlg.poly, old_poly)
             if idx_poly >= 0:
                 self.dlg.poly.setCurrentIndex(idx_poly)
         finally:
             self._suppress_data_change_events = False
         try:
             self._last_data_selection = (
-                self.dlg.Points.currentText(),
-                self.dlg.Points_2.currentText(),
-                self.dlg.poly.currentText(),
+                _combo_text(self.dlg.Points),
+                _combo_text(self.dlg.Points_2),
+                _combo_text(self.dlg.poly),
             )
         except Exception:  # nosec B110
             pass
         try:
-            current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
+            current_label = _tab_text(self.dlg.mainTabs, self.dlg.mainTabs.currentIndex())
             if self._is_framework_tab(current_label):
                 self._sync_framework_from_current_data()
         except Exception:  # nosec B110
@@ -909,7 +912,7 @@ class BestFitInterpolator:
             self._add_info_icon_next_to_widget(name, AUTO_CV_HELP_TEXT)
             widget = getattr(self.dlg, name, None)
             if widget is not None and hasattr(widget, "setToolTip"):
-                widget.setToolTip(AUTO_CV_HELP_TEXT)
+                _ui(widget, 'setToolTip', AUTO_CV_HELP_TEXT)
 
     def _ensure_data_profile_info_button(self) -> None:
         """Add a clickable Data-tab info icon for sample-count profile classes."""
@@ -923,13 +926,13 @@ class BestFitInterpolator:
         row_layout = QHBoxLayout(container)
         row_layout.setContentsMargins(0, 0, 0, 0)
         row_layout.setSpacing(6)
-        label = QLabel("Data profile classification", container)
+        label = _new(QLabel, "Data profile classification", container)
         label.setObjectName("lblDataProfileInfo")
-        label.setToolTip("Normal, dense, and massive profiles used by the plugin.")
+        _ui(label, 'setToolTip', "Normal, dense, and massive profiles used by the plugin.")
         row_layout.addWidget(label)
         button = QToolButton(self.dlg)
         button.setObjectName("btnDataProfileInfo")
-        button.setToolTip("Show the sample-count profile classes used by the plugin.")
+        _ui(button, 'setToolTip', "Show the sample-count profile classes used by the plugin.")
         button.setAutoRaise(True)
         button.setFocusPolicy(enum_value(Qt, "FocusPolicy", "NoFocus"))
         button.setFixedSize(22, 22)
@@ -939,9 +942,9 @@ class BestFitInterpolator:
                 button.setIcon(QIcon(icon_path))
                 button.setIconSize(button.size())
             else:
-                button.setText("i")
+                _ui(button, 'setText', "i")
         except Exception:
-            button.setText("i")
+            _ui(button, 'setText', "i")
         try:
             button.clicked.connect(self._show_data_profile_info)
         except Exception:  # nosec B110
@@ -962,8 +965,8 @@ class BestFitInterpolator:
     def _current_valid_sample_count(self) -> int:
         """Count finite values for the current Data-tab point layer and variable."""
         try:
-            points_layer_name = self.dlg.Points.currentText().strip()
-            variable_name = self.dlg.Points_2.currentText().strip()
+            points_layer_name = _combo_text(self.dlg.Points).strip()
+            variable_name = _combo_text(self.dlg.Points_2).strip()
         except Exception:
             return 0
         if not points_layer_name or not variable_name:
@@ -973,6 +976,8 @@ class BestFitInterpolator:
             return 0
         count = 0
         for feature in layers[0].getFeatures():
+            if not feature_in_analysis(self, layers[0], feature):
+                continue
             geom = feature.geometry()
             if geom is None or geom.isEmpty():
                 continue
@@ -993,7 +998,7 @@ class BestFitInterpolator:
                 f"Current selection: {sample_count:,} valid samples "
                 f"→ {dataset_scale_label(sample_count)}."
             )
-        QMessageBox.information(
+        _dialog(QMessageBox.information, 
             self.dlg,
             "Data profile classification",
             (
@@ -1003,7 +1008,7 @@ class BestFitInterpolator:
                 f"• Dense: {DENSE_SAMPLE_THRESHOLD + 1:,} to "
                 f"{MASSIVE_SAMPLE_THRESHOLD:,} valid samples.\n"
                 f"• Massive: more than {MASSIVE_SAMPLE_THRESHOLD:,} valid samples.\n\n"
-                f"{massive_data_capacity_note(sample_count if sample_count > 0 else None)}\n\n"
+                f"{massive_data_capacity_note()}\n\n"
                 f"{current}"
             ),
         )
@@ -1049,7 +1054,7 @@ class BestFitInterpolator:
         except Exception:  # nosec B110
             pass
 
-        idw_group = QGroupBox("IDW", group)
+        idw_group = _new(QGroupBox, "IDW", group)
         idw_group.setObjectName("groupIDWOptions")
         idw_group.setProperty("bfiSection", True)
         idw_layout = QGridLayout(idw_group)
@@ -1057,7 +1062,7 @@ class BestFitInterpolator:
         idw_layout.setHorizontalSpacing(6)
         idw_layout.setVerticalSpacing(4)
 
-        tps_group = QGroupBox("TPS", group)
+        tps_group = _new(QGroupBox, "TPS", group)
         tps_group.setObjectName("groupTPSOptions")
         tps_group.setProperty("bfiSection", True)
         tps_layout = QHBoxLayout(tps_group)
@@ -1076,7 +1081,7 @@ class BestFitInterpolator:
                           ("lblPower", power_tip), ("spinPower", power_tip)):
             widget = getattr(self.dlg, name, None)
             if widget is not None and hasattr(widget, "setToolTip"):
-                widget.setToolTip(tip)
+                _ui(widget, 'setToolTip', tip)
 
         if getattr(self.dlg, "radManualParams", None) is not None:
             idw_layout.addWidget(self.dlg.radManualParams, 0, 0, 1, 3)
@@ -1118,7 +1123,7 @@ class BestFitInterpolator:
         value = getattr(self.dlg, value_name, None)
         if label is not None:
             try:
-                label.setText(label_text)
+                _ui(label, 'setText', label_text)
                 grid.addWidget(label, row, 0, 1, 1)
             except Exception:  # nosec B110
                 pass
@@ -1186,7 +1191,7 @@ class BestFitInterpolator:
             widget = getattr(self.dlg, name, None)
             if widget is not None and hasattr(widget, "setText"):
                 try:
-                    widget.setText("--")
+                    _ui(widget, 'setText', "--")
                 except Exception:  # nosec B110
                     pass
 
@@ -1545,9 +1550,9 @@ class BestFitInterpolator:
             def _show_menu(pos):
                 try:
                     menu = QMenu(self.dlg)
-                    act_view = menu.addAction("View larger view")
-                    act_copy = menu.addAction("Copy graph")
-                    act_save = menu.addAction("Save graph")
+                    act_view = _ui(menu, 'addAction', "View larger view")
+                    act_copy = _ui(menu, 'addAction', "Copy graph")
+                    act_save = _ui(menu, 'addAction', "Save graph")
                     chosen = qt_exec(menu, canvas.mapToGlobal(pos))
                     if chosen == act_view:
                         self._show_larger_graph(fig, default_prefix)
@@ -1556,11 +1561,11 @@ class BestFitInterpolator:
                     elif chosen == act_save:
                         suggested_dir = self._ensure_output_dir() or os.path.expanduser("~")
                         suggested = os.path.join(suggested_dir, f"{default_prefix}.png")
-                        path, _ = QFileDialog.getSaveFileName(self.dlg, "Save graph", suggested, "PNG Images (*.png)")
+                        path, _ = _dialog(QFileDialog.getSaveFileName, self.dlg, "Save graph", suggested, "PNG Images (*.png)")
                         if path:
                             save_figure(fig, path, dpi=300, bbox_inches='tight')
                             try:
-                                self.iface.messageBar().pushMessage("Saved", f"PNG saved to: {path}", level=0)
+                                _message(self.iface.messageBar().pushMessage, "Saved", f"PNG saved to: {path}", level=0)
                             except Exception:  # nosec B110
                                 pass
                 except Exception:  # nosec B110
@@ -1594,12 +1599,12 @@ class BestFitInterpolator:
             pixmap.loadFromData(buf.getvalue(), "PNG")
             QApplication.clipboard().setPixmap(pixmap)
             try:
-                self.iface.messageBar().pushMessage("Copied", "Graph copied to clipboard.", level=0)
+                _message(self.iface.messageBar().pushMessage, "Copied", "Graph copied to clipboard.", level=0)
             except Exception:  # nosec B110
                 pass
         except Exception as exc:
             try:
-                QMessageBox.warning(self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
+                _dialog(QMessageBox.warning, self.dlg, "Copy graph", f"Could not copy graph:\n{exc}")
             except Exception:  # nosec B110
                 pass
 
@@ -1729,7 +1734,7 @@ class BestFitInterpolator:
 
             self._mark_temporary_layer(raster_layer, out_path)
             QgsProject.instance().addMapLayer(raster_layer)
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Regression Kriging",
                 f"RK raster created: {out_path}",
                 level=0,
@@ -1737,7 +1742,7 @@ class BestFitInterpolator:
             return out_path
         except Exception as e:
             try:
-                self.iface.messageBar().pushWarning("Regression Kriging", f"Failed to export RK raster: {e}")
+                _message(self.iface.messageBar().pushWarning, "Regression Kriging", f"Failed to export RK raster: {e}")
             except Exception:  # nosec B110
                 pass
             return None
@@ -1778,13 +1783,13 @@ class BestFitInterpolator:
 
         self.reset_plugin_state()
         self.load_layers()
-        layers=QgsProject.instance().mapLayersByName(self.dlg.Points.currentText())
+        layers=QgsProject.instance().mapLayersByName(_combo_text(self.dlg.Points))
         self._watch_input_layer(layers[0] if layers else None)
         try:
             self._last_data_selection = (
-                self.dlg.Points.currentText(),
-                self.dlg.Points_2.currentText(),
-                self.dlg.poly.currentText(),
+                _combo_text(self.dlg.Points),
+                _combo_text(self.dlg.Points_2),
+                _combo_text(self.dlg.poly),
             )
         except Exception:  # nosec B110
             pass
@@ -1831,7 +1836,7 @@ class BestFitInterpolator:
             self.ml_ctrl.parent_plugin = self
         except Exception as e:
             try:
-                self.iface.messageBar().pushWarning("Machine Learning", f"Failed to initialize ML tab: {e}")
+                _message(self.iface.messageBar().pushWarning, "Machine Learning", f"Failed to initialize ML tab: {e}")
             except Exception:  # nosec B110
                 pass
 
@@ -1848,7 +1853,7 @@ class BestFitInterpolator:
         except Exception as e:
             self.rk_ctrl = None
             try:
-                self.iface.messageBar().pushWarning("Regression Kriging", f"Failed to initialize RK tab: {e}")
+                _message(self.iface.messageBar().pushWarning, "Regression Kriging", f"Failed to initialize RK tab: {e}")
             except Exception:  # nosec B110
                 pass
 
@@ -1860,13 +1865,13 @@ class BestFitInterpolator:
                 self.framework_ctrl = FrameworkTabController(self.dlg, plugin=self)
             elif _FRAMEWORK_IMPORT_ERROR:
                 try:
-                    self.iface.messageBar().pushWarning("Framework", f"Framework tab is not available: {_FRAMEWORK_IMPORT_ERROR}")
+                    _message(self.iface.messageBar().pushWarning, "Framework", f"Framework tab is not available: {_FRAMEWORK_IMPORT_ERROR}")
                 except Exception:  # nosec B110
                     pass
         except Exception as e:
             self.framework_ctrl = None
             try:
-                self.iface.messageBar().pushWarning("Framework", f"Failed to initialize Framework tab: {e}")
+                _message(self.iface.messageBar().pushWarning, "Framework", f"Failed to initialize Framework tab: {e}")
             except Exception:  # nosec B110
                 pass
 
@@ -1892,12 +1897,16 @@ class BestFitInterpolator:
         from .ui_refinement import refine_main_dialog,refresh_info_labels
         refine_main_dialog(self.dlg)
         refresh_info_labels(self.dlg)
+        from .localization import LanguageController
+        self.language_ctrl = LanguageController(self)
         self.dlg.show()
 
     def _on_dialog_closed(self,*args):
         """Close session-owned windows and start from Data on the next opening."""
         if getattr(self,'_reset_on_reopen',False): return
         self._reset_on_reopen=True
+        if getattr(self, 'language_ctrl', None) is not None:
+            self.language_ctrl.dispose()
         self._disconnect_input_layer()
         self._disconnect_project_signals()
         if self.ok_ctrl is not None: self.ok_ctrl.dispose()
@@ -1919,9 +1928,9 @@ class BestFitInterpolator:
         self._last_interpolation_figure=None
         from .diagnostics_ui import install_diagnostics
         install_diagnostics(self)
-        self.dlg.Points.clear();    self.dlg.Points.addItem("")
-        self.dlg.Points_2.clear();  self.dlg.Points_2.addItem("")
-        self.dlg.poly.clear();      self.dlg.poly.addItem("")
+        self.dlg.Points.clear();    _ui(self.dlg.Points, 'addItem', "")
+        self.dlg.Points_2.clear();  _ui(self.dlg.Points_2, 'addItem', "")
+        self.dlg.poly.clear();      _ui(self.dlg.poly, 'addItem', "")
         self._last_data_selection = (None, None, None)
         self._last_det_interpolation = None
         self._last_ok_interpolation = None
@@ -1932,7 +1941,7 @@ class BestFitInterpolator:
             try:
                 self.dlg.manualNInput.setValue(12)
             except (AttributeError, TypeError):
-                self.dlg.manualNInput.setText("12")
+                _ui(self.dlg.manualNInput, 'setText', "12")
         if hasattr(self.dlg, 'manualPInput'):
             try:
                 self.dlg.manualPInput.setValue(2.0)
@@ -1946,9 +1955,9 @@ class BestFitInterpolator:
         self._reset_moran_index_label()
         self._reset_data_crs_label()
         layers = QgsProject.instance().mapLayers().values()
-        self.dlg.Points.clear();   self.dlg.Points.addItem("")
-        self.dlg.Points_2.clear(); self.dlg.Points_2.addItem("")
-        self.dlg.poly.clear();     self.dlg.poly.addItem("")
+        self.dlg.Points.clear();   _ui(self.dlg.Points, 'addItem', "")
+        self.dlg.Points_2.clear(); _ui(self.dlg.Points_2, 'addItem', "")
+        self.dlg.poly.clear();     _ui(self.dlg.poly, 'addItem', "")
         added_points = set(); added_polygons = set()
         for layer in layers:
             if isinstance(layer, QgsRasterLayer):
@@ -1963,8 +1972,8 @@ class BestFitInterpolator:
                         self.dlg.poly.addItem(layer.name()); added_polygons.add(layer.name())
 
     def update_variables(self):
-        points_layer_name = self.dlg.Points.currentText()
-        self.dlg.Points_2.clear(); self.dlg.Points_2.addItem("")
+        points_layer_name = _combo_text(self.dlg.Points)
+        self.dlg.Points_2.clear(); _ui(self.dlg.Points_2, 'addItem', "")
         if not points_layer_name:
             return
         layers = QgsProject.instance().mapLayersByName(points_layer_name)
@@ -1976,7 +1985,7 @@ class BestFitInterpolator:
             for field in points_layer.fields():
                 self.dlg.Points_2.addItem(field.name())
         try:
-            current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
+            current_label = _tab_text(self.dlg.mainTabs, self.dlg.mainTabs.currentIndex())
             if self._is_geostatistics_tab(current_label):
                 if self.dlg.Points_2.currentIndex() <= 0 and self.dlg.Points_2.count() > 1:
                     self.dlg.Points_2.setCurrentIndex(1)
@@ -1987,7 +1996,7 @@ class BestFitInterpolator:
     def _on_variable_changed_for_kriging(self):
         """If the Geostatistics tab is active, update its context when the variable changes."""
         tab_widget = self.dlg.mainTabs
-        current_label = tab_widget.tabText(tab_widget.currentIndex())
+        current_label = _tab_text(tab_widget, tab_widget.currentIndex())
         if self._is_geostatistics_tab(current_label):
             self._update_ok_context()
         if self._is_framework_tab(current_label):
@@ -2018,14 +2027,14 @@ class BestFitInterpolator:
         if getattr(self, "_suppress_data_change_events", False):
             return
 
-        points_layer_name = self.dlg.Points.currentText()
-        z_field = self.dlg.Points_2.currentText()
+        points_layer_name = _combo_text(self.dlg.Points)
+        z_field = _combo_text(self.dlg.Points_2)
         if not points_layer_name or not z_field:
             return
 
         if OKDispatcherController is None:
             detail = _OK_DISPATCHER_IMPORT_ERROR or "Missing ok_dispatcher.py or one of its dependencies."
-            self.iface.messageBar().pushCritical("Kriging", f"OKDispatcherController not available: {detail}")
+            _message(self.iface.messageBar().pushCritical, "Kriging", f"OKDispatcherController not available: {detail}")
             return
 
         if self.ok_ctrl is None:
@@ -2038,7 +2047,7 @@ class BestFitInterpolator:
                 if hasattr(self.dlg, 'tabKriging') and self.dlg.tabKriging is not None:
                     self.dlg.tabKriging.setEnabled(True)
             except Exception as e:
-                self.iface.messageBar().pushWarning("Kriging", f"Failed to initialize Kriging dispatcher: {e}")
+                _message(self.iface.messageBar().pushWarning, "Kriging", f"Failed to initialize Kriging dispatcher: {e}")
                 self.ok_ctrl = None
                 return
 
@@ -2048,7 +2057,7 @@ class BestFitInterpolator:
         self._watch_input_layer(layers[0])
         try:
             if layers[0].fields().indexOf(str(z_field)) < 0:
-                self.iface.messageBar().pushWarning(
+                _message(self.iface.messageBar().pushWarning, 
                     "Kriging",
                     "The selected Data-tab variable is not available in the selected point layer. Reload the Data tab selection.",
                 )
@@ -2070,15 +2079,15 @@ class BestFitInterpolator:
         if self.framework_ctrl is None or not hasattr(self, 'dlg') or self.dlg is None:
             return
         try:
-            current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
+            current_label = _tab_text(self.dlg.mainTabs, self.dlg.mainTabs.currentIndex())
             if not self._is_framework_tab(current_label):
                 return
         except Exception:
             return
 
-        points_layer_name = self.dlg.Points.currentText().strip() if hasattr(self.dlg, 'Points') else ""
-        variable_name = self.dlg.Points_2.currentText().strip() if hasattr(self.dlg, 'Points_2') else ""
-        polygon_name = self.dlg.poly.currentText().strip() if hasattr(self.dlg, 'poly') else ""
+        points_layer_name = _combo_text(self.dlg.Points).strip() if hasattr(self.dlg, 'Points') else ""
+        variable_name = _combo_text(self.dlg.Points_2).strip() if hasattr(self.dlg, 'Points_2') else ""
+        polygon_name = _combo_text(self.dlg.poly).strip() if hasattr(self.dlg, 'poly') else ""
         pixel_size = self._get_pixel_size(default=0.01)
 
         if not points_layer_name or not variable_name:
@@ -2143,7 +2152,7 @@ class BestFitInterpolator:
             return
 
         tab_widget = self.dlg.mainTabs
-        current_text = tab_widget.tabText(index).lower()
+        current_text = _tab_text(tab_widget, index).lower()
 
         # When enter to Deterministic interpolation
         try:
@@ -2211,13 +2220,13 @@ class BestFitInterpolator:
         """If no points layer/variable selected, pick the first available ones to enable Kriging init."""
         # Points layer
         try:
-            if hasattr(self.dlg, 'Points') and (not self.dlg.Points.currentText()):
+            if hasattr(self.dlg, 'Points') and (not _combo_text(self.dlg.Points)):
                 # Find first point layer in project
                 for lyr in QgsProject.instance().mapLayers().values():
                     if isinstance(lyr, QgsMapLayer):
                         gt = lyr.geometryType()
                         if gt == geometry_type("Point") or (QgsWkbTypes.isMultiType(lyr.wkbType()) and gt == geometry_type("Point")):
-                            idx = self.dlg.Points.findText(lyr.name())
+                            idx = _find_text(self.dlg.Points, lyr.name())
                             if idx >= 0:
                                 self.dlg.Points.setCurrentIndex(idx)
                                 break
@@ -2227,7 +2236,7 @@ class BestFitInterpolator:
             pass
         # Variable (field)
         try:
-            if hasattr(self.dlg, 'Points_2') and (not self.dlg.Points_2.currentText()):
+            if hasattr(self.dlg, 'Points_2') and (not _combo_text(self.dlg.Points_2)):
                 if self.dlg.Points_2.count() > 1:
                     # Index 0 is empty string; choose first real field
                     self.dlg.Points_2.setCurrentIndex(1)
@@ -2247,8 +2256,8 @@ class BestFitInterpolator:
         if removed > 0:
             try:
                 warning_key = (
-                    self.dlg.Points.currentText(),
-                    self.dlg.Points_2.currentText(),
+                    _combo_text(self.dlg.Points),
+                    _combo_text(self.dlg.Points_2),
                 )
             except Exception:
                 warning_key = ("__unscoped__", "__unscoped__")
@@ -2260,7 +2269,7 @@ class BestFitInterpolator:
                 # Mark it before opening the modal window so nested Qt events
                 # cannot display the same warning again.
                 shown.add(warning_key)
-                self.iface.messageBar().pushMessage(
+                _message(self.iface.messageBar().pushMessage, 
                     "Warning", f"Removed {removed} rows with incomplete or invalid data.", level=1
                 )
         return filtered_coords, filtered_values
@@ -2284,7 +2293,7 @@ class BestFitInterpolator:
         return x[keep], y[keep], z[keep], duplicate_rows, duplicate_groups
 
     def _confirm_tps_duplicate_handling(self, duplicate_rows, duplicate_groups):
-        reply = QMessageBox.question(
+        reply = _dialog(QMessageBox.question, 
             self.dlg,
             "TPS duplicate locations",
             (
@@ -2305,13 +2314,13 @@ class BestFitInterpolator:
             return np.asarray(x, dtype=float).ravel(), np.asarray(y, dtype=float).ravel(), np.asarray(z, dtype=float).ravel()
 
         if not self._confirm_tps_duplicate_handling(duplicate_rows, duplicate_groups):
-            self.iface.messageBar().pushWarning(
+            _message(self.iface.messageBar().pushWarning, 
                 context_title,
                 "TPS canceled because duplicate locations were not accepted.",
             )
             return None
 
-        self.iface.messageBar().pushMessage(
+        _message(self.iface.messageBar().pushMessage, 
             context_title,
             (
                 f"Using {z2.size} unique locations for TPS; "
@@ -2351,7 +2360,7 @@ class BestFitInterpolator:
     def _get_last_det_interpolation_for_validation(self):
         state = getattr(self, "_last_det_interpolation", None)
         if not state:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Validation",
                 "Run deterministic interpolation first, then run validation.",
                 level=2,
@@ -2394,7 +2403,7 @@ class BestFitInterpolator:
     def _get_last_ok_interpolation_for_validation(self):
         state = getattr(self, "_last_ok_interpolation", None)
         if not state:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Kriging validation",
                 "Run Ordinary Kriging interpolation first, then run validation.",
                 level=2,
@@ -2409,9 +2418,9 @@ class BestFitInterpolator:
         """
         try:
             current = (
-                self.dlg.Points.currentText(),
-                self.dlg.Points_2.currentText(),
-                self.dlg.poly.currentText(),
+                _combo_text(self.dlg.Points),
+                _combo_text(self.dlg.Points_2),
+                _combo_text(self.dlg.poly),
             )
         except Exception:
             return
@@ -2428,7 +2437,7 @@ class BestFitInterpolator:
             self._reset_ok_validation_canvas()
             framework_active = False
             try:
-                current_label = self.dlg.mainTabs.tabText(self.dlg.mainTabs.currentIndex())
+                current_label = _tab_text(self.dlg.mainTabs, self.dlg.mainTabs.currentIndex())
                 framework_active = self._is_framework_tab(current_label)
                 if self._is_geostatistics_tab(current_label):
                     self._update_ok_context()
@@ -2471,6 +2480,42 @@ class BestFitInterpolator:
             timer.timeout.connect(self._refresh_after_input_edit); self._input_edit_timer=timer
         timer.start(200)
 
+    def _on_analysis_mask_changed(self, layer_id, field_name):
+        """Invalidate all dependent results after an effective Keep/Exclude/Reset change."""
+        layers = QgsProject.instance().mapLayersByName(_combo_text(self.dlg.Points))
+        if not layers or layers[0].id() != layer_id or _combo_text(self.dlg.Points_2) != field_name:
+            return
+        # Open semivariogram windows own captured arrays and background fits.
+        # Close them before resetting caches so their old populations cannot apply.
+        from .semivariogram_dialog import SemivariogramSettingsDialog
+        from .framework_sdi_dialog import FrameworkSDIDialog
+        for window in self.dlg.findChildren(QDialog):
+            if isinstance(window, (SemivariogramSettingsDialog, FrameworkSDIDialog)):
+                for owner in [window] + window.findChildren(QDialog):
+                    for task in tuple(getattr(owner, "_bfi_jobs", ())):
+                        task.cancel()
+                window.close()
+        self._last_det_interpolation = self._last_ok_interpolation = None
+        self._last_interpolation_result = self._last_interpolation_figure = None
+        self._latest_produced_result = None
+        self._moran_cache.clear()
+        self._clear_all_plots(preserve_covariates=True)
+        self._clear_ok_validation_outputs()
+        active = getattr(self.ok_ctrl, "_active", None)
+        if active is not None:
+            timer = getattr(active, "_rebin_timer", None)
+            if timer is not None:
+                timer.stop()
+            active._baseline_initial = active._baseline_last = active._init_params = None
+            active._user_variogram_overrides = False
+            active._model_validation_results = []
+            active._exp_lags = active._exp_gamma = None
+            active._semivariogram_stale = True
+        self._update_ok_context()
+        active = getattr(self.ok_ctrl, "_active", None)
+        if active is not None and self._current_valid_sample_count() >= 5:
+            active.calculate_and_plot_experimental(initial_load=True)
+
     def _refresh_after_input_edit(self):
         """Invalidate model snapshots when the same selected layer is edited."""
         if not is_alive(getattr(self,"dlg",None)): return
@@ -2507,7 +2552,7 @@ class BestFitInterpolator:
         """Reset the Moran index label on the Data tab."""
         try:
             if hasattr(self.dlg, "lblMoranIndexValue") and self.dlg.lblMoranIndexValue is not None:
-                self.dlg.lblMoranIndexValue.setText("-")
+                _ui(self.dlg.lblMoranIndexValue, 'setText', "-")
         except Exception:  # nosec B110
             pass
 
@@ -2515,7 +2560,7 @@ class BestFitInterpolator:
         """Reset the Data tab CRS label."""
         try:
             if hasattr(self.dlg, "lblDataCrsValue") and self.dlg.lblDataCrsValue is not None:
-                self.dlg.lblDataCrsValue.setText("CRS:")
+                _ui(self.dlg.lblDataCrsValue, 'setText', "CRS:")
         except Exception:  # nosec B110
             pass
 
@@ -2560,7 +2605,7 @@ class BestFitInterpolator:
                 return
             crs_name = self._crs_display_name(crs)
             if hasattr(self.dlg, "lblDataCrsValue") and self.dlg.lblDataCrsValue is not None:
-                self.dlg.lblDataCrsValue.setText(f"CRS: {crs_name}")
+                _ui(self.dlg.lblDataCrsValue, 'setText', f"CRS: {crs_name}")
             if not self._crs_uses_meter_units(crs):
                 try:
                     key = f"{layer.id()}::{crs.authid()}"
@@ -2568,7 +2613,7 @@ class BestFitInterpolator:
                     key = crs_name
                 if key != getattr(self, "_last_planar_crs_warning_key", None):
                     self._last_planar_crs_warning_key = key
-                    QMessageBox.warning(
+                    _dialog(QMessageBox.warning, 
                         self.dlg,
                         "Metric CRS required",
                         "The selected point layer CRS does not use meter units.\n\n"
@@ -2597,9 +2642,9 @@ class BestFitInterpolator:
                 "diagnostics or interpolation can be trusted."
             )
             if critical:
-                QMessageBox.critical(self.dlg, f"{context} blocked", message)
+                _dialog(QMessageBox.critical, self.dlg, f"{context} blocked", message)
                 return False
-            QMessageBox.warning(self.dlg, "CRS warning", message)
+            _dialog(QMessageBox.warning, self.dlg, "CRS warning", message)
             return False
 
         if point_crs == polygon_crs:
@@ -2615,7 +2660,7 @@ class BestFitInterpolator:
             "Data diagnostics, Framework decisions, or interpolation."
         )
         if critical:
-            QMessageBox.critical(self.dlg, f"{context} blocked", message)
+            _dialog(QMessageBox.critical, self.dlg, f"{context} blocked", message)
             return False
 
         try:
@@ -2632,7 +2677,7 @@ class BestFitInterpolator:
         if warning_key not in shown:
             shown.add(warning_key)
             self._spatial_coverage_warning_keys = shown
-            QMessageBox.warning(self.dlg, "CRS mismatch", message)
+            _dialog(QMessageBox.warning, self.dlg, "CRS mismatch", message)
         return False
 
     def _set_moran_index_label(self, moran_i, pattern=None, p_value=None):
@@ -2642,7 +2687,7 @@ class BestFitInterpolator:
                 return
 
             if moran_i is None or not np.isfinite(moran_i):
-                self.dlg.lblMoranIndexValue.setText("-")
+                _ui(self.dlg.lblMoranIndexValue, 'setText', "-")
                 return
 
             txt = f"Moran's Index: {float(moran_i):.4f}"
@@ -2655,7 +2700,7 @@ class BestFitInterpolator:
             if pattern:
                 txt += f" ({pattern})"
 
-            self.dlg.lblMoranIndexValue.setText(txt)
+            _ui(self.dlg.lblMoranIndexValue, 'setText', txt)
         except Exception:  # nosec B110
             pass
 
@@ -2852,7 +2897,7 @@ class BestFitInterpolator:
             if warning_key not in shown:
                 shown.add(warning_key)
                 self._spatial_coverage_warning_keys = shown
-                QMessageBox.warning(
+                _dialog(QMessageBox.warning, 
                     self.dlg,
                     "Spatial coverage check",
                     "The spatial relationship between the sample points and polygon "
@@ -2893,7 +2938,7 @@ class BestFitInterpolator:
                 f"{outside} of {total} valid sample {noun} outside "
                 "the selected polygon."
             )
-        QMessageBox.warning(
+        _dialog(QMessageBox.warning, 
             self.dlg,
             "Points outside polygon",
             detail
@@ -2930,7 +2975,7 @@ class BestFitInterpolator:
                     and polygon_crs.isValid()
                     and point_crs != polygon_crs
                 ):
-                    QMessageBox.critical(
+                    _dialog(QMessageBox.critical, 
                         self.dlg,
                         f"{context} blocked",
                         "The point and polygon layers use different coordinate reference systems.",
@@ -2946,7 +2991,7 @@ class BestFitInterpolator:
                 variable_name,
             )
         except Exception as exc:
-            QMessageBox.critical(
+            _dialog(QMessageBox.critical, 
                 self.dlg,
                 f"{context} blocked",
                 "Spatial coverage could not be verified, so interpolation was "
@@ -2968,7 +3013,7 @@ class BestFitInterpolator:
                 f"None of the {total} valid sample points fall inside the "
                 "selected polygon."
             )
-        QMessageBox.critical(
+        _dialog(QMessageBox.critical, 
             self.dlg,
             f"{context} blocked",
             detail
@@ -2980,9 +3025,9 @@ class BestFitInterpolator:
     def _validate_current_interpolation_coverage(self, context="Interpolation"):
         """Resolve the current Data selections and run the blocking check."""
         try:
-            points_name = self.dlg.Points.currentText().strip()
-            polygon_name = self.dlg.poly.currentText().strip()
-            variable_name = self.dlg.Points_2.currentText().strip()
+            points_name = _combo_text(self.dlg.Points).strip()
+            polygon_name = _combo_text(self.dlg.poly).strip()
+            variable_name = _combo_text(self.dlg.Points_2).strip()
         except Exception:
             return True
         if not points_name or not polygon_name or not variable_name:
@@ -3001,13 +3046,13 @@ class BestFitInterpolator:
 
     def plot_map_tab1(self):
         self._ensure_canvases_attached()
-        points_layer_name = self.dlg.Points.currentText()
-        polygon_layer_name = self.dlg.poly.currentText()
-        variable_name = self.dlg.Points_2.currentText()
+        points_layer_name = _combo_text(self.dlg.Points)
+        polygon_layer_name = _combo_text(self.dlg.poly)
+        variable_name = _combo_text(self.dlg.Points_2)
         if not polygon_layer_name:
             self._reset_moran_index_label()
             self._reset_data_crs_label()
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self.dlg,
                 "Polygon required",
                 "Please load and select a polygon layer in the Data tab.",
@@ -3016,14 +3061,14 @@ class BestFitInterpolator:
         if not points_layer_name or not variable_name:
             self._reset_moran_index_label()
             self._reset_data_crs_label()
-            self.iface.messageBar().pushMessage("Error","Please select a point layer, polygon layer, and variable.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error","Please select a point layer, polygon layer, and variable.", level=3)
             return
         points_matches = QgsProject.instance().mapLayersByName(points_layer_name)
         polygon_matches = QgsProject.instance().mapLayersByName(polygon_layer_name)
         if not polygon_matches:
             self._reset_moran_index_label()
             self._reset_data_crs_label()
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self.dlg,
                 "Polygon required",
                 "The selected polygon layer is not loaded in QGIS. Please load it and try again.",
@@ -3032,7 +3077,7 @@ class BestFitInterpolator:
         if not points_matches:
             self._reset_moran_index_label()
             self._reset_data_crs_label()
-            self.iface.messageBar().pushMessage("Error","Selected point layer is not loaded in QGIS.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error","Selected point layer is not loaded in QGIS.", level=3)
             return
         points_layer = points_matches[0]
         polygon_layer = polygon_matches[0]
@@ -3058,7 +3103,7 @@ class BestFitInterpolator:
                     polygon_coords.extend([(pt.x(), pt.y()) for pt in ring])
         if not polygon_coords:
             self._reset_moran_index_label()
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self.dlg,
                 "Invalid polygon",
                 "No valid coordinates were found in the selected polygon layer.",
@@ -3080,7 +3125,7 @@ class BestFitInterpolator:
         points_coords, variable_values = self.filter_incomplete_data(points_coords, variable_values)
         if not points_coords or not variable_values:
             self._reset_moran_index_label()
-            self.iface.messageBar().pushMessage("Error","No valid points or values found after filtering.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error","No valid points or values found after filtering.", level=3)
             return
 
         self._warn_if_points_outside_polygon(
@@ -3221,31 +3266,31 @@ class BestFitInterpolator:
     def _update_metrics_labels(self, rmse_value, lccc_value,
                                rmse_pct=None, r2=None, mae=None, pearson_r=None):
         if hasattr(self.dlg, "valRMSE"):
-            self.dlg.valRMSE.setText(f"{rmse_value:.3f}" if np.isfinite(rmse_value) else "\u2014")
+            _ui(self.dlg.valRMSE, 'setText', f"{rmse_value:.3f}" if np.isfinite(rmse_value) else "\u2014")
         if hasattr(self.dlg, "valLCCC"):
-            self.dlg.valLCCC.setText(f"{lccc_value:.3f}" if np.isfinite(lccc_value) else "\u2014")
+            _ui(self.dlg.valLCCC, 'setText', f"{lccc_value:.3f}" if np.isfinite(lccc_value) else "\u2014")
         if hasattr(self.dlg, "valRMSEpct"):
-            self.dlg.valRMSEpct.setText(f"{rmse_pct:.2f}%" if (rmse_pct is not None and np.isfinite(rmse_pct)) else "\u2014")
+            _ui(self.dlg.valRMSEpct, 'setText', f"{rmse_pct:.2f}%" if (rmse_pct is not None and np.isfinite(rmse_pct)) else "\u2014")
         if hasattr(self.dlg, "valR2"):
-            self.dlg.valR2.setText(f"{r2:.3f}" if (r2 is not None and np.isfinite(r2)) else "\u2014")
+            _ui(self.dlg.valR2, 'setText', f"{r2:.3f}" if (r2 is not None and np.isfinite(r2)) else "\u2014")
         if hasattr(self.dlg, "valMAE"):
-            self.dlg.valMAE.setText(f"{mae:.3f}" if (mae is not None and np.isfinite(mae)) else "\u2014")
+            _ui(self.dlg.valMAE, 'setText', f"{mae:.3f}" if (mae is not None and np.isfinite(mae)) else "\u2014")
         if hasattr(self.dlg, "valPearsonR"):
-            self.dlg.valPearsonR.setText(f"{pearson_r:.3f}" if (pearson_r is not None and np.isfinite(pearson_r)) else "\u2014")
+            _ui(self.dlg.valPearsonR, 'setText', f"{pearson_r:.3f}" if (pearson_r is not None and np.isfinite(pearson_r)) else "\u2014")
 
         # Mirror into valRMSE_2 if present (extra RMSE%)
         if hasattr(self.dlg, "valRMSE_2"):
             if rmse_pct is not None and np.isfinite(rmse_pct):
-                self.dlg.valRMSE_2.setText(f"{rmse_pct:.2f}%")
+                _ui(self.dlg.valRMSE_2, 'setText', f"{rmse_pct:.2f}%")
             else:
-                self.dlg.valRMSE_2.setText("\u2014")
+                _ui(self.dlg.valRMSE_2, 'setText', "\u2014")
 
     def _clear_ok_validation_outputs(self):
         for name in ("valOKRMSE", "valOKRMSEpct", "valOKLCCC", "valOKR2", "valOKMAE", "valOKPearsonR"):
             try:
                 widget = getattr(self.dlg, name, None)
                 if widget is not None and hasattr(widget, "setText"):
-                    widget.setText("--")
+                    _ui(widget, 'setText', "--")
             except Exception:  # nosec B110
                 pass
         try:
@@ -3327,7 +3372,7 @@ class BestFitInterpolator:
 
         canvas.draw_idle()
 
-    def _clear_all_plots(self, reset_framework: bool = True):
+    def _clear_all_plots(self, reset_framework: bool = True, preserve_covariates: bool = False):
         """Clear interpolation, validation, and kriging plots when data/variable changes."""
         # Deterministic canvases
         try:
@@ -3360,7 +3405,9 @@ class BestFitInterpolator:
         except Exception:  # nosec B110
             pass
         try:
-            if self.ml_ctrl is not None and hasattr(self.ml_ctrl, "reset_for_data_change"):
+            if self.ml_ctrl is not None and preserve_covariates:
+                self.ml_ctrl.reset_for_analysis_change()
+            elif self.ml_ctrl is not None and hasattr(self.ml_ctrl, "reset_for_data_change"):
                 self.ml_ctrl.reset_for_data_change()
             elif self.ml_ctrl is not None and hasattr(self.ml_ctrl, "clear_plots"):
                 self.ml_ctrl.clear_plots()
@@ -3419,7 +3466,7 @@ class BestFitInterpolator:
                 training_data.get("z", []),
             )
         except Exception as exc:
-            QMessageBox.warning(
+            _dialog(QMessageBox.warning, 
                 self.dlg,
                 "Validation",
                 f"The saved interpolation data are unavailable. Run interpolation again.\n\n{format_shape_error(exc)}",
@@ -3433,7 +3480,7 @@ class BestFitInterpolator:
             x, y, z = prepared
         n = len(z)
         if n < 10:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Error",
                 "At least 10 valid samples are required for deterministic validation.",
                 level=3,
@@ -3459,14 +3506,14 @@ class BestFitInterpolator:
 
         # Determine method params
         if using_tps and not _HAS_TPS:
-            self.iface.messageBar().pushMessage("Error","TPS is selected but Thin_plate_spline.py was not found or failed to import.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error","TPS is selected but Thin_plate_spline.py was not found or failed to import.", level=3)
             return
 
         if not using_tps:
             p_value = det_params.get("p")
             n_value = det_params.get("n")
             if p_value is None or n_value is None:
-                self.iface.messageBar().pushMessage(
+                _message(self.iface.messageBar().pushMessage, 
                     "Validation",
                     "The last IDW interpolation has no saved p/n parameters. Run interpolation again first.",
                     level=2,
@@ -3498,7 +3545,7 @@ class BestFitInterpolator:
                     pi = self._clip_to_observed_range(pi, train_values)
                     preds[test_idx] = np.asarray(pi, dtype=float).ravel()
                 except Exception as e:
-                    self.iface.messageBar().pushWarning("Validation", format_shape_error(e, train_xy, test_xy, train_values))
+                    _message(self.iface.messageBar().pushWarning, "Validation", format_shape_error(e, train_xy, test_xy, train_values))
             else:
                 n_eff = max(1, min(int(n_value), int(mask.sum())))
                 pi = idw_interpolation(
@@ -3520,7 +3567,7 @@ class BestFitInterpolator:
         self._plot_validation_scatter(z, preds, fig=self.det_val_fig, canvas=self.det_val_canvas,
                                       title="Observed vs Predicted (Deterministic CV)")
 
-        self.iface.messageBar().pushMessage(
+        _message(self.iface.messageBar().pushMessage, 
             "Validation",
             f"CV finished. RMSE={rmse:.3f}, RMSE%={(rmse_pct if np.isfinite(rmse_pct) else float('nan')):.2f}%, "
             f"MAE={mae:.3f}, R\u00b2={(r2 if np.isfinite(r2) else float('nan')):.3f}, "
@@ -3536,7 +3583,7 @@ class BestFitInterpolator:
         if getattr(self, "ok_ctrl", None) is not None and hasattr(self.ok_ctrl, "_get_selected_model"):
             model = self.ok_ctrl._get_selected_model()
         else:
-            model = getattr(self.dlg, 'cmbOKModel', None).currentText() if hasattr(self.dlg, 'cmbOKModel') else "Sph"
+            model = _combo_text(getattr(self.dlg, 'cmbOKModel', None)) if hasattr(self.dlg, 'cmbOKModel') else "Sph"
             if str(model or "").strip().lower().startswith("auto"):
                 model = "exponential"
         nugget = self._read_numeric_from_widget(getattr(self.dlg, 'spinOKNugget', None), cast=float, default=0.0)
@@ -3545,6 +3592,10 @@ class BestFitInterpolator:
         return model, nugget, psill, var_range
 
     def run_ok_cv(self):
+        state = getattr(self, "_last_ok_interpolation", None)
+        if state and state.get("trend_degree", 0):
+            from .geostatistics_options import run_universal_validation
+            return run_universal_validation(self, state)
         """Run LOOCV/K Fold CV for Ordinary Kriging and plot into CV_Kriging_widget."""
         self._clear_ok_validation_outputs()
         self._reset_ok_validation_canvas()
@@ -3559,7 +3610,7 @@ class BestFitInterpolator:
 
         sample_xyz = np.asarray(ok_state.get("sample_xyz"), dtype=float)
         if sample_xyz.ndim != 2 or sample_xyz.shape[1] != 3:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Kriging validation",
                 "The saved interpolation data are unavailable. Run interpolation again.",
                 level=2,
@@ -3602,7 +3653,7 @@ class BestFitInterpolator:
         var_range = float(ok_state["var_range"])
 
         # Progress dialog
-        progress = QProgressDialog("Running Kriging CV", "Cancel", 0, len(folds), self.dlg)
+        progress = _new(QProgressDialog, "Running Kriging CV", "Cancel", 0, len(folds), self.dlg)
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
@@ -3610,7 +3661,7 @@ class BestFitInterpolator:
         # Run folds
         for i, test_idx_list in enumerate(folds, start=1):
             if progress.wasCanceled():
-                self.iface.messageBar().pushWarning("Kriging CV", "Operation canceled by user.")
+                _message(self.iface.messageBar().pushWarning, "Kriging CV", "Operation canceled by user.")
                 return
             mask = np.ones(n, dtype=bool)
             mask[test_idx_list] = False
@@ -3626,7 +3677,7 @@ class BestFitInterpolator:
                 )
                 preds[np.array(test_idx_list)] = np.asarray(pi, dtype=float)
             except Exception as e:
-                self.iface.messageBar().pushWarning("Kriging CV", f"Fold failed: {e}")
+                _message(self.iface.messageBar().pushWarning, "Kriging CV", f"Fold failed: {e}")
 
             progress.setValue(i)
 
@@ -3639,12 +3690,12 @@ class BestFitInterpolator:
         pearson_r = self._pearson_r(z, preds)
 
         # Update OK metrics labels if present
-        if hasattr(self.dlg, "valOKRMSE"):      self.dlg.valOKRMSE.setText(f"{rmse:.3f}" if np.isfinite(rmse) else "\u2014")
-        if hasattr(self.dlg, "valOKLCCC"):      self.dlg.valOKLCCC.setText(f"{lccc:.3f}" if np.isfinite(lccc) else "\u2014")
-        if hasattr(self.dlg, "valOKRMSEpct"):   self.dlg.valOKRMSEpct.setText(f"{rmse_pct:.2f}%" if np.isfinite(rmse_pct) else "\u2014")
-        if hasattr(self.dlg, "valOKR2"):        self.dlg.valOKR2.setText(f"{r2:.3f}" if np.isfinite(r2) else "\u2014")
-        if hasattr(self.dlg, "valOKMAE"):       self.dlg.valOKMAE.setText(f"{mae:.3f}" if np.isfinite(mae) else "\u2014")
-        if hasattr(self.dlg, "valOKPearsonR"):  self.dlg.valOKPearsonR.setText(f"{pearson_r:.3f}" if np.isfinite(pearson_r) else "\u2014")
+        if hasattr(self.dlg, "valOKRMSE"):      _ui(self.dlg.valOKRMSE, 'setText', f"{rmse:.3f}" if np.isfinite(rmse) else "\u2014")
+        if hasattr(self.dlg, "valOKLCCC"):      _ui(self.dlg.valOKLCCC, 'setText', f"{lccc:.3f}" if np.isfinite(lccc) else "\u2014")
+        if hasattr(self.dlg, "valOKRMSEpct"):   _ui(self.dlg.valOKRMSEpct, 'setText', f"{rmse_pct:.2f}%" if np.isfinite(rmse_pct) else "\u2014")
+        if hasattr(self.dlg, "valOKR2"):        _ui(self.dlg.valOKR2, 'setText', f"{r2:.3f}" if np.isfinite(r2) else "\u2014")
+        if hasattr(self.dlg, "valOKMAE"):       _ui(self.dlg.valOKMAE, 'setText', f"{mae:.3f}" if np.isfinite(mae) else "\u2014")
+        if hasattr(self.dlg, "valOKPearsonR"):  _ui(self.dlg.valOKPearsonR, 'setText', f"{pearson_r:.3f}" if np.isfinite(pearson_r) else "\u2014")
 
         # Plot scatter in dedicated Kriging CV widget
         if self.ok_cv_fig is None or self.ok_cv_canvas is None:
@@ -3652,7 +3703,7 @@ class BestFitInterpolator:
         self._plot_validation_scatter(z, preds, fig=self.ok_cv_fig, canvas=self.ok_cv_canvas,
                                       title=f"{cv_desc} \u2014 Observed vs Predicted")
 
-        self.iface.messageBar().pushMessage(
+        _message(self.iface.messageBar().pushMessage, 
             "Kriging CV",
             f"{cv_desc} finished. RMSE={rmse:.3f}, RMSE%={(rmse_pct if np.isfinite(rmse_pct) else float('nan')):.2f}%, "
             f"MAE={mae:.3f}, R\u00b2={(r2 if np.isfinite(r2) else float('nan')):.3f}, "
@@ -3662,6 +3713,10 @@ class BestFitInterpolator:
         )
 
     def run_ok_cv_reml(self, ok_state=None):
+        state = ok_state or getattr(self, "_last_ok_interpolation", None)
+        if state and state.get("trend_degree", 0):
+            from .geostatistics_options import run_universal_validation
+            return run_universal_validation(self, state)
         """Run LOOCV for Ordinary Kriging using the REML backend."""
         self._clear_ok_validation_outputs()
         self._reset_ok_validation_canvas()
@@ -3673,7 +3728,7 @@ class BestFitInterpolator:
         if ok_state is None:
             return
         if ok_state.get("backend") != "REML":
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Kriging validation",
                 "The last interpolation used MoM. Run the matching Kriging validation.",
                 level=2,
@@ -3683,7 +3738,7 @@ class BestFitInterpolator:
         sample_xyz = np.asarray(ok_state.get("sample_xyz"), dtype=float)
         reml_fit = ok_state.get("reml_fit")
         if sample_xyz.ndim != 2 or sample_xyz.shape[1] != 3 or reml_fit is None:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Kriging validation",
                 "The saved REML interpolation configuration is unavailable. Run interpolation again.",
                 level=2,
@@ -3693,13 +3748,13 @@ class BestFitInterpolator:
         try:
             cv_result = cv_ok_reml_interface(sample_xyz, reml_fit, k=0)
         except Exception as e:
-            self.iface.messageBar().pushMessage("Error", f"REML CV failed: {e}", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", f"REML CV failed: {e}", level=3)
             return
 
         obs = cv_result.get("y_true", cv_result.get("obs"))
         pred = cv_result.get("y_pred", cv_result.get("pred"))
         if obs is None or pred is None:
-            self.iface.messageBar().pushMessage("Error", "REML CV did not return predictions.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "REML CV did not return predictions.", level=3)
             return
 
         rmse = self._rmse(obs, pred)
@@ -3714,14 +3769,14 @@ class BestFitInterpolator:
             title="OK REML \u2014 Observed vs Predicted"
         )
 
-        if hasattr(self.dlg, "valOKRMSE"):     self.dlg.valOKRMSE.setText(f"{rmse:.3f}" if np.isfinite(rmse) else "\u2014")
-        if hasattr(self.dlg, "valOKLCCC"):     self.dlg.valOKLCCC.setText(f"{lccc:.3f}" if np.isfinite(lccc) else "\u2014")
-        if hasattr(self.dlg, "valOKRMSEpct"):  self.dlg.valOKRMSEpct.setText(f"{rmse_pct:.2f}%" if np.isfinite(rmse_pct) else "\u2014")
-        if hasattr(self.dlg, "valOKR2"):       self.dlg.valOKR2.setText(f"{r2:.3f}" if np.isfinite(r2) else "\u2014")
-        if hasattr(self.dlg, "valOKMAE"):      self.dlg.valOKMAE.setText(f"{mae:.3f}" if np.isfinite(mae) else "\u2014")
-        if hasattr(self.dlg, "valOKPearsonR"): self.dlg.valOKPearsonR.setText(f"{pearson_r:.3f}" if np.isfinite(pearson_r) else "\u2014")
+        if hasattr(self.dlg, "valOKRMSE"):     _ui(self.dlg.valOKRMSE, 'setText', f"{rmse:.3f}" if np.isfinite(rmse) else "\u2014")
+        if hasattr(self.dlg, "valOKLCCC"):     _ui(self.dlg.valOKLCCC, 'setText', f"{lccc:.3f}" if np.isfinite(lccc) else "\u2014")
+        if hasattr(self.dlg, "valOKRMSEpct"):  _ui(self.dlg.valOKRMSEpct, 'setText', f"{rmse_pct:.2f}%" if np.isfinite(rmse_pct) else "\u2014")
+        if hasattr(self.dlg, "valOKR2"):       _ui(self.dlg.valOKR2, 'setText', f"{r2:.3f}" if np.isfinite(r2) else "\u2014")
+        if hasattr(self.dlg, "valOKMAE"):      _ui(self.dlg.valOKMAE, 'setText', f"{mae:.3f}" if np.isfinite(mae) else "\u2014")
+        if hasattr(self.dlg, "valOKPearsonR"): _ui(self.dlg.valOKPearsonR, 'setText', f"{pearson_r:.3f}" if np.isfinite(pearson_r) else "\u2014")
 
-        self.iface.messageBar().pushMessage(
+        _message(self.iface.messageBar().pushMessage, 
             "Kriging REML CV",
             f"Finished REML CV \u2014 RMSE={rmse:.3f}, RMSE%={(rmse_pct if np.isfinite(rmse_pct) else float('nan')):.2f}%, "
             f"MAE={mae:.3f}, R\u00b2={(r2 if np.isfinite(r2) else float('nan')):.3f}, "
@@ -3735,13 +3790,13 @@ class BestFitInterpolator:
         """Deterministic interpolation entrypoint with progress dialog."""
         self._ensure_canvases_attached()
         mode = self._selected_deterministic_mode()
-        points_layer_name = self.dlg.Points.currentText()
-        variable_name = self.dlg.Points_2.currentText()
-        polygon_layer_name = self.dlg.poly.currentText()
+        points_layer_name = _combo_text(self.dlg.Points)
+        variable_name = _combo_text(self.dlg.Points_2)
+        polygon_layer_name = _combo_text(self.dlg.poly)
         pixel_size = self._get_pixel_size(default=0.01)
 
         if not points_layer_name or not variable_name or not polygon_layer_name:
-            self.iface.messageBar().pushMessage("Error", "All inputs are required.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "All inputs are required.", level=3)
             return
         if not self._validate_current_interpolation_coverage("Interpolation"):
             return
@@ -3764,7 +3819,7 @@ class BestFitInterpolator:
 
         pts_coords, vals = self.filter_incomplete_data(pts_coords, vals)
         if len(pts_coords) < 10:
-            self.iface.messageBar().pushMessage("Error", "At least 10 valid data points are required for interpolation.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "At least 10 valid data points are required for interpolation.", level=3)
             return
 
         try:
@@ -3774,13 +3829,13 @@ class BestFitInterpolator:
                 vals,
             )
         except Exception as exc:
-            QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(exc))
+            _dialog(QMessageBox.warning, self.dlg, "Interpolation", format_shape_error(exc))
             return
 
         # ------- Thin Plate Spline -------
         if mode == self.MODE_TPS:
             if not _HAS_TPS:
-                self.iface.messageBar().pushMessage("Error", "TPS is selected but Thin_plate_spline.py was not found or failed to import.", level=3)
+                _message(self.iface.messageBar().pushMessage, "Error", "TPS is selected but Thin_plate_spline.py was not found or failed to import.", level=3)
                 return
             prepared = self._prepare_tps_training_data(x, y, z, "TPS")
             if prepared is None:
@@ -3794,10 +3849,10 @@ class BestFitInterpolator:
                 p_value = self._read_numeric_from_widget(self.dlg.manualPInput, cast=float, default=None)
                 n_value = self._read_numeric_from_widget(self.dlg.manualNInput, cast=int, default=None)
                 if p_value is None or n_value is None:
-                    self.iface.messageBar().pushMessage("Error", "Manual p or n value is invalid.", level=3)
+                    _message(self.iface.messageBar().pushMessage, "Error", "Manual p or n value is invalid.", level=3)
                     return
             else:
-                tune_progress = QProgressDialog(
+                tune_progress = _new(QProgressDialog, 
                     "Optimizing IDW parameters", "Cancel", 0, 5, self.dlg
                 )
                 tune_progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
@@ -3815,18 +3870,18 @@ class BestFitInterpolator:
                         x, y, z, progress_fn=_idw_tune_progress
                     )
                     p_value, n_value = best_p, best_n
-                    self.iface.messageBar().pushMessage(
+                    _message(self.iface.messageBar().pushMessage, 
                         "Optimization Complete",
                         f"Optimized parameters: p={best_p}, n={best_n}, ISI={best_isi:.5f}",
                         level=0
                     )
                 except KeyboardInterrupt:
-                    self.iface.messageBar().pushWarning(
+                    _message(self.iface.messageBar().pushWarning, 
                         "IDW optimization", "Operation canceled by user."
                     )
                     return
                 except ValueError as e:
-                    self.iface.messageBar().pushMessage("Error", str(e), level=3)
+                    _message(self.iface.messageBar().pushMessage, "Error", str(e), level=3)
                     return
                 finally:
                     tune_progress.close()
@@ -3922,7 +3977,7 @@ class BestFitInterpolator:
         driver = gdal.GetDriverByName("GTiff")
         dataset = driver.Create(raster_path, n_cols, n_rows, 1, gdal.GDT_Float32)
         if not dataset:
-            self.iface.messageBar().pushMessage("Error","Failed to create GTiff.", level=3); return
+            _message(self.iface.messageBar().pushMessage, "Error","Failed to create GTiff.", level=3); return
 
         geotransform = (xmin, pixel_size, 0, ymax, 0, -pixel_size)
         dataset.SetGeoTransform(geotransform)
@@ -3940,10 +3995,10 @@ class BestFitInterpolator:
         layer_name = f"{title_prefix} ({variable_name})"
         raster_layer = self._create_output_raster_layer(raster_path, layer_name)
         if not raster_layer.isValid():
-            self.iface.messageBar().pushMessage("Error","Raster layer is not valid.", level=3); return
+            _message(self.iface.messageBar().pushMessage, "Error","Raster layer is not valid.", level=3); return
         self._mark_temporary_layer(raster_layer, raster_path)
         QgsProject.instance().addMapLayer(raster_layer)
-        self.iface.messageBar().pushMessage("Info", f"Raster layer created: {raster_path}", level=0)
+        _message(self.iface.messageBar().pushMessage, "Info", f"Raster layer created: {raster_path}", level=0)
         return raster_path
 
     def _draw_interpolation_preview(self, result_array, polygon_layer, variable_name, title):
@@ -3997,7 +4052,7 @@ class BestFitInterpolator:
             pts_coords.append(g); vals.append(v)
         pts_coords, vals = self.filter_incomplete_data(pts_coords, vals)
         if not pts_coords or not vals:
-            self.iface.messageBar().pushMessage("Error","No valid points or values found for interpolation.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error","No valid points or values found for interpolation.", level=3)
             return
 
         try:
@@ -4008,11 +4063,11 @@ class BestFitInterpolator:
             )
             xy_pts = ensure_xy_2d(np.column_stack([x_vals, y_vals]), "training coordinates")
         except Exception as exc:
-            QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(exc))
+            _dialog(QMessageBox.warning, self.dlg, "Interpolation", format_shape_error(exc))
             return
 
         if z_vals.size < 10:
-            self.iface.messageBar().pushMessage("Error", "At least 10 valid samples are required for IDW interpolation.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "At least 10 valid samples are required for IDW interpolation.", level=3)
             return
 
         polygon_layer = QgsProject.instance().mapLayersByName(polygon_layer_name)[0]
@@ -4020,17 +4075,17 @@ class BestFitInterpolator:
         try:
             xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
         except ValueError as e:
-            self.iface.messageBar().pushMessage("Error", str(e), level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", str(e), level=3)
             return
 
         result_array = np.full((n_rows, n_cols), np.nan, dtype=np.float32)
 
         total_inside = len(inside_indices)
         if total_inside == 0:
-            self.iface.messageBar().pushMessage("Warning", "No grid cells fall inside the polygon.", level=2)
+            _message(self.iface.messageBar().pushMessage, "Warning", "No grid cells fall inside the polygon.", level=2)
             return
         self._notify_dense_profile(z_vals.size, "IDW")
-        progress = QProgressDialog("Interpolating (IDW)", "Cancel", 0, total_inside, self.dlg)
+        progress = _new(QProgressDialog, "Interpolating (IDW)", "Cancel", 0, total_inside, self.dlg)
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
@@ -4051,11 +4106,11 @@ class BestFitInterpolator:
             )
         except KeyboardInterrupt:
             progress.close()
-            self.iface.messageBar().pushWarning("Interpolation", "Operation canceled by user.")
+            _message(self.iface.messageBar().pushWarning, "Interpolation", "Operation canceled by user.")
             return
         except Exception as exc:
             progress.close()
-            QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(exc, xy_pts, inside_pts, z_vals))
+            _dialog(QMessageBox.warning, self.dlg, "Interpolation", format_shape_error(exc, xy_pts, inside_pts, z_vals))
             return
         progress.close()
         rows = inside_indices // n_cols
@@ -4078,7 +4133,7 @@ class BestFitInterpolator:
             n=int(n_value),
             raster_path=raster_path,
         )
-        self.iface.messageBar().pushMessage("Interpolation Complete", level=0)
+        _message(self.iface.messageBar().pushMessage, "Interpolation Complete", level=0)
 
     def create_and_display_raster_tps(self, points_layer_name, variable_name,
                                       polygon_layer_name, pixel_size, x, y, z):
@@ -4087,30 +4142,30 @@ class BestFitInterpolator:
         try:
             x, y, z = finite_training_arrays(x, y, z)
         except Exception as exc:
-            QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(exc))
+            _dialog(QMessageBox.warning, self.dlg, "Interpolation", format_shape_error(exc))
             return
         prepared = self._prepare_tps_training_data(x, y, z, "TPS")
         if prepared is None:
             return
         x, y, z = prepared
         if z.size < 10:
-            self.iface.messageBar().pushMessage("Error", "At least 10 valid samples are required for TPS interpolation.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "At least 10 valid samples are required for TPS interpolation.", level=3)
             return
         polygon_layer = QgsProject.instance().mapLayersByName(polygon_layer_name)[0]
         try:
             xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
         except ValueError as e:
-            self.iface.messageBar().pushMessage("Error", str(e), level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", str(e), level=3)
             return
 
         result_array = np.full((n_rows, n_cols), np.nan, dtype=np.float32)
 
         total_inside = len(inside_indices)
         if total_inside == 0:
-            self.iface.messageBar().pushMessage("Warning","No grid cells fall inside the polygon.", level=2)
+            _message(self.iface.messageBar().pushMessage, "Warning","No grid cells fall inside the polygon.", level=2)
             return
 
-        progress = QProgressDialog("Interpolating (TPS)", "Cancel", 0, total_inside, self.dlg)
+        progress = _new(QProgressDialog, "Interpolating (TPS)", "Cancel", 0, total_inside, self.dlg)
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
@@ -4132,11 +4187,11 @@ class BestFitInterpolator:
             tps_vals = self._clip_to_observed_range(tps_vals, z)
         except KeyboardInterrupt:
             progress.close()
-            self.iface.messageBar().pushWarning("Interpolation", "Operation canceled by user.")
+            _message(self.iface.messageBar().pushWarning, "Interpolation", "Operation canceled by user.")
             return
         except Exception as e:
             progress.close()
-            QMessageBox.warning(self.dlg, "Interpolation", format_shape_error(e, np.column_stack([x, y]), inside_pts, z))
+            _dialog(QMessageBox.warning, self.dlg, "Interpolation", format_shape_error(e, np.column_stack([x, y]), inside_pts, z))
             return
         progress.close()
         rows = inside_indices // n_cols
@@ -4160,26 +4215,26 @@ class BestFitInterpolator:
             variable_name,
             "TPS Interpolation\n" + r"$\epsilon=0.0001$",
         )
-        self.iface.messageBar().pushMessage("Interpolation Complete", level=0)
+        _message(self.iface.messageBar().pushMessage, "Interpolation Complete", level=0)
 
     # ---------------------------- Kriging interpolation -------------------------
 
     def run_ok_interpolation(self):
         """Export Ordinary Kriging raster to QGIS, mirroring deterministic export behavior."""
-        points_layer_name = self.dlg.Points.currentText()
-        variable_name = self.dlg.Points_2.currentText()
-        polygon_layer_name = self.dlg.poly.currentText()
+        points_layer_name = _combo_text(self.dlg.Points)
+        variable_name = _combo_text(self.dlg.Points_2)
+        polygon_layer_name = _combo_text(self.dlg.poly)
         pixel_size = self._get_pixel_size(default=0.01)
 
         if not points_layer_name or not variable_name or not polygon_layer_name:
-            self.iface.messageBar().pushMessage("Error", "All inputs are required.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "All inputs are required.", level=3)
             return
         if not self._validate_current_interpolation_coverage("Kriging"):
             return
 
         layers = QgsProject.instance().mapLayersByName(points_layer_name)
         if not layers:
-            self.iface.messageBar().pushMessage("Error","Point layer not found.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error","Point layer not found.", level=3)
             return
 
         layer = layers[0]
@@ -4197,7 +4252,7 @@ class BestFitInterpolator:
 
         coords, vals = self.filter_incomplete_data(coords, vals)
         if len(coords) < 5:
-            self.iface.messageBar().pushMessage("Error","At least 5 valid data points are required for interpolation.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error","At least 5 valid data points are required for interpolation.", level=3)
             return
 
         x = np.array([p.x() for p in coords])
@@ -4210,17 +4265,17 @@ class BestFitInterpolator:
         try:
             xmin, xmax, ymin, ymax, n_cols, n_rows, inside_points, inside_indices = self._init_grid_and_mask(polygon_layer, pixel_size)
         except ValueError as e:
-            self.iface.messageBar().pushMessage("Error", str(e), level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", str(e), level=3)
             return
 
         result_array = np.full((n_rows, n_cols), np.nan, dtype=np.float32)
 
         total_inside = len(inside_indices)
         if total_inside == 0:
-            self.iface.messageBar().pushMessage("Warning","No grid cells fall inside the polygon.", level=2)
+            _message(self.iface.messageBar().pushMessage, "Warning","No grid cells fall inside the polygon.", level=2)
             return
 
-        progress = QProgressDialog("Interpolating (Ordinary Kriging)", "Cancel", 0, total_inside, self.dlg)
+        progress = _new(QProgressDialog, "Interpolating (Ordinary Kriging)", "Cancel", 0, total_inside, self.dlg)
         progress.setWindowModality(enum_value(Qt, "WindowModality", "WindowModal"))
         progress.setMinimumDuration(0)
         progress.setValue(0)
@@ -4241,11 +4296,11 @@ class BestFitInterpolator:
             )
         except KeyboardInterrupt:
             progress.close()
-            self.iface.messageBar().pushWarning("Kriging", "Operation canceled by user.")
+            _message(self.iface.messageBar().pushWarning, "Kriging", "Operation canceled by user.")
             return
         except Exception as e:
             progress.close()
-            self.iface.messageBar().pushMessage("Error", f"Kriging failed: {e}", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", f"Kriging failed: {e}", level=3)
             return
         progress.close()
         rows = inside_indices // n_cols
@@ -4276,18 +4331,18 @@ class BestFitInterpolator:
         from .interpolation_result import publish_result
         publish_result(self,'OK',self._last_ok_interpolation,self.det_interp_fig,raster_path=raster_path)
 
-        self.iface.messageBar().pushMessage("Kriging", "Interpolation Complete", level=0)
+        _message(self.iface.messageBar().pushMessage, "Kriging", "Interpolation Complete", level=0)
 
     def run_ok_interpolation_reml(self):
         """Run REML-based OK interpolation without requiring an experimental variogram."""
         self._ensure_canvases_attached()
-        points_layer_name = self.dlg.Points.currentText()
-        variable_name = self.dlg.Points_2.currentText()
-        polygon_layer_name = self.dlg.poly.currentText()
+        points_layer_name = _combo_text(self.dlg.Points)
+        variable_name = _combo_text(self.dlg.Points_2)
+        polygon_layer_name = _combo_text(self.dlg.poly)
         pixel_size = self._get_pixel_size(default=0.01)
 
         if not points_layer_name or not variable_name or not polygon_layer_name:
-            self.iface.messageBar().pushMessage("Error", "All inputs are required.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "All inputs are required.", level=3)
             return
         if not self._validate_current_interpolation_coverage("Kriging REML"):
             return
@@ -4311,7 +4366,7 @@ class BestFitInterpolator:
 
         coords, vals = self.filter_incomplete_data(coords, vals)
         if len(coords) < 5:
-            self.iface.messageBar().pushMessage("Error", "At least 5 valid data points are required for interpolation.", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", "At least 5 valid data points are required for interpolation.", level=3)
             return
         if is_dense_dataset(len(coords)):
             self.run_ok_interpolation()
@@ -4329,7 +4384,7 @@ class BestFitInterpolator:
         try:
             reml_fit = fit_ok_reml_interface(sample_xyz, model=model, init_from_mom=mom_fit)
         except Exception as e:
-            self.iface.messageBar().pushMessage("Error", f"REML fit failed: {e}", level=3)
+            _message(self.iface.messageBar().pushMessage, "Error", f"REML fit failed: {e}", level=3)
             return
 
         polygon_layer = QgsProject.instance().mapLayersByName(polygon_layer_name)[0]
@@ -4340,7 +4395,7 @@ class BestFitInterpolator:
         try:
             preds, _ = predict_ok_reml_interface(reml_fit, sample_xyz, inside_pts)
         except Exception as e:
-            self.iface.messageBar().pushMessage(
+            _message(self.iface.messageBar().pushMessage, 
                 "Error",
                 f"REML prediction failed: {e}",
                 level=3,
@@ -4379,6 +4434,6 @@ class BestFitInterpolator:
         executed=dict(self._last_ok_interpolation)
         executed.update(model=reml_fit['model'],nugget=reml_fit['nugget'],psill=reml_fit['psill'],var_range=reml_fit['range'])
         publish_result(self,'OK',executed,self.det_interp_fig,raster_path=raster_path)
-        self.iface.messageBar().pushMessage("Kriging REML", "Interpolation Complete", level=0)
+        _message(self.iface.messageBar().pushMessage, "Kriging REML", "Interpolation Complete", level=0)
 
 

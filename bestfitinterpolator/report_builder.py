@@ -1,4 +1,5 @@
 """Editable report configuration and a paginated preview of the same PDF source."""
+from .localization import _dialog, _new, _ui
 import os
 from qgis.PyQt.QtCore import QSizeF,QRectF,Qt,QUrl
 from qgis.PyQt.QtGui import QTextDocument,QPageSize,QPageLayout,QPainter,QFont,QColor,QDesktopServices
@@ -32,7 +33,7 @@ def configure_printer(printer):
 def create_document(state,printer):
     document=QTextDocument()
     document.documentLayout().setPaintDevice(printer)
-    document.setHtml(report_html(state))
+    _ui(document, 'setHtml', report_html(state))
     document.setDefaultFont(__import__('qgis.PyQt.QtGui',fromlist=['QFont']).QFont("Arial",10))
     rect=printer.pageLayout().paintRectPixels(printer.resolution())
     document.setPageSize(QSizeF(rect.width(),rect.height()-24.*printer.resolution()/72.))
@@ -71,24 +72,24 @@ def export_report_pdf(state,path):
 
 class ReportBuilderDialog(QDialog):
     def __init__(self,state,parent=None):
-        super().__init__(parent); self.state=state; self.setWindowTitle("Report Builder"); self.resize(1150,850)
+        super().__init__(parent); self.state=state; _ui(self, 'setWindowTitle', "Report Builder"); self.resize(1150,850)
         root=QVBoxLayout(self); fields=QHBoxLayout(); root.addLayout(fields)
         self.study,self.author,self.notes=QLineEdit(state.study_name),QLineEdit(state.author),QLineEdit(state.notes)
         for name,w in (("Study",self.study),("Author",self.author),("Notes",self.notes)):
-            fields.addWidget(QLabel(name)); fields.addWidget(w); w.editingFinished.connect(self.refresh)
+            fields.addWidget(_new(QLabel, name)); fields.addWidget(w); w.editingFinished.connect(self.refresh)
         split=QSplitter(); root.addWidget(split,1)
         options=QWidget(); layout=QVBoxLayout(options); self.checks=[]
         for section in state.sections:
-            chk=QCheckBox(section.title); chk.setChecked(section.enabled or section.mandatory); chk.setEnabled(not section.mandatory)
+            chk=_new(QCheckBox, section.title); chk.setChecked(section.enabled or section.mandatory); chk.setEnabled(not section.mandatory)
             chk.toggled.connect(self.refresh); layout.addWidget(chk); self.checks.append((section,chk))
         layout.addStretch(); scroll=QScrollArea(); scroll.setWidgetResizable(True); scroll.setWidget(options); split.addWidget(scroll)
         self.printer=QPrinter(enum_value(QPrinter,"PrinterMode","HighResolution")); configure_printer(self.printer)
         self.preview=QPrintPreviewWidget(self.printer,self); self.preview.paintRequested.connect(self.paint); split.addWidget(self.preview)
         split.setSizes((280,800))
         actions=QHBoxLayout(); root.addLayout(actions)
-        refresh=QPushButton("Refresh preview"); refresh.clicked.connect(self.refresh); actions.addWidget(refresh)
-        export=QPushButton("Export PDF"); export.clicked.connect(self.export); actions.addWidget(export)
-        html_button=QPushButton('View HTML'); html_button.clicked.connect(self.export_html); actions.addWidget(html_button)
+        refresh=_new(QPushButton, "Refresh preview"); refresh.clicked.connect(self.refresh); actions.addWidget(refresh)
+        export=_new(QPushButton, "Export PDF"); export.clicked.connect(self.export); actions.addWidget(export)
+        html_button=_new(QPushButton, 'View HTML'); html_button.clicked.connect(self.export_html); actions.addWidget(html_button)
         self.document=create_document(state,self.printer); apply_theme(self)
         from qgis.PyQt.QtWidgets import QApplication
         self.setMinimumSize(600,420); self.setSizeGripEnabled(True)
@@ -107,16 +108,16 @@ class ReportBuilderDialog(QDialog):
 
     def export(self):
         self.refresh()
-        path,_=QFileDialog.getSaveFileName(self,"Export technical report","best_fit_report.pdf","PDF (*.pdf)")
+        path,_=_dialog(QFileDialog.getSaveFileName, self,"Export technical report","best_fit_report.pdf","PDF (*.pdf)")
         if not path: return
         if not path.lower().endswith(".pdf"): path+=".pdf"
         try: export_report_pdf(self.state,path)
-        except Exception as exc: QMessageBox.warning(self,"Report export",str(exc))
+        except Exception as exc: _dialog(QMessageBox.warning, self,"Report export",str(exc))
 
     def export_html(self):
         self.refresh()
         try: open_temporary_html(self,self.state)
-        except Exception as exc: QMessageBox.warning(self,'Report preview',str(exc))
+        except Exception as exc: _dialog(QMessageBox.warning, self,'Report preview',str(exc))
 
 
 class ReportOverviewWidget(QWidget):
@@ -124,14 +125,14 @@ class ReportOverviewWidget(QWidget):
     def __init__(self,framework,parent=None):
         super().__init__(parent); self.framework=framework
         root=QVBoxLayout(self)
-        self.description=QLabel('Explore the current session, validation and executed interpolation. View the interactive HTML report in your browser or open the PDF options.')
+        self.description=_new(QLabel, 'Explore the current session, validation and executed interpolation. View the interactive HTML report in your browser or open the PDF options.')
         self.description.setWordWrap(True); root.addWidget(self.description)
         actions=QHBoxLayout(); root.addLayout(actions)
-        refresh=QPushButton('Refresh summary'); refresh.clicked.connect(self.refresh); actions.addWidget(refresh)
-        pdf=QPushButton('PDF preview / options'); pdf.clicked.connect(framework.on_preview_report_clicked); actions.addWidget(pdf)
-        html_button=QPushButton('View HTML'); html_button.clicked.connect(self.export_html); actions.addWidget(html_button)
+        refresh=_new(QPushButton, 'Refresh summary'); refresh.clicked.connect(self.refresh); actions.addWidget(refresh)
+        pdf=_new(QPushButton, 'PDF preview / options'); pdf.clicked.connect(framework.on_preview_report_clicked); actions.addWidget(pdf)
+        html_button=_new(QPushButton, 'View HTML'); html_button.clicked.connect(self.export_html); actions.addWidget(html_button)
         split=QSplitter(); root.addWidget(split,1)
-        self.sections=QListWidget(); self.sections.addItems(('Overview','Validation','Interpolation','Diagnostics'))
+        self.sections=QListWidget(); _ui(self.sections, 'addItems', ('Overview','Validation','Interpolation','Diagnostics'))
         self.sections.setMaximumWidth(180); self.sections.setMinimumWidth(120); split.addWidget(self.sections)
         self.browser=QTextBrowser(); self.browser.setOpenLinks(False)
         self.browser.setSizePolicy(enum_value(QSizePolicy,'Policy','Ignored'),enum_value(QSizePolicy,'Policy','Expanding'))
@@ -161,7 +162,9 @@ class ReportOverviewWidget(QWidget):
         if section==0:
             fields=(('Variable',s.variable_name or 'Pending'),('Samples',s.sample_count),('Pixel size',s.pixel_size),
                     ('Framework mode',s.framework_mode),('Evaluated methods',', '.join(s.validated_methods) or 'Pending'),
-                    ('Recommended',s.selected_winner or 'Pending'),('Selected for next run',s.__dict__.get('selected_method') or s.selected_winner or 'Pending'),
+                    ('Recommended',', '.join(s.suggested_methods) or 'Pending'),
+                    ('Validation winner',s.selected_winner or 'Pending'),
+                    ('Selected for next run',s.__dict__.get('selected_method') or s.selected_winner or 'Pending'),
                     ('Executed in Framework',executed_method(f)))
             content+=ReportTable(('Session','Value'),fields).html()
             content+='<p><a href="bfi:validation">Review validation</a> · <a href="bfi:interpolation">Open interpolation</a> · <a href="bfi:comparison">Compare maps</a></p>'
@@ -178,10 +181,10 @@ class ReportOverviewWidget(QWidget):
         else:
             content+=ReportTable(('Spatial diagnostic','Value'),(('Global Moran I',s.moran_i),('p value',s.moran_p_value),('Spatial pattern',s.spatial_pattern or 'Pending'),('SDI',s.sdi_value),('SDI class',s.sdi_status or 'Pending'))).html()
             content+='<p>Open Outlier diagnostic in Data to review local clusters, statistical flags and Keep/Exclude/Reset decisions. Diagnostics help interpret the inputs; they do not automatically remove observations.</p>'
-        self.browser.setHtml('<html><head><style>body{font-family:Arial;color:#142b42}h2{color:#008eab}table{width:100%;border-collapse:collapse}th{background:#e5f2f5}td,th{padding:7px;border:1px solid #cad8df}a{color:#008eab}p{line-height:1.4}</style></head><body>'+content+'</body></html>')
+        _ui(self.browser, 'setHtml', '<html><head><style>body{font-family:Arial;color:#142b42}h2{color:#008eab}table{width:100%;border-collapse:collapse}th{background:#e5f2f5}td,th{padding:7px;border:1px solid #cad8df}a{color:#008eab}p{line-height:1.4}</style></head><body>'+content+'</body></html>')
 
     def export_html(self):
         f=self.framework
         state=f._fresh_report_state()
         try: open_temporary_html(self,state)
-        except Exception as exc: QMessageBox.warning(self,'Report preview',str(exc))
+        except Exception as exc: _dialog(QMessageBox.warning, self,'Report preview',str(exc))

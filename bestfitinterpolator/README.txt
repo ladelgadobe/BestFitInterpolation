@@ -5,6 +5,17 @@ Best Fit Interpolator is a QGIS plugin for selecting, validating, and applying s
 
 The plugin supports deterministic, geostatistical, machine-learning, and hybrid methods, including IDW, TPS, Ordinary Kriging, REML-assisted kriging, Random Forest, SVM, and Regression Kriging.
 
+Version 2.1
+-----------
+- Offline English, Spanish and Brazilian Portuguese interface with a saved language selector, translated dialogs, plots and new reports.
+- Ordinary and linear Universal Kriging with conditional SD/variance maps; joint constrained weighted least-squares MoM fitting and explicit model-scale/practical-range conventions.
+- RF tree-dispersion maps and RK conditional residual-kriging uncertainty, with an optional Add SD layer control for standalone and Framework runs.
+- Automatic bounded RF/SVM/RK grid search in Framework using the individual workflows' routines and defaults, configurable budgets, exact-input cache reuse and report provenance.
+- Independent Framework and standalone maps, models, metrics and SD choices; Framework previews stay empty until a successful Framework interpolation.
+- Independent raster-file predictor readers, coverage accounting, responsive validation with cancellation and hidden Windows helper processes.
+- Reports distinguish initial recommendations, validation winners, next selections and actual executions, and display the complete map comparison at the report width.
+- Updated 51-page English manual, retaining its stable filename and the original Auto, LOOCV and K-Fold validation workflow.
+
 Version 2.0
 -----------
 - Outlier diagnostic combines IQR, MAD and optional Z flags with Global Moran and Local Moran/LISA; sample exclusions remain explicit user decisions.

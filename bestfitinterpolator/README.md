@@ -1,5 +1,7 @@
 # Best Fit Interpolator
 
+Version 2.1 provides translated interfaces, explicit uncertainty maps and independent Framework and standalone workflows. See the [user manual](https://github.com/ladelgadobe/BestFitInterpolation/blob/main/BestFitInterpolator_User_Manual.pdf) and [RF/RK uncertainty definitions](UNCERTAINTY_RF_RK.md).
+
 <p align="center">
   <img src="icon.png" alt="Best Fit Interpolator icon" width="140">
 </p>
@@ -22,7 +24,7 @@ The plugin combines deterministic, geostatistical, machine-learning, and hybrid 
 
 - Inverse Distance Weighting (IDW)
 - Thin Plate Spline (TPS)
-- Ordinary Kriging (OK)
+- Ordinary Kriging (OK) and linear Universal Kriging (UK)
 - REML-assisted kriging
 - Random Forest (RF)
 - Support Vector Machine (SVM)
@@ -37,6 +39,17 @@ The plugin combines deterministic, geostatistical, machine-learning, and hybrid 
 - Framework-guided method selection inspired by the reference article.
 - Interpolation map generation directly inside QGIS.
 - PDF report support for framework validation outputs.
+
+## Version 2.1
+
+- Offline English, Spanish and Brazilian Portuguese interface with a saved language selector, translated dialogs, plots and new reports.
+- Ordinary and linear Universal Kriging with conditional SD/variance maps; joint constrained weighted least-squares MoM fitting and explicit model-scale/practical-range conventions.
+- RF tree-dispersion maps and RK conditional residual-kriging uncertainty, with an optional Add SD layer control for standalone and Framework runs.
+- Automatic bounded RF/SVM/RK grid search in Framework using the individual workflows' routines and defaults, configurable budgets, exact-input cache reuse and report provenance.
+- Independent Framework and standalone maps, models, metrics and SD choices; Framework previews stay empty until a successful Framework interpolation.
+- Independent raster-file predictor readers, coverage accounting, responsive validation with cancellation and hidden Windows helper processes.
+- Reports distinguish initial recommendations, validation winners, next selections and actual executions, and display the complete map comparison at the report width.
+- Updated 51-page English manual, retaining its stable filename and the original Auto, LOOCV and K-Fold validation workflow.
 
 ## Version 2.0
 
@@ -119,3 +132,14 @@ Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Poz
 
 - Homepage: https://github.com/ladelgadobe/BestFitInterpolation
 - Issues: https://github.com/ladelgadobe/BestFitInterpolation/issues
+
+
+## Automatic Framework ML search
+
+Framework automatically searches RF, SVM and RK trend hyperparameters with the same bounded grid search and defaults as the individual windows. Its settings button allows per-method changes. Completed searches are reused only for identical training inputs and settings; the final model is refitted on all valid rows. Reports identify both fresh searches and reuse. See [Framework search](FRAMEWORK_SEARCH.md).
+# Interface languages (local 2.1)
+
+Use the upper-right language selector for English, Spanish or Brazilian Portuguese. Translations work offline and the plugin remembers the preference. See [LANGUAGE_SUPPORT.md](LANGUAGE_SUPPORT.md).
+
+
+Covariate extraction, correlations and interpolation use independent raster-file readers, preserving selected sources, CRS and explicit NoData policies. This avoids inheriting stale sampling state from QGIS display layers. RF/SVM/RK numerical routines, search settings and SD layer controls are unchanged.

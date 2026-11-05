@@ -5,6 +5,8 @@ All code comments are in English.
 """
 
 from __future__ import annotations
+from .localization import _message
+from .localization import _combo_text, _ui
 
 from .compat import log_exception
 from typing import Optional
@@ -55,7 +57,7 @@ class OKDispatcherController:
             return
         try:
             if hasattr(combo, "count") and combo.count() == 0:
-                combo.addItems(["Automatic", "MoM", "REML"])
+                _ui(combo, 'addItems', ["Automatic", "MoM", "REML"])
             if hasattr(combo, "setCurrentIndex") and combo.currentIndex() < 0:
                 combo.setCurrentIndex(0)
             combo.currentIndexChanged.connect(self._on_fit_method_changed)
@@ -66,7 +68,7 @@ class OKDispatcherController:
         combo = getattr(self.dlg, "cmbOKFitMethod", None)
         try:
             if combo is not None and hasattr(combo, "currentText"):
-                text = str(combo.currentText() or "").strip()
+                text = str(_combo_text(combo) or "").strip()
                 if text:
                     return text
         except Exception:  # nosec B110
@@ -91,7 +93,7 @@ class OKDispatcherController:
             return
         self._last_decision_warning = key
         try:
-            self.iface.messageBar().pushWarning(
+            _message(self.iface.messageBar().pushWarning, 
                 "Kriging",
                 f"REML is not available for this dataset ({decision.reason}). MoM will be used instead.",
             )

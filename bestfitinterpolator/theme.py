@@ -1,4 +1,5 @@
 """Plugin-wide visual tokens, information controls and figure identity."""
+from .localization import _tab_text, _ui
 import os
 import re
 from functools import lru_cache
@@ -74,10 +75,12 @@ def stylesheet():
 
 
 def apply_theme(widget):
-    widget.setWindowTitle(clean_display_name(widget.windowTitle()))
+    _ui(widget, 'setWindowTitle', clean_display_name(_source_ui_text(widget, 'setWindowTitle', widget.windowTitle())))
     widget.setObjectName(widget.objectName() or "bfiRoot")
     widget.setStyleSheet(stylesheet())
     refresh_controls(widget)
+    from .localization import localize_widget
+    localize_widget(widget)
 
 
 def action_icon(kind='info'):
@@ -108,26 +111,31 @@ def clean_display_name(text):
     """Use plain names while retaining numeric signs and mathematical notation."""
     text=text.replace('…','').replace('...','')
     text=re.sub(r'\s+[—–-]\s+',' ',text)
-    return re.sub(r'(?<=[A-Za-z])-(?=[A-Za-z])',' ',text)
+    return text
+
+
+def _source_ui_text(widget, method, fallback):
+    record = getattr(widget, '_bfi_i18n', {}).get((method,))
+    return record[1][0] if record else fallback
 
 
 def refresh_controls(widget):
     """Keep existing widgets and assign only compact icons and action hierarchy."""
     for button in widget.findChildren(QAbstractButton):
-        button.setText(clean_display_name(button.text()))
+        _ui(button, 'setText', clean_display_name(_source_ui_text(button, 'setText', button.text())))
     for group in widget.findChildren(QGroupBox):
-        group.setTitle(clean_display_name(group.title()))
+        _ui(group, 'setTitle', clean_display_name(_source_ui_text(group, 'setTitle', group.title())))
         group.style().unpolish(group); group.style().polish(group)
     for tabs in widget.findChildren(QTabWidget):
         for index in range(tabs.count()):
-            tabs.setTabText(index,clean_display_name(tabs.tabText(index)))
+            _ui(tabs, 'setTabText', index,clean_display_name(_tab_text(tabs, index)))
     for button in widget.findChildren(QToolButton):
         if 'info' in button.objectName().lower() or button.property('bfiInfo'):
             button.setProperty('bfiInfo',True)
             button.setIcon(action_icon())
             button.setIconSize(QSize(18,18)); button.setFixedSize(24,24)
     for button in widget.findChildren(QPushButton):
-        text=button.text().strip().lower()
+        text=_source_ui_text(button, 'setText', button.text()).strip().lower()
         primary=text.startswith(('interpolate','run ','validate','apply','compare','calculate')) and 'view' not in text
         button.setProperty('bfiPrimary',primary)
         button.style().unpolish(button); button.style().polish(button)
@@ -139,9 +147,9 @@ class InfoButton(QToolButton):
         self.setProperty("bfiInfo", True)
         self.setIcon(action_icon())
         self.setIconSize(QSize(18,18)); self.setFixedSize(24,24)
-        self.setText("i")
-        self.setToolTip(text)
-        self.setAccessibleName("Information")
+        _ui(self, 'setText', "i")
+        _ui(self, 'setToolTip', text)
+        _ui(self, 'setAccessibleName', "Information")
 
 
 def apply_branding_to_figure(figure, enabled=None):
@@ -177,12 +185,20 @@ def _brand_image():
 
 
 def style_figure(figure):
+    from .localization import translate_figure
+    def clean_artist(artist):
+        current = artist.get_text()
+        source = (getattr(artist, '_bfi_language_source', current)
+                  if getattr(artist, '_bfi_language_display', None) == current else current)
+        source = clean_display_name(source)
+        artist.set_text(source)
+        artist._bfi_language_source = artist._bfi_language_display = source
     figure.set_facecolor(COLORS["surface"])
     if getattr(figure,'_suptitle',None) is not None:
-        figure._suptitle.set_text(clean_display_name(figure._suptitle.get_text()))
+        clean_artist(figure._suptitle)
     for ax in figure.axes:
         for title in (ax.title,ax._left_title,ax._right_title):
-            title.set_text(clean_display_name(title.get_text()))
+            clean_artist(title)
         ax.tick_params(colors=COLORS["text_secondary"])
         ax.xaxis.label.set_color(COLORS["text_primary"])
         ax.yaxis.label.set_color(COLORS["text_primary"])
@@ -194,10 +210,11 @@ def style_figure(figure):
             if label.get_fontsize()>9: label.set_fontsize(8)
         legend=ax.get_legend()
         if legend is not None:
-            legend.get_title().set_text(clean_display_name(legend.get_title().get_text()))
+            clean_artist(legend.get_title())
             for label in legend.get_texts():
-                label.set_text(clean_display_name(label.get_text()))
+                clean_artist(label)
                 if label.get_fontsize()>9: label.set_fontsize(8)
+    translate_figure(figure)
     apply_branding_to_figure(figure)
 
 

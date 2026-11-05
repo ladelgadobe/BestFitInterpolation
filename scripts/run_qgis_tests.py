@@ -39,6 +39,7 @@ def main():
     parser.add_argument('--image', default='local installed runtime')
     parser.add_argument('--plugin-root', default=str(ROOT/'bestfitinterpolator'), help='Plugin source directory to exercise, including an installed copy')
     parser.add_argument('--dependency-path', help='Existing packages for this interpreter, without installing or changing its profile')
+    parser.add_argument('--cases', help='Optional comma-separated functional cases for focused debugging')
     args = parser.parse_args()
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -109,6 +110,8 @@ def main():
                 raise RuntimeError('Plugin source mismatch; refusing to test a substituted copy')
             suite = RuntimeCases(app, output.parent, args.pdf)
             for name, case in suite.cases():
+                if args.cases and name not in args.cases.split(','):
+                    continue
                 try:
                     with warnings.catch_warnings(record=True) as recorded:
                         warnings.simplefilter('always')

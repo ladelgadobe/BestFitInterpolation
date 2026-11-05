@@ -661,7 +661,7 @@
                 <item row="4" column="0">
                  <widget class="QLabel" name="lblOKRange">
                   <property name="text">
-                   <string>Range (a)</string>
+                   <string>Range (a, scale)</string>
                   </property>
                  </widget>
                 </item>
@@ -776,6 +776,16 @@
                  <widget class="QLabel" name="lblSDI_value">
                   <property name="text">
                    <string>—</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="0" colspan="3">
+                 <widget class="QLabel" name="lblOKPracticalRange">
+                  <property name="text">
+                   <string>Practical range: —</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>

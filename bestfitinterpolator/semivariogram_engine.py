@@ -1,8 +1,4 @@
-"""Shared semivariogram primitives and unchanged named fitting/validation policies.
-
-Ordinary MoM, Ordinary REML and residual grid fitting intentionally retain their
-existing mathematical policies. UI controllers delegate to this numerical engine.
-"""
+"""Shared semivariogram fitting and existing method-specific validation policies."""
 from dataclasses import dataclass
 from typing import List
 import numpy as np
@@ -12,6 +8,7 @@ from .validation_policy import decide_automatic_cv
 from .kriging_ordinary import ordinary_kriging_interpolation
 from .reml_bridge import fit_ok_reml_interface, cv_ok_reml_interface
 from .kriging_reml import _HAS_SCIPY as _HAS_REML
+from .semivariogram_fit import fit_joint_wls
 
 GEOSTAT_DENSE_HOLDOUT_MAX_TEST=2000
 GEOSTAT_MASSIVE_HOLDOUT_MAX_TEST=5000
@@ -61,7 +58,13 @@ class _OrdinaryPolicy:
 
 
     def _guess_initial_params(self, lags, gamma, cutoff, model="exponential"):
-        """Estimate a closer automatic MoM fit for (nugget, psill, range).
+        """Joint constrained WLS; historical heuristics provide initialization only."""
+        initial = self._heuristic_initial_params(lags, gamma, cutoff, model)
+        params, self._last_mom_fit_info = fit_joint_wls(lags, gamma, cutoff, model, initial)
+        return params
+
+    def _heuristic_initial_params(self, lags, gamma, cutoff, model="exponential"):
+        """Historical bounded seed, also retained for underdetermined inputs.
 
         The previous version used only very simple heuristics (tail max/median and
         first crossing of 95% of the sill). That could leave the initial theoretical
@@ -258,6 +261,7 @@ class _OrdinaryPolicy:
             "range": float(rng),
             "selection": selection,
             "validation_n": int(np.count_nonzero(np.isfinite(preds))),
+            "fit_diagnostics": dict(getattr(self, "_last_mom_fit_info", {})),
         })
         return metrics
 
@@ -316,6 +320,7 @@ class _REMLPolicy(_OrdinaryPolicy):
             obs = np.asarray(obs, dtype=float)
             selection = "reml_cv"
             fitted_params = tuple(float(fit[key]) for key in ("nugget", "psill", "range"))
+            nugget, psill, rng = fitted_params
         else:
             preds = np.full(z.size, np.nan, dtype=float)
             if is_dense_dataset(z.size):
@@ -581,6 +586,14 @@ class SemivariogramEngine:
 
     def validate(self, x, y, z, cutoff, lag, candidates, cancelled=lambda:False):
         rows=[]
+        if getattr(self, "trend_degree", 0):
+            from .kriging_workflow import validate_kriging_model
+            for token in candidates:
+                row, _ = validate_kriging_model(np.column_stack((x, y)), z, token,
+                    "REML" if self.profile == "ok_reml" else "MoM", 1, cutoff, lag, cancelled=cancelled)
+                rows.append(row)
+            rows.sort(key=lambda row: (-row["lccc"], row["rmse"]))
+            return rows
         if self.profile=="residual":
             lags,gamma=bin_experimental_variogram(x,y,z,cutoff,lag)
             fits=[f for f in self.policy._fit_variogram_candidates(lags,gamma,cutoff) if f.model in candidates]

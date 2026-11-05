@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Central notification routing for the plugin."""
+from .localization import _dialog
 
 from qgis.PyQt.QtWidgets import QApplication, QMessageBox
 
@@ -52,7 +53,8 @@ class PopupMessageBar:
             names=("Info","Warning","Critical","Success")
             value=getattr(level,"value",level)
             call_kwargs["level"]=enum_value(Qgis,"MessageLevel",names[max(0,min(3,int(value)))])
-        args = (title,) if message in (None, "") else (title, message)
+        from .localization import tr
+        args = (tr(title),) if message in (None, "") else (tr(title), tr(message))
         return method(*args, **call_kwargs)
 
     @staticmethod
@@ -72,9 +74,9 @@ class PopupMessageBar:
 
         title_token = window_title.strip().lower()
         if numeric_level >= 3 or title_token in {"error", "critical", "fatal error"}:
-            return QMessageBox.critical(self._parent(), window_title, text)
+            return _dialog(QMessageBox.critical, self._parent(), window_title, text)
         if numeric_level >= 1 or title_token in {"warning", "alert"}:
-            return QMessageBox.warning(self._parent(), window_title, text)
+            return _dialog(QMessageBox.warning, self._parent(), window_title, text)
         return self._push_native(
             "pushMessage",
             title,
@@ -87,12 +89,12 @@ class PopupMessageBar:
     def pushWarning(self, title, message=None, duration=None, **kwargs):
         del duration, kwargs
         window_title, text = self._title_and_text(title, message)
-        return QMessageBox.warning(self._parent(), window_title, text)
+        return _dialog(QMessageBox.warning, self._parent(), window_title, text)
 
     def pushCritical(self, title, message=None, duration=None, **kwargs):
         del duration, kwargs
         window_title, text = self._title_and_text(title, message)
-        return QMessageBox.critical(self._parent(), window_title, text)
+        return _dialog(QMessageBox.critical, self._parent(), window_title, text)
 
     def pushSuccess(self, title, message=None, duration=None, **kwargs):
         return self._push_native(

@@ -83,6 +83,13 @@ def _scale_coordinates_for_tps(x, y, xi, yi):
     )
 
 
+try:
+    from .numerical_runtime import responsive_numerical
+except ImportError:  # standalone numerical use
+    from numerical_runtime import responsive_numerical
+
+
+@responsive_numerical
 def tps_interpolation(
     x,
     y,

@@ -9,8 +9,10 @@ from qgis.core import QgsProject
 def parameter_snapshot(configuration):
     """Capture executed settings, excluding training arrays and fitted objects."""
     keys=('method','backend','variable','target_name','points_layer','polygon_layer','pixel_size','params',
-          'resolved_params','rf_params','search_mode','rf_search_mode','feature_names','model','nugget',
-          'psill','var_range','variogram_fit','source','validation_sample_count','validation_full_sample_count')
+          'resolved_params','rf_params','search_mode','rf_search_mode','framework_search_settings','search_summary','grid_params','search_folds','search_iterations','feature_names','model','nugget',
+          'psill','var_range','variogram_fit','source','validation_sample_count','validation_full_sample_count',
+          'trend_degree','kriging_type','uncertainty_path','uncertainty_definition',
+          'uncertainty_canvas_outputs','training_coverage','grid_coverage','uncertainty_paths','uncertainty_definitions','uncertainty_calibrated','uncertainty_tree_count','training_sample_count')
     def simple(value):
         if value is None or isinstance(value,(str,bool,int,float)): return value
         if isinstance(value,dict): return {str(k):simple(v) for k,v in value.items() if k!='raster_path'}
@@ -38,6 +40,7 @@ class InterpolationResult:
 
 def publish_result(owner,method,configuration,figure=None,raster_path=None):
     plugin=getattr(owner,'parent_plugin',None) or getattr(getattr(owner,'dlg',None),'_bfi_plugin',None) or owner
+    plugin=getattr(plugin,'_framework_owner',plugin)
     path=raster_path or configuration.get('raster_path') or configuration.get('params',{}).get('raster_path')
     if not path: return None
     layers=[layer for layer in QgsProject.instance().mapLayers().values() if layer.source().split('|')[0]==str(path)]
@@ -61,6 +64,9 @@ def publish_result(owner,method,configuration,figure=None,raster_path=None):
         dataset=None
     plugin._latest_produced_result=result
     purpose=getattr(plugin,'_bfi_interpolation_purpose','standalone')
+    if configuration.get('uncertainty_paths'):
+        from .uncertainty_maps import link_uncertainty
+        link_uncertainty(result)
     if purpose=='comparison': return result
     plugin._last_interpolation_result=result
     from .mpl_compat import clone_figure
@@ -68,6 +74,9 @@ def publish_result(owner,method,configuration,figure=None,raster_path=None):
     framework=getattr(plugin,'framework_ctrl',None)
     if framework is not None and purpose=='final':
         framework.state.__dict__['executed_result']=result
+        framework._interpolation_prediction_figure=clone_figure(figure) if figure is not None else None
+        from .uncertainty_maps import configure_framework_selector
+        configure_framework_selector(framework, result)
         framework.report_state=None
         framework.state.__dict__.pop('report_state',None)
         if method in framework.state.validated_methods:

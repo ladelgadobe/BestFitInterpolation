@@ -48,7 +48,8 @@ def test_about_tab_is_built_from_plugin_metadata():
     assert 'metadata.get("article"' in method_source
     assert '"article_title"' in method_source
     assert '"article_citation"' in method_source
-    assert 'tabs.addTab(about_tab, "About")' in method_source
+    assert any(isinstance(node, ast.Constant) and node.value == 'About'
+               for node in ast.walk(_method_node(dialog, '_add_about_tab')))
     assert 'root_layout.setAlignment(enum_value(Qt, "AlignmentFlag", "AlignTop"))' in method_source
     assert "heading_layout.addStretch()" not in method_source
     assert (

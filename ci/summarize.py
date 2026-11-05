@@ -26,10 +26,21 @@ def summarize(discovery, folder):
               'Relative tolerance: {}; absolute tolerance: {}. Exact LISA class comparison. Expected values are never regenerated in CI.'.format(baseline['rtol'], baseline['atol']), '',
               '| QGIS | Calculation | Maximum absolute difference |', '|---|---|---|']
     for row in rows:
-        for key, values in row.get('numerical_results', {}).items():
+        numerical = row.get('numerical_results', {})
+        scope = numerical.get('v2_1_scope', {})
+        for key, values in numerical.items():
+            if key == 'v2_1_scope':
+                continue
+            if key not in baseline['results']:
+                raise ValueError('Unknown numerical calculation: ' + key)
             expected = baseline['results'][key]
             delta = 'same classes' if key == 'lisa' and values == expected else ('classes differ' if key == 'lisa' else '{:.8g}'.format(max(abs(a-b) for a,b in zip(values, expected))))
+            if key in scope.get('intentionally_revised_keys', []):
+                delta += ' (intentional v2.1 ordinary-fit change)'
             lines.append('| {} | {} | {} |'.format(row['requested'], key, delta))
+        if scope:
+            lines += ['', 'QGIS {} v2.1 fit checks: {}. Unaffected outputs retain the original baseline comparison.'.format(
+                row['requested'], ', '.join(scope.get('correctness_checks', []))), '']
     for row in rows:
         lines += ['', '## QGIS ' + row['requested'], '', 'Image: ' + str(row.get('resolution')), '',
                   'Environment: ' + str(row.get('environment', {})), '']
