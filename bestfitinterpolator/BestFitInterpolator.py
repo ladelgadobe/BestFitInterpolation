@@ -19,7 +19,7 @@ import math
 import configparser
 import hashlib
 from .diagnostics_ui import feature_in_analysis
-from .compat import geometry_type, enum_value
+from .compat import geometry_type
 import numpy as np
 import random
 import textwrap

@@ -266,7 +266,8 @@ def ok_predict(
     C = _cov_matrix(XY, ps, a, ng, model)
     L = np.linalg.cholesky(C)
     def chol_solve(B): return _cholesky_solve(L, B)
-    Ci = lambda B: chol_solve(B)
+    def Ci(B):
+        return chol_solve(B)
     Ci_y, Ci_X = Ci(y), Ci(X)
     XtCiX = X.T @ Ci_X
     XtCiX_inv = np.linalg.inv(XtCiX)

@@ -3432,8 +3432,8 @@ class MachineLearningTabController:
             grid_df["__grid_row"] = (inside_indices // int(n_cols)).astype(np.int64, copy=False)
             grid_df["__grid_col"] = (inside_indices % int(n_cols)).astype(np.int64, copy=False)
             grid_meta = {
-                "covariate_coverage": sampler.summary(total_inside, total_inside) if not raster_providers else coverage,
-            "xmin": float(xmin),
+                "covariate_coverage": sampler.summary(total_inside, total_inside),
+                "xmin": float(xmin),
                 "ymin": float(ymin),
                 "xmax": float(xmax),
                 "ymax": float(ymax),
@@ -3498,7 +3498,7 @@ class MachineLearningTabController:
 
         # Return also a small metadata dict needed to build the output raster
         grid_meta = {
-            "covariate_coverage": sampler.summary(total_inside, total_inside) if not raster_providers else coverage,
+            "covariate_coverage": coverage,
             "xmin": float(xmin),
             "ymin": float(ymin),
             "xmax": float(xmax),

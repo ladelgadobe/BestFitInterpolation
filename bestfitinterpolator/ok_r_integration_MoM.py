@@ -28,7 +28,7 @@ import uuid
 from .semivariogram_engine import SemivariogramEngine
 from .semivariogram_fit import update_range_widgets
 from .diagnostics_ui import feature_in_analysis
-from .compat import geometry_type, enum_value
+from .compat import geometry_type
 import numpy as np
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QEvent
 from qgis.PyQt.QtGui import QCursor, QPixmap
