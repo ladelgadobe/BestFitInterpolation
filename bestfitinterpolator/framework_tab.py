@@ -2402,7 +2402,8 @@ class FrameworkTabController(QObject):
 
     def _build_report_preview_html(self) -> str:
         """Build a lightweight report preview without embedded figures."""
-        esc = lambda v: html.escape(str(v if v not in (None, "") else "Pending"))
+        def esc(v):
+            return html.escape(str(v if v not in (None, "") else "Pending"))
         selected = self.state.__dict__.get("selected_method") or self.state.selected_winner or "Pending"
         methods = ", ".join(self.state.validated_methods or self._selected_methods_from_checkboxes()) or "Pending"
         validation_table = self._validation_metrics_table_html()
@@ -2429,7 +2430,8 @@ class FrameworkTabController(QObject):
 
     def _validation_metrics_table_html(self) -> str:
         """Build the validation metrics table used by both preview and final PDF."""
-        esc = lambda v: html.escape(str(v if v not in (None, "") else "Pending"))
+        def esc(v):
+            return html.escape(str(v if v not in (None, "") else "Pending"))
         rows = []
         for row in self.state.validation_results or []:
             rows.append(
@@ -2454,7 +2456,8 @@ class FrameworkTabController(QObject):
 
     def _collect_legacy_report_html(self) -> str:
         """Build the English Framework validation report template."""
-        esc = lambda v: html.escape(str(v if v not in (None, "") else "Pending"))
+        def esc(v):
+            return html.escape(str(v if v not in (None, "") else "Pending"))
         recommended = ", ".join(self.state.suggested_methods) if self.state.suggested_methods else "Pending"
         selected = ", ".join(self.state.validated_methods) if self.state.validated_methods else "Pending"
         from .interpolation_result import executed_method

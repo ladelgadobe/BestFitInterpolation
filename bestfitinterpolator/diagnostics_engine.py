@@ -144,7 +144,8 @@ def spatial_statistics(values, neighbors, permutations=499, seed=42, cancelled=l
             spatial_dot=matrix.dot
         except ImportError:
             rows=np.repeat(np.arange(n),counts)
-            spatial_dot=lambda array:np.bincount(rows,weights=weights*array[columns],minlength=n)
+            def spatial_dot(array):
+                return np.bincount(rows, weights=weights*array[columns], minlength=n)
         rng = np.random.default_rng(seed)
         max_k = int(np.max(counts))
         draws = np.array([rng.choice(n-1, size=max_k, replace=False) for _ in range(p)])
