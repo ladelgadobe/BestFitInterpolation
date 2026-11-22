@@ -13,6 +13,7 @@ Version 2.1 provides translated interfaces, explicit uncertainty maps and indepe
 <p align="center">
   <a href="https://github.com/ladelgadobe/BestFitInterpolation/issues">Report an issue</a> |
   <a href="https://doi.org/10.1007/s11119-025-10311-8">Reference article</a> |
+  <a href="https://doi.org/10.1016/j.softx.2026.103252">Plugin article</a> |
   <a href="mailto:ladelgadobe@unal.edu.co">Contact</a>
 </p>
 
@@ -122,7 +123,15 @@ Contact: [ladelgadobe@unal.edu.co](mailto:ladelgadobe@unal.edu.co)
 
 ## Citation
 
+### Plugin article (main reference)
+
+Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator: a QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods*. **SoftwareX, 36, Article 103252**. https://doi.org/10.1016/j.softx.2026.103252
+
+### Reference article (method-selection framework)
+
 Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. Precision Agriculture, 27, Article 10. https://doi.org/10.1007/s11119-025-10311-8
+
+If you use this plugin in academic work, please cite the software and the plugin article. If you use the method-selection framework, please also cite the reference article. See the [citation styles and downloads](https://github.com/ladelgadobe/BestFitInterpolation#cite-the-plugin-article).
 
 ## User Manual
 

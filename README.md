@@ -11,9 +11,12 @@ Best Fit Interpolator helps users compare deterministic, geostatistical, machine
 [![QGIS](https://img.shields.io/badge/QGIS-3.14%2B-589632?style=for-the-badge&logo=qgis&logoColor=white)](https://qgis.org)
 [![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![Version](https://img.shields.io/badge/version-2.1-1565C0?style=for-the-badge)](docs/releases/2.1.md)
-[![Article](https://img.shields.io/badge/Reference%20Article-Precision%20Agriculture-1B5E20?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
+
+[![Reference Article](https://img.shields.io/badge/Reference%20Article-Precision%20Agriculture-1B5E20?style=for-the-badge)](https://doi.org/10.1007/s11119-025-10311-8)
+[![Plugin Article](https://img.shields.io/badge/Plugin%20Article-SoftwareX-0077B6?style=for-the-badge)](https://doi.org/10.1016/j.softx.2026.103252)
 
 [Reference article](https://doi.org/10.1007/s11119-025-10311-8) |
+[Plugin article](https://doi.org/10.1016/j.softx.2026.103252) |
 [User manual PDF](BestFitInterpolator_User_Manual.pdf) |
 [Issues](https://github.com/ladelgadobe/BestFitInterpolation/issues) |
 [Contact](mailto:ladelgadobe@unal.edu.co)
@@ -189,21 +192,71 @@ Contact: [ladelgadobe@unal.edu.co](mailto:ladelgadobe@unal.edu.co)
 
 ---
 
+## Plugin Article
+
+Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator: a QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods*. **SoftwareX, 36, Article 103252**. https://doi.org/10.1016/j.softx.2026.103252
+
+This is the main reference for the plugin, describing its design, implementation, validation, and application workflow.
+
 ## Reference Article
 
 Laura Delgado Bejarano, Agda Loureiro Gonçalves Oliveira, João Vitor Fiolo Pozzuto, Dario Castañeda Sánchez, and Lucas Rios do Amaral (2026). *Performance of interpolation methods in digital soil mapping: the influence of data characteristics*. **Precision Agriculture, 27, Article 10**. https://doi.org/10.1007/s11119-025-10311-8
 
-If you use this plugin in academic work, please cite both the software and the reference article.
+If you use this plugin in academic work, please cite the software and the plugin article. If you use the method-selection framework, please also cite the reference article.
 
-### Cite the software
+## Cite the software
 
 Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator* (Version 2.1) [QGIS plugin]. GitHub. https://github.com/ladelgadobe/BestFitInterpolation
+
+Version 2.1 archive: Zenodo. https://doi.org/10.5281/zenodo.23988628
 
 Archived version: Delgado Bejarano, L., & Rios do Amaral, L. (2026). *Best Fit Interpolator* (Version 1.1) [QGIS plugin]. Zenodo. https://doi.org/10.5281/zenodo.21891225
 
 ---
 
-## Cite this article
+## Cite the plugin article
+
+Expand a citation style below, then use the copy button in the citation box.
+
+<details open>
+<summary><strong>APA 7th edition</strong></summary>
+
+```text
+Delgado Bejarano, L., & Rios do Amaral, L. (2026). Best Fit Interpolator: A QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods. SoftwareX, 36, Article 103252. https://doi.org/10.1016/j.softx.2026.103252
+```
+
+</details>
+
+<details>
+<summary><strong>Vancouver</strong></summary>
+
+```text
+Delgado Bejarano L, Rios do Amaral L. Best Fit Interpolator: a QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods. SoftwareX. 2026;36:103252. doi:10.1016/j.softx.2026.103252.
+```
+
+</details>
+
+<details>
+<summary><strong>ISO 690</strong></summary>
+
+```text
+DELGADO BEJARANO, Laura and RIOS DO AMARAL, Lucas. Best Fit Interpolator: a QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods. SoftwareX, 2026, vol. 36, article 103252. DOI 10.1016/j.softx.2026.103252. Available at: https://doi.org/10.1016/j.softx.2026.103252.
+```
+
+</details>
+
+<details>
+<summary><strong>ABNT NBR 6023:2018</strong></summary>
+
+```text
+DELGADO BEJARANO, Laura; RIOS DO AMARAL, Lucas. Best Fit Interpolator: a QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods. SoftwareX, v. 36, art. 103252, 2026. DOI: https://doi.org/10.1016/j.softx.2026.103252.
+```
+
+</details>
+
+---
+
+## Cite the reference article
 
 Expand a citation style below, then use the copy button in the citation box.
 
@@ -245,7 +298,7 @@ DELGADO BEJARANO, Laura; LOUREIRO GONÇALVES OLIVEIRA, Agda; FIOLO POZZUTO, Joã
 
 ### Download citation files
 
-[Download BibTeX (.bib)](CITATION.bib) | [Download RefMan / RIS (.ris)](CITATION.ris) | [Open the archived 1.1 software DOI](https://doi.org/10.5281/zenodo.21891225) | [Open the article DOI](https://doi.org/10.1007/s11119-025-10311-8)
+[Download BibTeX (.bib)](CITATION.bib) | [Download RefMan / RIS (.ris)](CITATION.ris) | [Open the archived 1.1 software DOI](https://doi.org/10.5281/zenodo.21891225) | [Open the reference article DOI](https://doi.org/10.1007/s11119-025-10311-8) | [Open the plugin article DOI](https://doi.org/10.1016/j.softx.2026.103252)
 
 GitHub also provides its native **Cite this repository** option from [`CITATION.cff`](CITATION.cff).
 

@@ -1,5 +1,18 @@
 TY  - JOUR
 AU  - Delgado Bejarano, Laura
+AU  - Rios do Amaral, Lucas
+TI  - Best Fit Interpolator: a QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods
+JO  - SoftwareX
+PY  - 2026
+VL  - 36
+SP  - 103252
+DO  - 10.1016/j.softx.2026.103252
+UR  - https://doi.org/10.1016/j.softx.2026.103252
+PB  - Elsevier
+ER  -
+
+TY  - JOUR
+AU  - Delgado Bejarano, Laura
 AU  - Loureiro Gonçalves Oliveira, Agda
 AU  - Fiolo Pozzuto, João Vitor
 AU  - Castañeda Sánchez, Dario
@@ -25,6 +38,7 @@ PY  - 2026
 DA  - 2026/11/05
 PB  - GitHub
 ET  - Version 2.1
+DO  - 10.5281/zenodo.23988628
 UR  - https://github.com/ladelgadobe/BestFitInterpolation
 N1  - QGIS plugin for selecting, validating, and applying spatial interpolation methods based on data characteristics.
 ER  -
