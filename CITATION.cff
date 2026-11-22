@@ -1,8 +1,9 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite both the software and the reference article below."
+message: "Please cite this software and the plugin article below. Also cite the method-selection framework article when using that framework."
 title: "Best Fit Interpolator"
 type: software
 version: "2.1"
+doi: "10.5281/zenodo.23988628"
 date-released: 2026-11-05
 license: GPL-3.0-or-later
 repository-code: "https://github.com/ladelgadobe/BestFitInterpolation"
@@ -16,26 +17,42 @@ authors:
     orcid: "https://orcid.org/0000-0001-8071-4449"
 preferred-citation:
   type: article
-  title: "Performance of interpolation methods in digital soil mapping: the influence of data characteristics"
-  journal: "Precision Agriculture"
+  title: "Best Fit Interpolator: a QGIS decision-support plugin for comparing, validating, and applying spatial interpolation methods"
+  journal: "SoftwareX"
   year: 2026
-  volume: 27
-  issue: 1
-  start: 10
-  doi: "10.1007/s11119-025-10311-8"
+  volume: 36
+  start: 103252
+  doi: "10.1016/j.softx.2026.103252"
+  url: "https://doi.org/10.1016/j.softx.2026.103252"
   authors:
     - given-names: Laura
       family-names: Delgado Bejarano
       orcid: "https://orcid.org/0000-0002-9608-9307"
-    - given-names: Agda
-      family-names: Loureiro Gonçalves Oliveira
-      orcid: "https://orcid.org/0000-0002-8761-9716"
-    - given-names: João Vitor
-      family-names: Fiolo Pozzuto
-      orcid: "https://orcid.org/0000-0002-4489-403X"
-    - given-names: Dario
-      family-names: Castañeda Sánchez
-      orcid: "https://orcid.org/0000-0002-2693-371X"
     - given-names: Lucas
       family-names: Rios do Amaral
       orcid: "https://orcid.org/0000-0001-8071-4449"
+references:
+  - type: article
+    title: "Performance of interpolation methods in digital soil mapping: the influence of data characteristics"
+    journal: "Precision Agriculture"
+    year: 2026
+    volume: 27
+    issue: 1
+    start: 10
+    doi: "10.1007/s11119-025-10311-8"
+    authors:
+      - given-names: Laura
+        family-names: Delgado Bejarano
+        orcid: "https://orcid.org/0000-0002-9608-9307"
+      - given-names: Agda
+        family-names: Loureiro Gonçalves Oliveira
+        orcid: "https://orcid.org/0000-0002-8761-9716"
+      - given-names: João Vitor
+        family-names: Fiolo Pozzuto
+        orcid: "https://orcid.org/0000-0002-4489-403X"
+      - given-names: Dario
+        family-names: Castañeda Sánchez
+        orcid: "https://orcid.org/0000-0002-2693-371X"
+      - given-names: Lucas
+        family-names: Rios do Amaral
+        orcid: "https://orcid.org/0000-0001-8071-4449"
